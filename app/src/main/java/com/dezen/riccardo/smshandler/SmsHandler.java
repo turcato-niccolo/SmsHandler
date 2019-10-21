@@ -22,7 +22,7 @@ public class SmsHandler {
     private SMSReceiver smsReceiver;
     private OnSmsReceivedListener listener;
 
-    public SmsHandler(Context context){
+    public SmsHandler(){
         smsManager = SmsManager.getDefault();
         scAddress = null;
         sentIntent = null;
@@ -34,16 +34,13 @@ public class SmsHandler {
     private class SMSReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d("Sms_test", "BROADCAST");
             Bundle bundle = intent.getExtras();
             if(intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION) && bundle != null){
                 Object[] pdus = (Object[]) bundle.get("pdus");
                 if(pdus != null && pdus.length > 0){
                     SmsMessage[] messages = new SmsMessage[pdus.length];
-                    StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < pdus.length; i++) {
                         messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                        sb.append(messages[i].getMessageBody());
                     }
                     if(listener != null) listener.onReceive(messages);
                 }
@@ -56,7 +53,11 @@ public class SmsHandler {
     }
 
     public void sendSMS(String destination, String message){
-        smsManager.sendTextMessage(destination,scAddress,message,sentIntent,deliveryIntent);
+        try{
+            smsManager.sendTextMessage(destination,scAddress,message,sentIntent,deliveryIntent);
+        }catch(IllegalArgumentException e){
+            //NON E' STATO INVIATO IL MESSAGGIO
+        }
     }
 
     public void setScAddress(String scAddress) {
@@ -78,7 +79,13 @@ public class SmsHandler {
         return smsReceiver;
     }
 
+    public void unregisterReceiver(Context context){
+        context.unregisterReceiver(smsReceiver);
+    }
+
     public void setListener(OnSmsReceivedListener listener){
         this.listener = listener;
     }
+
+    public void clearListener(){ listener = null;}
 }
