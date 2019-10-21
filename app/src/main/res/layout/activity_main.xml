@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.smstest.MainActivity">
+
+    <!-- EditText for entering a phone number  -->
+    <EditText
+        android:id="@+id/sms_phone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:hint="Enter phone"
+        android:inputType="phone" />
+
+    <!-- EditText for entering a message  -->
+    <EditText
+        android:id="@+id/sms_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sms_phone"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:hint="Enter message"
+        android:inputType="text" />
+
+    <!-- The smsSendMessage() method will be called by this button.  -->
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Sms"
+        android:id="@+id/btnSendSMS"
+        android:layout_below="@+id/sms_message"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="48dp"
+        android:onClick="smsSendMessage"/>
+
+    <!-- The retryApp() method will be called by this button.
+    <Button
+        android:id="@+id/button_retry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/sms_message"
+        android:text="Retry"
+        android:visibility="invisible"
+        android:onClick="retryApp"/>-->
+
+</RelativeLayout>
