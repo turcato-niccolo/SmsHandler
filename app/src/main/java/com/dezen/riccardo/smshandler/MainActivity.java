@@ -26,6 +26,17 @@ public class MainActivity extends AppCompatActivity {
 
 
     Context context = this;
+
+    /***
+     *
+     * @param savedInstanceState parametro di sistema
+     *
+     * @returns Metodo eseguito all'apertura dell'app, verifica se i permessi di invio e ricezione sms sono garantit, nel caso li richiede
+     *
+     *
+     * @throws
+     */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,6 +56,13 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{"android.permission.SEND_SMS", "android.permission.RECEIVE_SMS"}, REQUEST_CODE);
         }
 
+
+        /***
+         * Alla pressione del pulsande "Send" costruisce il messaggio da visualizzare nella textview e di richiamare il metodo della
+         * libreria SmsHandler per mandare attivamente il messaggio, scrive su un toast il messaggio che genera tale metodo.
+         *
+         *
+         */
         send_button.setOnClickListener(
                 new Button.OnClickListener() {
                     public void onClick(View v) {

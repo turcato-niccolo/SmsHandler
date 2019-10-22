@@ -23,6 +23,15 @@ public class BroadcastSmsHandler extends BroadcastReceiver {
         sender = SmsManager.getDefault();
     }
 
+    /***
+     *
+     * @param context parametro di sistema
+     * @param intent parametro di sistema
+     *
+     * Gestisce i messaggi sms che il dispositivo riceve ad app aperta
+     * Genera un toast di tipo SMS from NUMERO: TESTO
+     *               
+     */
     @TargetApi(Build.VERSION_CODES.M)
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -58,9 +67,16 @@ public class BroadcastSmsHandler extends BroadcastReceiver {
         }
     }
 
+
+    /***
+     *
+     * @param number numero di telefono, deve essere in formato da 10 cifre
+     * @param text testo dell'sms
+     * @return ritorna "1" se c'è stato un errore legato agli argomenti, "0" se l'invio è andato a buon fine, per gli altri tipi di eccezione ritorna direttamente la stringa di errore
+     */
     public String Send(String number, String text) {
-        //ritorna "1" se c'è stato un errore legato agli argomenti, "0" se l'invio è andato a buon fine
-        //per gli altri tipi di eccezione ritorna direttamente la stringa di errore
+        //
+        //
         String exitCode = "0";
 
         try {
