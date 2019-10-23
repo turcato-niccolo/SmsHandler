@@ -38,9 +38,8 @@ public class SmsHandler {
                 Object[] pdus = (Object[]) bundle.get("pdus");
                 if(pdus != null && pdus.length > 0){
                     SmsMessage[] messages = new SmsMessage[pdus.length];
-                    for (int i = 0; i < pdus.length; i++) {
+                    for (int i = 0; i < pdus.length; i++)
                         messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                    }
                     if(listener != null) listener.onReceive(messages);
                 }
             }

@@ -51,7 +51,9 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
     @Override
     public void onReceive(SmsMessage[] messages) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Messaggio da: "+messages[0].getOriginatingAddress());
+        sb.append("Messaggio da: ")
+            .append(messages[0].getOriginatingAddress())
+            .append(" ");
         for(SmsMessage sms : messages) sb.append(sms.getMessageBody());
         textView_last_message.setText(sb.toString());
     }
