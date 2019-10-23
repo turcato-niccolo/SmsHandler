@@ -13,7 +13,8 @@
         android:layout_marginTop="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/container_sub" />
+        app:layout_constraintTop_toBottomOf="@id/container_sub"
+        android:textAlignment="center"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/container_sub"
@@ -57,11 +58,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:gravity="center"
-            android:text="INVIA"
+            android:text="SEND"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editText_message"
-            />
+            app:layout_constraintTop_toBottomOf="@id/editText_message" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

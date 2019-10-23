@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -44,16 +45,26 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
         smsHandler.unregisterReceiver(getApplicationContext());
     }
 
-    private void sendMessage(String destination, String message){
+    /**
+     * Sends a message through this activity's instance of SmsHandler
+     * @param destination the destination address for the message, in phone number format
+     * @param message the body of the message to be sent, can't be neither null nor empty
+     */
+    private void sendMessage(String destination, @NonNull String message){
         smsHandler.sendSMS(destination, message);
     }
 
+    /**
+     * Method from the OnSmsReceivedListener interface, reads the body of the message and
+     * updates a TextView's content
+     * @param messages non-empty array of SmsMessages retrieved by SmsHandler
+     */
     @Override
     public void onReceive(SmsMessage[] messages) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Messaggio da: ")
+        sb.append("Last message from: ")
             .append(messages[0].getOriginatingAddress())
-            .append(" ");
+            .append("\n");
         for(SmsMessage sms : messages) sb.append(sms.getMessageBody());
         textView_last_message.setText(sb.toString());
     }
