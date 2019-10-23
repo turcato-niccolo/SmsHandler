@@ -30,7 +30,7 @@ public class BroadcastSmsHandler extends BroadcastReceiver {
      *
      * Gestisce i messaggi sms che il dispositivo riceve ad app aperta
      * Genera un toast di tipo SMS from NUMERO: TESTO
-     *               
+     *
      */
     @TargetApi(Build.VERSION_CODES.M)
     @Override
