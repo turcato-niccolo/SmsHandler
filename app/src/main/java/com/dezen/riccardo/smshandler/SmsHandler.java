@@ -8,10 +8,9 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.provider.Telephony;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
-import android.util.Log;
-import android.widget.Toast;
 
 public class SmsHandler {
 
@@ -35,7 +34,7 @@ public class SmsHandler {
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
-            if(intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION) && bundle != null){
+            if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION) && bundle != null){
                 Object[] pdus = (Object[]) bundle.get("pdus");
                 if(pdus != null && pdus.length > 0){
                     SmsMessage[] messages = new SmsMessage[pdus.length];
@@ -53,11 +52,8 @@ public class SmsHandler {
     }
 
     public void sendSMS(String destination, String message){
-        try{
+        if(PhoneNumberUtils.isGlobalPhoneNumber(destination) && PhoneNumberUtils.isWellFormedSmsAddress(destination))
             smsManager.sendTextMessage(destination,scAddress,message,sentIntent,deliveryIntent);
-        }catch(IllegalArgumentException e){
-            //NON E' STATO INVIATO IL MESSAGGIO
-        }
     }
 
     public void setScAddress(String scAddress) {
@@ -72,11 +68,10 @@ public class SmsHandler {
         this.deliveryIntent = deliveryIntent;
     }
 
-    public BroadcastReceiver registerReceiver(Context context){
+    public void registerReceiver(Context context){
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
         context.registerReceiver(smsReceiver,filter);
-        return smsReceiver;
     }
 
     public void unregisterReceiver(Context context){
