@@ -2,6 +2,7 @@ package com.dezen.riccardo.smshandler;
 
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
