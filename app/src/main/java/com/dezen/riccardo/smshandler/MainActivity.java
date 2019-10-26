@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
         smsHandler = new SmsHandler();
         smsHandler.registerReceiver(getApplicationContext());
         smsHandler.setListener(this);
+
         button_send = findViewById(R.id.button_send);
         editText_number = findViewById(R.id.editText_number);
         editText_message = findViewById(R.id.editText_message);
