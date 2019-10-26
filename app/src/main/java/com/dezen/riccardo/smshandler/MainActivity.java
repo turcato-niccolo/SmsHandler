@@ -1,6 +1,9 @@
 package com.dezen.riccardo.smshandler;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.telephony.SmsMessage;
 import android.util.Log;
 import android.view.View;
@@ -11,6 +14,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationManagerCompat;
+
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsReceivedListener {
 
@@ -37,6 +43,23 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
                 sendMessage(editText_number.getText().toString(), editText_message.getText().toString());
             }
         });
+        if(!isNotificationListenerEnabled(getApplicationContext())) {
+            openNotificationListenSettings(null);
+        }
+    }
+
+    public boolean isNotificationListenerEnabled(Context context) {
+        Set<String> packageNames = NotificationManagerCompat.getEnabledListenerPackages(this);
+        return packageNames.contains(context.getPackageName());
+    }
+
+    public void openNotificationListenSettings(View v) {
+        try {
+            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
