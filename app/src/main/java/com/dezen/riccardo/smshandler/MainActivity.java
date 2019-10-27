@@ -5,11 +5,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.SmsMessage;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +18,7 @@ import androidx.core.app.NotificationManagerCompat;
 
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsReceivedListener {
+public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsEventListener {
 
     private SmsHandler smsHandler;
     private Button button_send;
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         smsHandler = new SmsHandler();
-        smsHandler.registerReceiver(getApplicationContext());
+        smsHandler.registerReceiver(getApplicationContext(),true,true,true);
         smsHandler.setListener(this);
 
         button_send = findViewById(R.id.button_send);
@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
         if(!isNotificationListenerEnabled(getApplicationContext())) {
             openNotificationListenSettings(null);
         }
+
+        SmsUtils.logUnreadMessages(getApplicationContext());
     }
 
     public boolean isNotificationListenerEnabled(Context context) {
@@ -80,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
     }
 
     /**
-     * Method from the OnSmsReceivedListener interface, reads the body of the message and
+     * Method from the OnSmsEventListener interface, reads the body of the message and
      * updates a TextView's content
      * @param messages non-empty array of SmsMessages retrieved by SmsHandler
      */
@@ -92,5 +94,14 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
             .append("\n");
         for(SmsMessage sms : messages) sb.append(sms.getMessageBody());
         textView_last_message.setText(sb.toString());
+    }
+    @Override
+    public void onSent(int resultCode) {
+        Toast.makeText(getApplicationContext(), "SMS may have been sent", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onDelivered(int resultCode) {
+        Toast.makeText(getApplicationContext(), "SMS may have been delivered", Toast.LENGTH_SHORT).show();
     }
 }

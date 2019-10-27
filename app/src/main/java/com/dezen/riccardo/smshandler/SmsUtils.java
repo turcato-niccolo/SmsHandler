@@ -2,10 +2,14 @@ package com.dezen.riccardo.smshandler;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.Telephony;
-import android.telephony.SmsMessage;
 import android.util.Log;
+
+import androidx.room.Room;
+
+import com.dezen.riccardo.smshandler.database.SmsDatabase;
+import com.dezen.riccardo.smshandler.database.SmsEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,20 +29,44 @@ public class SmsUtils {
                 Telephony.Sms.CONTENT_URI,
                 inboxProjection, selectionClause, selectionArgs,
                 Telephony.Sms._ID);
-        if(mCursor.getCount() >= 1){
+        if(mCursor != null && mCursor.getCount() >= 1){
             mCursor.moveToFirst();
             while(!mCursor.isLast()){
                 StringBuilder sb = new StringBuilder()
-                        .append(mCursor.getString(0)+" ")
-                        .append(mCursor.getString(1)+" ")
-                        .append(mCursor.getString(2)+" ")
+                        .append(mCursor.getString(0)).append(" ")
+                        .append(mCursor.getString(1)).append(" ")
+                        .append(mCursor.getString(2)).append(" ")
                         .append(mCursor.getString(3));
                 list.add(sb.toString());
                 Log.d("SMSUtils", sb.toString());
                 mCursor.moveToNext();
             }
+            mCursor.close();
         }
-        mCursor.close();
         return list;
+    }
+
+
+    public static void logUnreadMessages(Context context){
+        new LogTask(context).execute();
+    }
+
+    private static class LogTask extends AsyncTask<String, Integer, Void>{
+        private Context context;
+        public LogTask(Context context){
+            this.context = context;
+        }
+        @Override
+        protected Void doInBackground(String... strings) {
+            SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, context.getString(R.string.sms_local_database))
+                    .enableMultiInstanceInvalidation()
+                    .build();
+            SmsEntity[] messages = db.access().loadAllSms();
+            for(SmsEntity sms : messages){
+                db.access().deleteSms(sms);
+                Log.e("Unread Message", sms.address+" "+sms.body);
+            }
+            return null;
+        }
     }
 }

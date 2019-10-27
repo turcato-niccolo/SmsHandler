@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">SmsHandler</string>
+    <string name="sms_handler_received_broadcast">NEW_SMS</string>
+    <string name="sms_handler_sent_broadcast">SMS_SENT</string>
+    <string name="sms_handler_delivered_broadcast">SMS_DELIVERED</string>
+    <string name="sms_local_database">sms-db</string>
 </resources>

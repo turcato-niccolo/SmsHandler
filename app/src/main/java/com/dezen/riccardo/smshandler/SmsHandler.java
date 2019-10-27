@@ -1,18 +1,14 @@
 package com.dezen.riccardo.smshandler;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.os.Bundle;
 import android.provider.Telephony;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -22,9 +18,8 @@ public class SmsHandler {
     private String scAddress;
     private PendingIntent sentIntent;
     private PendingIntent deliveryIntent;
-    private SMSReceiver smsReceiver;
-    private OnSmsReceivedListener listener;
-
+    private OnSmsEventListener listener;
+    private SmsEventReceiver smsEventReceiver;
     /**
      * Default constructor. SmsManager.getDefault() can behave unpredictably if called from a
      * background thread in multi-SIM systems.
@@ -33,26 +28,28 @@ public class SmsHandler {
         smsManager = SmsManager.getDefault();
         scAddress = null;
         listener = null;
-        smsReceiver = new SMSReceiver();
         sentIntent = null;
         deliveryIntent = null;
+        smsEventReceiver = new SmsEventReceiver();
     }
 
-    private class SMSReceiver extends BroadcastReceiver{
+    private class SmsEventReceiver extends BroadcastReceiver{
         /**
-         * Default method for BroadcastReceivers. Verifies that there are incoming textmessages and
+         * Default method for BroadcastReceivers. Verifies that there are incoming, sent or delivered text messages and
          * forwards them to a listener, if avaiable.
          */
         @Override
         public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION) && bundle != null){
-                Object[] pdus = (Object[]) bundle.get("pdus");
-                if(pdus != null && pdus.length > 0){
-                    SmsMessage[] messages = new SmsMessage[pdus.length];
-                    for (int i = 0; i < pdus.length; i++)
-                        messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                    if(listener != null) listener.onReceive(messages);
+            if(intent.getAction() != null){
+                if(intent.getAction().equals(context.getString(R.string.sms_handler_received_broadcast))) {
+                    if (listener != null)
+                        listener.onReceive(Telephony.Sms.Intents.getMessagesFromIntent(intent));
+                }
+                if(intent.getAction().equals(context.getString(R.string.sms_handler_sent_broadcast))){
+                    if(listener != null) listener.onSent(getResultCode());
+                }
+                if(intent.getAction().equals(context.getString(R.string.sms_handler_delivered_broadcast))){
+                    if(listener != null) listener.onDelivered(getResultCode());
                 }
             }
         }
@@ -61,8 +58,10 @@ public class SmsHandler {
     /**
      * Interface meant to be implemented by any class wanting to listen for incoming SMS messages.
      */
-    public interface OnSmsReceivedListener{
+    public interface OnSmsEventListener {
         void onReceive(SmsMessage[] messages);
+        void onSent(int resultCode);
+        void onDelivered(int resultCode);
     }
 
     /**
@@ -97,65 +96,24 @@ public class SmsHandler {
      * Method that registers an instance of SmsReceiver
      * @param context the Context which wishes to register the receiver
      *                multiple calls should not be made before unregistering
+     * @param received whether the receiver should listen for incoming sms
+     * @param sent whether the receiver should listen for sent sms
+     * @param delivered whether the receiver should listen for delivered sms
      */
-    public void registerReceiver(final Context context){
-        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
-        context.registerReceiver(smsReceiver,filter);
-
-        //SMS DELIVERED
-        String DELIVERED = "SMS_DELIVERED";
-        PendingIntent deliveryIntent = PendingIntent.getBroadcast(context, 0, new Intent(DELIVERED), 0);
-        setDeliveryIntent(deliveryIntent);
-        context.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context arg0, Intent arg1) {
-                switch (getResultCode()) {
-                    case Activity.RESULT_OK:
-                        Toast.makeText(context, "SMS delivered",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case Activity.RESULT_CANCELED:
-                        Toast.makeText(context, "SMS not delivered",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                }
+    public void registerReceiver(Context context, boolean received, boolean sent, boolean delivered){
+        if(received || sent || delivered){
+            IntentFilter filter = new IntentFilter();
+            if(received) filter.addAction(context.getString(R.string.sms_handler_received_broadcast));
+            if(sent){
+                filter.addAction(context.getString(R.string.sms_handler_sent_broadcast));
+                sentIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_sent_broadcast)),0);
             }
-        }, new IntentFilter(DELIVERED));
-
-        //SMS SENT
-        String SENT = "SMS_SENT";
-        PendingIntent sentIntent = PendingIntent.getBroadcast(context, 0, new Intent(SENT), 0);
-        setSentIntent(sentIntent);
-        context.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context arg0, Intent arg1) {
-                switch (getResultCode()) {
-                    case Activity.RESULT_OK:
-                        Toast.makeText(context, "SMS sent",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                        Toast.makeText(context, "Generic failure",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        Toast.makeText(context, "No service",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case SmsManager.RESULT_ERROR_NULL_PDU:
-                        Toast.makeText(context, "Null PDU",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        Toast.makeText(context, "Radio off",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + getResultCode());
-                }
+            if(delivered){
+                filter.addAction(context.getString(R.string.sms_handler_delivered_broadcast));
+                deliveryIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_delivered_broadcast)),0);
             }
-        }, new IntentFilter(SENT));
+            context.registerReceiver(smsEventReceiver,filter);
+        }
     }
 
     /**
@@ -163,10 +121,12 @@ public class SmsHandler {
      * @param context which wishes to unregister the receiver
      */
     public void unregisterReceiver(Context context){
-        context.unregisterReceiver(smsReceiver);
+        context.unregisterReceiver(smsEventReceiver);
+        sentIntent = null;
+        deliveryIntent = null;
     }
 
-    public void setListener(OnSmsReceivedListener listener){
+    public void setListener(OnSmsEventListener listener){
         this.listener = listener;
     }
 
