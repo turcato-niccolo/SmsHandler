@@ -112,11 +112,11 @@ public class SmsHandler {
             public void onReceive(Context arg0, Intent arg1) {
                 switch (getResultCode()) {
                     case Activity.RESULT_OK:
-                        Toast.makeText(arg0, "SMS delivered",
+                        Toast.makeText(context, "SMS delivered",
                                 Toast.LENGTH_SHORT).show();
                         break;
                     case Activity.RESULT_CANCELED:
-                        Toast.makeText(arg0, "SMS not delivered",
+                        Toast.makeText(context, "SMS not delivered",
                                 Toast.LENGTH_SHORT).show();
                         break;
                 }
@@ -136,19 +136,19 @@ public class SmsHandler {
                                 Toast.LENGTH_SHORT).show();
                         break;
                     case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
-                        Toast.makeText(arg0, "Generic failure",
+                        Toast.makeText(context, "Generic failure",
                                 Toast.LENGTH_SHORT).show();
                         break;
                     case SmsManager.RESULT_ERROR_NO_SERVICE:
-                        Toast.makeText(arg0, "No service",
+                        Toast.makeText(context, "No service",
                                 Toast.LENGTH_SHORT).show();
                         break;
                     case SmsManager.RESULT_ERROR_NULL_PDU:
-                        Toast.makeText(arg0, "Null PDU",
+                        Toast.makeText(context, "Null PDU",
                                 Toast.LENGTH_SHORT).show();
                         break;
                     case SmsManager.RESULT_ERROR_RADIO_OFF:
-                        Toast.makeText(arg0, "Radio off",
+                        Toast.makeText(context, "Radio off",
                                 Toast.LENGTH_SHORT).show();
                         break;
                     default:
