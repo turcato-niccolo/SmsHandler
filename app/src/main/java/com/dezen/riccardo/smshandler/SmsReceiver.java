@@ -19,18 +19,23 @@ public class SmsReceiver extends BroadcastReceiver {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
             SmsMessage[] messages = Telephony.Sms.Intents.getMessagesFromIntent(intent);
             if(messages != null && messages.length > 0){
-                Log.e("SmsReceiver", "U got mail");
-                //write new sms to local database asynchronously
-                SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, context.getString(R.string.sms_local_database))
-                        .enableMultiInstanceInvalidation()
-                        .build();
-                new WriteToDbTask(messages,db).execute();
-                //broadcast local intent to wake the local receiver if the app is running
-                Intent local_intent = new Intent();
-                local_intent.replaceExtras(intent);
-                local_intent.setAction(context.getString(R.string.sms_handler_received_broadcast));
-                local_intent.setPackage(context.getApplicationContext().getPackageName());
-                context.sendBroadcast(local_intent);
+                if(SmsHandler.shouldHandleIncomingSms()){
+                    //broadcast local intent to wake the local receiver if the app is running
+                    Log.d("SmsReceiver", "Forwarding intent...");
+                    Intent local_intent = new Intent();
+                    local_intent.replaceExtras(intent);
+                    local_intent.setAction(context.getString(R.string.sms_handler_received_broadcast));
+                    local_intent.setPackage(context.getApplicationContext().getPackageName());
+                    context.sendBroadcast(local_intent);
+                }
+                else{
+                    //write new sms to local database asynchronously
+                    Log.d("SmsReceiver", "Writing to database...");
+                    SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, context.getString(R.string.sms_local_database))
+                            .enableMultiInstanceInvalidation()
+                            .build();
+                    new WriteToDbTask(messages,db).execute();
+                }
             }
         }
     }
@@ -39,7 +44,7 @@ public class SmsReceiver extends BroadcastReceiver {
         private SmsMessage[] smsMessages;
         private SmsDatabase db;
 
-        public WriteToDbTask(SmsMessage[] smsMessages, SmsDatabase db) {
+        WriteToDbTask(SmsMessage[] smsMessages, SmsDatabase db) {
             this.smsMessages = smsMessages;
             this.db = db;
         }

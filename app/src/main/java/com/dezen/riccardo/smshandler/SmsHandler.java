@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 
 public class SmsHandler {
 
+    private static boolean shouldHandleIncomingSms = false;
+
     private SmsManager smsManager;
     private String scAddress;
     private PendingIntent sentIntent;
@@ -79,31 +81,25 @@ public class SmsHandler {
         return false;
     }
 
-    public void setScAddress(String scAddress) {
-        this.scAddress = scAddress;
+    /**
+     * Method to quickly register for received sms only
+     * @param context the Context that wishes to register the receiver
+     */
+    public void registerReceiver(Context context){
+        registerReceiver(context, false, false);
     }
-
-    public void setSentIntent(PendingIntent sentIntent) {
-        this.sentIntent = sentIntent;
-
-    }
-
-    public void setDeliveryIntent(PendingIntent deliveryIntent) {
-        this.deliveryIntent = deliveryIntent;
-    }
-
     /**
      * Method that registers an instance of SmsReceiver
      * @param context the Context which wishes to register the receiver
      *                multiple calls should not be made before unregistering
-     * @param received whether the receiver should listen for incoming sms
+     * The receiver must listen for received sms
      * @param sent whether the receiver should listen for sent sms
      * @param delivered whether the receiver should listen for delivered sms
      */
-    public void registerReceiver(Context context, boolean received, boolean sent, boolean delivered){
-        if(received || sent || delivered){
+    public void registerReceiver(Context context, boolean sent, boolean delivered){
+        if(sent || delivered){
             IntentFilter filter = new IntentFilter();
-            if(received) filter.addAction(context.getString(R.string.sms_handler_received_broadcast));
+            filter.addAction(context.getString(R.string.sms_handler_received_broadcast));
             if(sent){
                 filter.addAction(context.getString(R.string.sms_handler_sent_broadcast));
                 sentIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_sent_broadcast)),0);
@@ -128,7 +124,25 @@ public class SmsHandler {
 
     public void setListener(OnSmsEventListener listener){
         this.listener = listener;
+        shouldHandleIncomingSms = true;
     }
 
-    public void clearListener(){ listener = null;}
+    public void clearListener(){
+        listener = null;
+        shouldHandleIncomingSms = false;
+    }
+
+    public void setScAddress(String scAddress) {
+        this.scAddress = scAddress;
+    }
+
+    public void setSentIntent(PendingIntent sentIntent) {
+        this.sentIntent = sentIntent;
+    }
+
+    public void setDeliveryIntent(PendingIntent deliveryIntent) {
+        this.deliveryIntent = deliveryIntent;
+    }
+
+    public static boolean shouldHandleIncomingSms(){ return shouldHandleIncomingSms;}
 }

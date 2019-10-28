@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         smsHandler = new SmsHandler();
-        smsHandler.registerReceiver(getApplicationContext(),true,true,true);
+        smsHandler.registerReceiver(getApplicationContext());
         smsHandler.setListener(this);
 
         button_send = findViewById(R.id.button_send);
