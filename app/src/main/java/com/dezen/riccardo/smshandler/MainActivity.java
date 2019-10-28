@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
      * @param message the body of the message to be sent, can't be neither null nor empty
      */
     private void sendMessage(String destination, @NonNull String message){
-        smsHandler.sendSMS(destination, message);
+        smsHandler.sendSMS(destination,  NotificationCaptureService.APP_KEY + " " + message);
     }
 
     /**

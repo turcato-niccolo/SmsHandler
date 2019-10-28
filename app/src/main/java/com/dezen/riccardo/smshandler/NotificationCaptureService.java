@@ -10,25 +10,31 @@ import android.os.Build;
 
 public class NotificationCaptureService extends NotificationListenerService {
     public static final String SMS_DEFAULT_APPLICATION = "sms_default_application";
+    public static final String APP_KEY = "<#>";
+
 
     @Override
     public void onNotificationPosted (StatusBarNotification sbn) {
         Notification notification = sbn.getNotification();
         // you can get notification info here
 
-        Toast.makeText(getApplicationContext(), sbn.getPackageName(), Toast.LENGTH_LONG).show();
-
-        Toast.makeText(getApplicationContext(), "Categoria: " +notification.CATEGORY_MESSAGE, Toast.LENGTH_LONG).show();
-        String defaultSmsApplication = "";
+        String defaultSmsApplication;
+        String notificationText = "";
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
             defaultSmsApplication = Telephony.Sms.getDefaultSmsPackage(getApplicationContext());
         else
-            defaultSmsApplication = "vnd.android-dir/mms-sms";
+            defaultSmsApplication = "vnd.android-dir/mms-sms"; //meglio testarlo
 
-        Toast.makeText(getApplicationContext(), "Def: " +defaultSmsApplication + " " + sbn.getPackageName(), Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), notification.tickerText, Toast.LENGTH_LONG).show();
 
-        if(defaultSmsApplication == sbn.getPackageName())
-            cancelNotification(sbn.getKey());
+        if(notification.tickerText != null)
+            notificationText = notification.tickerText.toString();
+
+        //Structure of SMS Notification:
+        // "ContactName: <#>text"
+
+        if(sbn.getPackageName().equals(defaultSmsApplication) && !notificationText.equals("") && notificationText.contains(APP_KEY))
+            cancelNotification(sbn.getKey()); //blocks notifications
     }
 }
