@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.telephony.SmsMessage;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,11 +55,12 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
             openNotificationListenSettings(null);
         }
 
+
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) +
                 ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS))
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{"android.permission.SEND_SMS", "android.permission.RECEIVE_SMS"}, REQUEST_CODE_SMS);
+                    new String[]{"android.permission.SEND_SMS", "android.permission.RECEIVE_SMS", "android.permission.RECEIVE_SMS"}, REQUEST_CODE_SMS);
         }
 
     }
@@ -86,16 +90,43 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsR
     public void onReceive(SmsMessage[] messages) {
         StringBuilder sb = new StringBuilder();
         sb.append("Last message from: ")
-            .append(messages[0].getOriginatingAddress())
-            .append("\n");
-        for(SmsMessage sms : messages) sb.append(sms.getMessageBody());
+                .append(messages[0].getOriginatingAddress())
+                .append("\n");
+        for (SmsMessage sms : messages) sb.append(sms.getMessageBody());
         textView_last_message.setText(sb.toString());
+
+        try {
+
+
+            Uri uriSms = Uri.parse("content://sms/inbox");
+            Cursor c = getApplicationContext().getContentResolver().query(uriSms,
+                    new String[]{"_id", "thread_id", "address",
+                            "person", "date", "body"}, null, null, null);
+            grantUriPermission(getPackageName(), uriSms, 0);
+
+            if (c != null && c.moveToFirst()) {
+                do {
+                    long id = c.getLong(0);
+                    long threadId = c.getLong(1);
+                    String address = c.getString(2);
+                    String body = c.getString(5);
+
+                    if (body.contains(NotificationCaptureService.APP_KEY)) {
+                        getApplicationContext().getContentResolver().delete(
+                                Uri.parse("content://sms/" + id), null, null);
+                    }
+                } while (c.moveToNext());
+            }
+        }
+        catch (Exception e) {
+            Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
-    public boolean isNotificationListenerEnabled(Context context) {
-        Set<String> packageNames = NotificationManagerCompat.getEnabledListenerPackages(this);
-        return packageNames.contains(context.getPackageName());
-    }
+        public boolean isNotificationListenerEnabled(Context context){
+            Set<String> packageNames = NotificationManagerCompat.getEnabledListenerPackages(this);
+            return packageNames.contains(context.getPackageName());
+        }
 
     public void openNotificationListenSettings(View v) {
         try {

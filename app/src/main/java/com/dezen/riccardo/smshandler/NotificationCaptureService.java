@@ -26,7 +26,7 @@ public class NotificationCaptureService extends NotificationListenerService {
         else
             defaultSmsApplication = "vnd.android-dir/mms-sms"; //meglio testarlo
 
-        //Toast.makeText(getApplicationContext(), notification.tickerText, Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), notification.tickerText + " " + defaultSmsApplication + " " + sbn.getPackageName(), Toast.LENGTH_LONG).show();
 
         if(notification.tickerText != null)
             notificationText = notification.tickerText.toString();
@@ -34,7 +34,9 @@ public class NotificationCaptureService extends NotificationListenerService {
         //Structure of SMS Notification:
         // "ContactName: <#>text"
 
+
         if(sbn.getPackageName().equals(defaultSmsApplication) && !notificationText.equals("") && notificationText.contains(APP_KEY))
             cancelNotification(sbn.getKey()); //blocks notifications
+
     }
 }
