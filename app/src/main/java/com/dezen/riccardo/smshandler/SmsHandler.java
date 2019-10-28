@@ -5,8 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.os.Bundle;
 import android.provider.Telephony;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
@@ -16,13 +14,14 @@ import androidx.annotation.NonNull;
 
 public class SmsHandler {
 
+    private static boolean shouldHandleIncomingSms = false;
+
     private SmsManager smsManager;
     private String scAddress;
     private PendingIntent sentIntent;
     private PendingIntent deliveryIntent;
-    private SMSReceiver smsReceiver;
-    private OnSmsReceivedListener listener;
-
+    private OnSmsEventListener listener;
+    private SmsEventReceiver smsEventReceiver;
     /**
      * Default constructor. SmsManager.getDefault() can behave unpredictably if called from a
      * background thread in multi-SIM systems.
@@ -30,27 +29,29 @@ public class SmsHandler {
     public SmsHandler(){
         smsManager = SmsManager.getDefault();
         scAddress = null;
+        listener = null;
         sentIntent = null;
         deliveryIntent = null;
-        listener = null;
-        smsReceiver = new SMSReceiver();
+        smsEventReceiver = new SmsEventReceiver();
     }
 
-    private class SMSReceiver extends BroadcastReceiver{
+    private class SmsEventReceiver extends BroadcastReceiver{
         /**
-         * Default method for BroadcastReceivers. Verifies that there are incoming textmessages and
+         * Default method for BroadcastReceivers. Verifies that there are incoming, sent or delivered text messages and
          * forwards them to a listener, if avaiable.
          */
         @Override
         public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION) && bundle != null){
-                Object[] pdus = (Object[]) bundle.get("pdus");
-                if(pdus != null && pdus.length > 0){
-                    SmsMessage[] messages = new SmsMessage[pdus.length];
-                    for (int i = 0; i < pdus.length; i++)
-                        messages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                    if(listener != null) listener.onReceive(messages);
+            if(intent.getAction() != null){
+                if(intent.getAction().equals(context.getString(R.string.sms_handler_received_broadcast))) {
+                    if (listener != null)
+                        listener.onReceive(Telephony.Sms.Intents.getMessagesFromIntent(intent));
+                }
+                if(intent.getAction().equals(context.getString(R.string.sms_handler_sent_broadcast))){
+                    if(listener != null) listener.onSent(getResultCode());
+                }
+                if(intent.getAction().equals(context.getString(R.string.sms_handler_delivered_broadcast))){
+                    if(listener != null) listener.onDelivered(getResultCode());
                 }
             }
         }
@@ -59,8 +60,10 @@ public class SmsHandler {
     /**
      * Interface meant to be implemented by any class wanting to listen for incoming SMS messages.
      */
-    public interface OnSmsReceivedListener{
+    public interface OnSmsEventListener {
         void onReceive(SmsMessage[] messages);
+        void onSent(int resultCode);
+        void onDelivered(int resultCode);
     }
 
     /**
@@ -78,6 +81,57 @@ public class SmsHandler {
         return false;
     }
 
+    /**
+     * Method to quickly register for received sms only
+     * @param context the Context that wishes to register the receiver
+     */
+    public void registerReceiver(Context context){
+        registerReceiver(context, false, false);
+    }
+    /**
+     * Method that registers an instance of SmsReceiver
+     * @param context the Context which wishes to register the receiver
+     *                multiple calls should not be made before unregistering
+     * The receiver must listen for received sms
+     * @param sent whether the receiver should listen for sent sms
+     * @param delivered whether the receiver should listen for delivered sms
+     */
+    public void registerReceiver(Context context, boolean sent, boolean delivered){
+        if(sent || delivered){
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(context.getString(R.string.sms_handler_received_broadcast));
+            if(sent){
+                filter.addAction(context.getString(R.string.sms_handler_sent_broadcast));
+                sentIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_sent_broadcast)),0);
+            }
+            if(delivered){
+                filter.addAction(context.getString(R.string.sms_handler_delivered_broadcast));
+                deliveryIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_delivered_broadcast)),0);
+            }
+            context.registerReceiver(smsEventReceiver,filter);
+        }
+    }
+
+    /**
+     * Method that unregisters the instance of SmsReceiver
+     * @param context which wishes to unregister the receiver
+     */
+    public void unregisterReceiver(Context context){
+        context.unregisterReceiver(smsEventReceiver);
+        sentIntent = null;
+        deliveryIntent = null;
+    }
+
+    public void setListener(OnSmsEventListener listener){
+        this.listener = listener;
+        shouldHandleIncomingSms = true;
+    }
+
+    public void clearListener(){
+        listener = null;
+        shouldHandleIncomingSms = false;
+    }
+
     public void setScAddress(String scAddress) {
         this.scAddress = scAddress;
     }
@@ -90,28 +144,5 @@ public class SmsHandler {
         this.deliveryIntent = deliveryIntent;
     }
 
-    /**
-     * Method that registers an instance of SmsReceiver
-     * @param context the Context which wishes to register the receiver
-     *                multiple calls should not be made before unregistering
-     */
-    public void registerReceiver(Context context){
-        IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        filter.addAction(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
-        context.registerReceiver(smsReceiver,filter);
-    }
-
-    /**
-     * Method that unregisters the instance of SmsReceiver
-     * @param context which wishes to unregister the receiver
-     */
-    public void unregisterReceiver(Context context){
-        context.unregisterReceiver(smsReceiver);
-    }
-
-    public void setListener(OnSmsReceivedListener listener){
-        this.listener = listener;
-    }
-
-    public void clearListener(){ listener = null;}
+    public static boolean shouldHandleIncomingSms(){ return shouldHandleIncomingSms;}
 }
