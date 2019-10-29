@@ -92,24 +92,22 @@ public class SmsHandler {
      * Method that registers an instance of SmsReceiver
      * @param context the Context which wishes to register the receiver
      *                multiple calls should not be made before unregistering
-     * The receiver must listen for received sms
+     * The receiver must listen for received sms - this is a temporary solution for proper handling of shouldHandleIncomingSms
      * @param sent whether the receiver should listen for sent sms
      * @param delivered whether the receiver should listen for delivered sms
      */
     public void registerReceiver(Context context, boolean sent, boolean delivered){
-        if(sent || delivered){
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(context.getString(R.string.sms_handler_received_broadcast));
-            if(sent){
-                filter.addAction(context.getString(R.string.sms_handler_sent_broadcast));
-                sentIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_sent_broadcast)),0);
-            }
-            if(delivered){
-                filter.addAction(context.getString(R.string.sms_handler_delivered_broadcast));
-                deliveryIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_delivered_broadcast)),0);
-            }
-            context.registerReceiver(smsEventReceiver,filter);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(context.getString(R.string.sms_handler_received_broadcast));
+        if(sent){
+            filter.addAction(context.getString(R.string.sms_handler_sent_broadcast));
+            sentIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_sent_broadcast)),0);
         }
+        if(delivered){
+            filter.addAction(context.getString(R.string.sms_handler_delivered_broadcast));
+            deliveryIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_delivered_broadcast)),0);
+        }
+        context.registerReceiver(smsEventReceiver,filter);
     }
 
     /**
