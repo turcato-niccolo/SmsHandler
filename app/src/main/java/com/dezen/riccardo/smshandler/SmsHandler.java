@@ -23,6 +23,7 @@ import java.util.List;
 
 public class SmsHandler {
 
+    public static final String APP_KEY = "<#>";
     /**
      * Contains references to all listeners belonging to instances of this class
      * which registered a receiver that listens for at least incoming sms.*/
@@ -64,7 +65,8 @@ public class SmsHandler {
                 if(intent.getAction().equals(context.getString(R.string.sms_handler_received_broadcast))) {
                     if (listener != null){
                         for(SmsMessage message : Telephony.Sms.Intents.getMessagesFromIntent(intent)){
-                            listener.onReceive(message.getOriginatingAddress(), message.getMessageBody());
+                            if(message.getMessageBody().contains(APP_KEY))
+                                listener.onReceive(message.getOriginatingAddress(), message.getMessageBody());
                         }
                     }
                 }
@@ -101,7 +103,7 @@ public class SmsHandler {
     public boolean sendSMS(String destination, @NonNull String message){
         if(message.isEmpty()) return false;
         if(PhoneNumberUtils.isGlobalPhoneNumber(destination) && PhoneNumberUtils.isWellFormedSmsAddress(destination)){
-            smsManager.sendTextMessage(destination,scAddress,message,sentIntent,deliveryIntent);
+            smsManager.sendTextMessage(destination,scAddress,APP_KEY+message,sentIntent,deliveryIntent);
             return true;
         }
         return false;
