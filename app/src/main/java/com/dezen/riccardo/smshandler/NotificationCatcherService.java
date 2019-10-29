@@ -15,9 +15,6 @@ public class NotificationCatcherService extends NotificationListenerService {
         String defaultSmsApplication;
         String notificationText = "";
         defaultSmsApplication = Telephony.Sms.getDefaultSmsPackage(getApplicationContext());
-
-        Toast.makeText(getApplicationContext(), notification.tickerText + " " + defaultSmsApplication + " " + sbn.getPackageName(), Toast.LENGTH_LONG).show();
-
         if(notification.tickerText != null)
             notificationText = notification.tickerText.toString();
 
