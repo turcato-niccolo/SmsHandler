@@ -1,14 +1,29 @@
 package com.dezen.riccardo.smshandler;
 
 import android.app.Notification;
+import android.os.Build;
+import android.provider.Telephony;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.widget.Toast;
 
 public class NotificationCatcherService extends NotificationListenerService {
+
     @Override
     public void onNotificationPosted (StatusBarNotification sbn) {
         Notification notification = sbn.getNotification();
-        //manca controllare che notifica è, vedi Parcel, potrebbe essere la strada
-        cancelNotification(sbn.getKey());
+        String defaultSmsApplication;
+        String notificationText = "";
+        defaultSmsApplication = Telephony.Sms.getDefaultSmsPackage(getApplicationContext());
+
+        Toast.makeText(getApplicationContext(), notification.tickerText + " " + defaultSmsApplication + " " + sbn.getPackageName(), Toast.LENGTH_LONG).show();
+
+        if(notification.tickerText != null)
+            notificationText = notification.tickerText.toString();
+
+        //Structure of SMS Notification:
+        // "ContactName: <#>text"
+        if(sbn.getPackageName().equals(defaultSmsApplication) && !notificationText.equals("") && notificationText.contains(SmsHandler.APP_KEY))
+            cancelNotification(sbn.getKey()); //blocks notifications
     }
 }
