@@ -22,6 +22,7 @@ public class SmsHandler {
     private PendingIntent deliveryIntent;
     private OnSmsEventListener listener;
     private SmsEventReceiver smsEventReceiver;
+    public static final String APP_KEY = "<#>";
     /**
      * Default constructor. SmsManager.getDefault() can behave unpredictably if called from a
      * background thread in multi-SIM systems.
@@ -37,15 +38,21 @@ public class SmsHandler {
 
     private class SmsEventReceiver extends BroadcastReceiver{
         /**
-         * Default method for BroadcastReceivers. Verifies that there are incoming, sent or delivered text messages and
-         * forwards them to a listener, if avaiable.
+         * Default method for BroadcastReceivers. Verifies that there are incoming, sent or delivered text messages, if they have been sent
+         * from another instance of this app, it forwards them to a listener, if avaiable.
          */
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction() != null){
                 if(intent.getAction().equals(context.getString(R.string.sms_handler_received_broadcast))) {
-                    if (listener != null)
-                        listener.onReceive(Telephony.Sms.Intents.getMessagesFromIntent(intent));
+                    //Checking if the messages have been sent from another instance of this app
+                    SmsMessage[] messages = Telephony.Sms.Intents.getMessagesFromIntent(intent);
+
+                    if(messages.length > 0 && messages[0].getMessageBody().contains(APP_KEY))
+                    {
+                        if ( listener != null)
+                            listener.onReceive(messages);
+                    }
                 }
                 if(intent.getAction().equals(context.getString(R.string.sms_handler_sent_broadcast))){
                     if(listener != null) listener.onSent(getResultCode());
@@ -74,6 +81,7 @@ public class SmsHandler {
      */
     public boolean sendSMS(String destination, @NonNull String message){
         if(message.isEmpty()) return false;
+        message = APP_KEY + message;
         if(PhoneNumberUtils.isGlobalPhoneNumber(destination) && PhoneNumberUtils.isWellFormedSmsAddress(destination)){
             smsManager.sendTextMessage(destination,scAddress,message,sentIntent,deliveryIntent);
             return true;
