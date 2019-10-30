@@ -1,7 +1,9 @@
 package com.dezen.riccardo.smshandler;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -17,7 +19,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.Set;
 
@@ -29,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
     private EditText editText_message;
     private TextView textView_last_message;
     private LinearLayout linearLayout;
+    final int REQUEST_CODE_SMS = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +58,22 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
             openNotificationListenSettings(null);
         }
         new MyTask(getApplicationContext()).execute();
+
+        requestSmsPermission();
+    }
+
+    /***
+     * Asks sms-related permission to OS
+     * TODO? close application if user does not accept
+     */
+    public void requestSmsPermission()
+    {
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) +
+                ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS))
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{"android.permission.SEND_SMS", "android.permission.RECEIVE_SMS", "android.permission.RECEIVE_SMS"}, REQUEST_CODE_SMS);
+        }
     }
 
     public boolean isNotificationListenerEnabled(Context context) {
