@@ -8,17 +8,21 @@ import android.provider.Telephony;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.room.Room;
 
 import com.dezen.riccardo.smshandler.database.SmsDatabase;
 import com.dezen.riccardo.smshandler.database.SmsEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SmsReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
-            SmsMessage[] messages = Telephony.Sms.Intents.getMessagesFromIntent(intent);
-            if(messages != null && messages.length > 0){
+            List<SmsMessage> messages = filter(Telephony.Sms.Intents.getMessagesFromIntent(intent));
+            if(messages.size() > 0){
                 if(SmsHandler.shouldHandleIncomingSms()){
                     //broadcast local intent to wake the local receiver if the app is running
                     Log.d("SmsReceiver", "Forwarding intent...");
@@ -41,10 +45,10 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     private static class WriteToDbTask extends AsyncTask<String,Integer,Void>{
-        private SmsMessage[] smsMessages;
+        private List<SmsMessage> smsMessages;
         private SmsDatabase db;
 
-        WriteToDbTask(SmsMessage[] smsMessages, SmsDatabase db) {
+        WriteToDbTask(List<SmsMessage> smsMessages, SmsDatabase db) {
             this.smsMessages = smsMessages;
             this.db = db;
         }
@@ -59,5 +63,20 @@ public class SmsReceiver extends BroadcastReceiver {
             }
             return null;
         }
+    }
+
+    /**
+     * Method filtering messages containing SmsHandler.APP_KEY
+     * @param messages array of messages
+     * @return list of messages containing SmsHandler.APP_KEY
+     */
+    private List<SmsMessage> filter(SmsMessage[] messages){
+        List<SmsMessage> list = new ArrayList<>();
+        if(messages != null){
+            for(SmsMessage sms : messages){
+                if(sms.getMessageBody().contains(SmsHandler.APP_KEY)) list.add(sms);
+            }
+        }
+        return list;
     }
 }
