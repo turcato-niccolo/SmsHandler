@@ -23,6 +23,10 @@ import java.util.List;
 public class SmsHandler {
 
     public static final String APP_KEY = "<#>";
+    public static final String SMS_HANDLER_RECEIVED_BROADCAST = "";
+    public static final String SMS_HANDLER_SENT_BROADCAST = "SMS_SENT";
+    public static final String SMS_HANDLER_DELIVERED_BROADCAST = "SMS_DELIVERED";
+    public static final String SMS_HANDLER_LOCAL_DATABASE = "sms-db";
     /**
      * Contains references to all listeners belonging to instances of this class
      * which registered a receiver that listens for at least incoming sms.*/
@@ -61,7 +65,7 @@ public class SmsHandler {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction() != null){
-                if(intent.getAction().equals(context.getString(R.string.sms_handler_received_broadcast))) {
+                if(intent.getAction().equals(SMS_HANDLER_RECEIVED_BROADCAST)) {
                     if (listener != null){
                         for(SmsMessage message : Telephony.Sms.Intents.getMessagesFromIntent(intent)){
                             if(message.getMessageBody().contains(APP_KEY))
@@ -69,10 +73,10 @@ public class SmsHandler {
                         }
                     }
                 }
-                if(intent.getAction().equals(context.getString(R.string.sms_handler_sent_broadcast))){
+                if(intent.getAction().equals(SMS_HANDLER_SENT_BROADCAST)){
                     if(listener != null) listener.onSent(getResultCode());
                 }
-                if(intent.getAction().equals(context.getString(R.string.sms_handler_delivered_broadcast))){
+                if(intent.getAction().equals(SMS_HANDLER_DELIVERED_BROADCAST)){
                     if(listener != null) listener.onDelivered(getResultCode());
                 }
             }
@@ -133,17 +137,17 @@ public class SmsHandler {
         if(!received && !sent && !delivered) throw new IllegalStateException("Shouldn't register a receiver with no action.");
         IntentFilter filter = new IntentFilter();
         if(received){
-            filter.addAction(context.getString(R.string.sms_handler_received_broadcast));
+            filter.addAction(SMS_HANDLER_RECEIVED_BROADCAST);
             listeningForIncoming = true;
             if(listener != null) activeIncomingListeners.add(listener);
         }
         if(sent){
-            filter.addAction(context.getString(R.string.sms_handler_sent_broadcast));
-            sentIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_sent_broadcast)),0);
+            filter.addAction(SMS_HANDLER_SENT_BROADCAST);
+            sentIntent = PendingIntent.getBroadcast(context,0,new Intent(SMS_HANDLER_SENT_BROADCAST),0);
         }
         if(delivered){
-            filter.addAction(context.getString(R.string.sms_handler_delivered_broadcast));
-            deliveryIntent = PendingIntent.getBroadcast(context,0,new Intent(context.getString(R.string.sms_handler_delivered_broadcast)),0);
+            filter.addAction(SMS_HANDLER_DELIVERED_BROADCAST);
+            deliveryIntent = PendingIntent.getBroadcast(context,0,new Intent(SMS_HANDLER_DELIVERED_BROADCAST),0);
         }
         context.registerReceiver(smsEventReceiver,filter);
     }
@@ -197,7 +201,7 @@ public class SmsHandler {
      * @throws IllegalStateException if it's run from the main Thread.
      */
     public SmsEntity[] fetchUnreadMessages(Context context){
-        SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, context.getString(R.string.sms_local_database))
+        SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMS_HANDLER_LOCAL_DATABASE)
                 .enableMultiInstanceInvalidation()
                 .build();
         SmsEntity[] messages = db.access().loadAllSms();

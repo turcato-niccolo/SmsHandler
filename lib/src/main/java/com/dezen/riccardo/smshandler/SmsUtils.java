@@ -58,7 +58,7 @@ public class SmsUtils {
         }
         @Override
         protected Void doInBackground(String... strings) {
-            SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, context.getString(R.string.sms_local_database))
+            SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SmsHandler.SMS_HANDLER_LOCAL_DATABASE)
                     .enableMultiInstanceInvalidation()
                     .build();
             SmsEntity[] messages = db.access().loadAllSms();

@@ -27,14 +27,14 @@ public class SmsReceiver extends BroadcastReceiver {
                     Log.d("SmsReceiver", "Forwarding intent...");
                     Intent local_intent = new Intent();
                     local_intent.replaceExtras(intent);
-                    local_intent.setAction(context.getString(R.string.sms_handler_received_broadcast));
+                    local_intent.setAction(SmsHandler.SMS_HANDLER_RECEIVED_BROADCAST);
                     local_intent.setPackage(context.getApplicationContext().getPackageName());
                     context.sendBroadcast(local_intent);
                 }
                 else{
                     //write new sms to local database asynchronously
                     Log.d("SmsReceiver", "Writing to database...");
-                    SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, context.getString(R.string.sms_local_database))
+                    SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SmsHandler.SMS_HANDLER_LOCAL_DATABASE)
                             .enableMultiInstanceInvalidation()
                             .build();
                     new WriteToDbTask(messages,db).execute();
