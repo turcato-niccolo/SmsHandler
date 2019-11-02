@@ -20,9 +20,5 @@ public class NotificationCatcherService extends NotificationListenerService {
             if(sbn.getPackageName().equals(defaultSmsApplication) && !notificationText.equals("") && notificationText.contains(SmsHandler.APP_KEY))
                 cancelNotification(sbn.getKey()); //blocks notifications
         }
-
-
-
-
     }
 }
