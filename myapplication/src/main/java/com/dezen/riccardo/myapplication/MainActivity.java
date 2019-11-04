@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,6 +30,7 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsEventListener {
 
     private SmsHandler smsHandler;
+    private SmsHandler smsHandler2;
     private Button button_send;
     private EditText editText_number;
     private EditText editText_message;
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
         smsHandler = new SmsHandler();
         smsHandler.registerReceiver(getApplicationContext(), true, true, true);
         smsHandler.setListener(this);
+        smsHandler2 = new SmsHandler();
+        smsHandler2.registerReceiver(getApplicationContext(), true, true, true);
+        smsHandler2.setListener(this);
 
         button_send = findViewById(R.id.button_send);
         editText_number = findViewById(R.id.editText_number);
@@ -115,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
      */
     @Override
     public void onReceive(String from, String body) {
+        Log.d("Received message: ",body);
         StringBuilder sb = new StringBuilder();
         sb.append("Last message from: ").append(from).append("\n").append(body);
         textView_last_message.setText(sb.toString());

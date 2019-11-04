@@ -23,7 +23,8 @@ import java.util.List;
 public class SmsHandler {
 
     public static final String APP_KEY = "<#>";
-    public static final String SMS_HANDLER_RECEIVED_BROADCAST = "";
+    public static final String WAKE_KEY = "<urgent>";
+    public static final String SMS_HANDLER_RECEIVED_BROADCAST = "NEW_SMS";
     public static final String SMS_HANDLER_SENT_BROADCAST = "SMS_SENT";
     public static final String SMS_HANDLER_DELIVERED_BROADCAST = "SMS_DELIVERED";
     public static final String SMS_HANDLER_LOCAL_DATABASE = "sms-db";
@@ -41,7 +42,7 @@ public class SmsHandler {
     private OnSmsEventListener listener;
     //This instance's not necessarily registered BroadcastReceiver.
     private SmsEventReceiver smsEventReceiver;
-    //Whether the receiver for this instance is listening for incoming sms.
+    //Whether the receiver for this instance is listening for at least incoming sms.
     private boolean listeningForIncoming;
     /**
      * Default constructor. SmsManager.getDefault() can behave unpredictably if called from a
@@ -128,6 +129,7 @@ public class SmsHandler {
      * @param sent whether the receiver should listen for sent sms
      * @param delivered whether the receiver should listen for delivered sms
      * @throws IllegalStateException if trying to register the receiver with no action to be received
+     * TODO handle trying to register receiver while one is already active
      */
     public void registerReceiver(Context context, boolean received, boolean sent, boolean delivered) throws IllegalStateException{
         /**The boolean values allow to enable the three actions the receiver might want to listen to.
