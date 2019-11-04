@@ -36,33 +36,26 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         smsHandler = new SmsHandler();
         fullListener = new SmsHandler.OnSmsEventListener() {
             @Override
-            public void onReceive(String from, String message) {
-                if(rListener != null){
-                    SMSPeer p = new SMSPeer(from);
-                    SMSMessage m = new SMSMessage(p, message);
-                    rListener.onMessageReceived(m);
-                }
+            public void onReceive(SMSMessage message) {
+                if(rListener != null) rListener.onMessageReceived(message);
             }
 
             @Override
-            public void onSent(int resultCode) {
-                if(sListener != null){
-
-                }
+            public void onSent(int resultCode, SMSMessage message) {
+                if(sListener != null) sListener.onMessageSent(resultCode,message);
             }
 
             @Override
-            public void onDelivered(int resultCode) {
-                if(dListener != null){
-
-                }
+            public void onDelivered(int resultCode, SMSMessage message) {
+                if(dListener != null) dListener.onMessageDelivered(resultCode,message);
             }
         };
     }
 
+    //TODO sendSMS should send SMSMessage object
     @Override
     public void sendMessage(SMSMessage message) {
-        smsHandler.sendSMS(message.getPeer().getAddress(),message.getData());
+        smsHandler.sendSMS(owner,message.getPeer().getAddress(),message.getData());
     }
 
     @Override

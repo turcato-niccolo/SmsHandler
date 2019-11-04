@@ -23,6 +23,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SmsHandler;
 
 import java.util.Set;
@@ -45,9 +46,6 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
         smsHandler = new SmsHandler();
         smsHandler.registerReceiver(getApplicationContext(), true, true, true);
         smsHandler.setListener(this);
-        smsHandler2 = new SmsHandler();
-        smsHandler2.registerReceiver(getApplicationContext(), true, true, true);
-        smsHandler2.setListener(this);
 
         button_send = findViewById(R.id.button_send);
         editText_number = findViewById(R.id.editText_number);
@@ -109,17 +107,18 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
      * @param message the body of the message to be sent, can't be neither null nor empty
      */
     private void sendMessage(String destination, @NonNull String message){
-        smsHandler.sendSMS(destination, message);
+        smsHandler.sendSMS(getApplicationContext(),destination, message);
     }
 
     /**
      * Method from the OnSmsEventListener interface, reads the body of the message and
      * updates a TextView's content
-     * @param from the originating address.
-     * @param body the body of the message.
+     * @param message the received message
      */
     @Override
-    public void onReceive(String from, String body) {
+    public void onReceive(SMSMessage message) {
+        String from = message.getPeer().getAddress().toString();
+        String body = message.getData().toString();
         Log.d("Received message: ",body);
         StringBuilder sb = new StringBuilder();
         sb.append("Last message from: ").append(from).append("\n").append(body);
@@ -135,13 +134,13 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
         linearLayout.addView(view);
     }
     @Override
-    public void onSent(int resultCode) {
-        Toast.makeText(getApplicationContext(), "SMS may have been sent", Toast.LENGTH_SHORT).show();
+    public void onSent(int resultCode, SMSMessage message) {
+        Toast.makeText(getApplicationContext(), "May have been sent: "+message.getData(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onDelivered(int resultCode) {
-        Toast.makeText(getApplicationContext(), "SMS may have been delivered", Toast.LENGTH_SHORT).show();
+    public void onDelivered(int resultCode, SMSMessage message) {
+        Toast.makeText(getApplicationContext(), "May have been delivered: "+message.getData(), Toast.LENGTH_SHORT).show();
     }
 
     private class MyTask extends AsyncTask<String, Integer, Void>{

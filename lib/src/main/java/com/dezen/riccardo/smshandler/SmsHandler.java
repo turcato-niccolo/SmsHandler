@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.provider.Telephony;
-import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -35,8 +34,6 @@ public class SmsHandler {
 
     private SmsManager smsManager;
     private String scAddress;
-    private PendingIntent sentIntent;
-    private PendingIntent deliveryIntent;
 
     //This instance's attached listener.
     private OnSmsEventListener listener;
@@ -44,6 +41,10 @@ public class SmsHandler {
     private SmsEventReceiver smsEventReceiver;
     //Whether the receiver for this instance is listening for at least incoming sms.
     private boolean listeningForIncoming;
+    //Whether this instance should use pending intent to confirm sending
+    private boolean shouldUsePendingIntentSending;
+    //Whether this instance should use pending intent to confirm delivery
+    private boolean shouldUsePendingIntentDelivery;
     /**
      * Default constructor. SmsManager.getDefault() can behave unpredictably if called from a
      * background thread in multi-SIM systems.
@@ -52,10 +53,10 @@ public class SmsHandler {
         smsManager = SmsManager.getDefault();
         scAddress = null;
         listener = null;
-        sentIntent = null;
-        deliveryIntent = null;
         smsEventReceiver = new SmsEventReceiver();
         listeningForIncoming = false;
+        shouldUsePendingIntentSending = false;
+        shouldUsePendingIntentDelivery = false;
     }
 
     private class SmsEventReceiver extends BroadcastReceiver{
@@ -69,16 +70,27 @@ public class SmsHandler {
                 if(intent.getAction().equals(SMS_HANDLER_RECEIVED_BROADCAST)) {
                     if (listener != null){
                         for(SmsMessage message : Telephony.Sms.Intents.getMessagesFromIntent(intent)){
-                            if(message.getMessageBody().contains(APP_KEY))
-                                listener.onReceive(message.getOriginatingAddress(), message.getMessageBody());
+                            if(message.getMessageBody().contains(APP_KEY)){
+                                SMSMessage m = new SMSMessage(new SMSPeer(message.getOriginatingAddress()), message.getMessageBody());
+                                listener.onReceive(m);
+                            }
                         }
                     }
                 }
                 if(intent.getAction().equals(SMS_HANDLER_SENT_BROADCAST)){
-                    if(listener != null) listener.onSent(getResultCode());
+                    SMSMessage m = new SMSMessage(
+                            new SMSPeer(intent.getStringExtra("address")),
+                            intent.getStringExtra("message")
+                    );
+                    Log.d("SmsHandler","Message for: "+intent.getStringExtra("address")+"\n"+intent.getStringExtra("message"));
+                    if(listener != null) listener.onSent(getResultCode(),m);
                 }
                 if(intent.getAction().equals(SMS_HANDLER_DELIVERED_BROADCAST)){
-                    if(listener != null) listener.onDelivered(getResultCode());
+                    SMSMessage m = new SMSMessage(
+                            new SMSPeer(intent.getStringExtra("address")),
+                            intent.getStringExtra("message")
+                    );
+                    if(listener != null) listener.onDelivered(getResultCode(),m);
                 }
             }
         }
@@ -90,27 +102,51 @@ public class SmsHandler {
     public interface OnSmsEventListener {
         /**
          * Method called when an sms is received
-         * @param from the originating address.
-         * @param message the body of the message.
+         * @param message the message.
          */
-        void onReceive(String from, String message);
-        void onSent(int resultCode);
-        void onDelivered(int resultCode);
+        void onReceive(SMSMessage message);
+
+        /**
+         * Method called when an attempt to send an sms has been made
+         * @param resultCode the result for the sending operation
+         * @param message the message related to said operation
+         */
+        void onSent(int resultCode, SMSMessage message);
+
+        /**
+         * Method called when a message might have been delivered
+         * @param resultCode the result for the delivery operation
+         * @param message the message related to said operation
+         */
+        void onDelivered(int resultCode, SMSMessage message);
     }
 
     /**
      * Method that sends a text message through SmsManager
-     * @param destination the destination address for the message, in phone number format
-     * @param message the body of the message to be sent
-     * @return true if the destination address was valid, and therefore a sending attempt was made, false otherwise
+     * @param context the context asking to send the message
+     * @param destination the VALID destination address for the message, in phone number format
+     * @param message the VALID body of the message to be sent
      */
-    public boolean sendSMS(String destination, @NonNull String message){
-        if(message.isEmpty()) return false;
-        if(PhoneNumberUtils.isGlobalPhoneNumber(destination) && PhoneNumberUtils.isWellFormedSmsAddress(destination)){
-            smsManager.sendTextMessage(destination,scAddress,APP_KEY+message,sentIntent,deliveryIntent);
-            return true;
+    //TODO Pending intent always returns first message sent since phone startup despite being initialized every time
+    public void sendSMS(Context context, String destination, @NonNull String message){
+        PendingIntent sentIntent;
+        PendingIntent deliveryIntent;
+        if(shouldUsePendingIntentSending){
+            Intent intent = new Intent(SMS_HANDLER_SENT_BROADCAST)
+                    .putExtra("address",destination)
+                    .putExtra("message",message);
+            Log.d("SmsHandler", "Pending intent for message: "+intent.getStringExtra("message"));
+            sentIntent = PendingIntent.getBroadcast(context,0,intent,0);
         }
-        return false;
+        else sentIntent = null;
+        if(shouldUsePendingIntentDelivery){
+            Intent intent = new Intent(SMS_HANDLER_DELIVERED_BROADCAST)
+                    .putExtra("address",destination)
+                    .putExtra("message",message);
+            deliveryIntent = PendingIntent.getBroadcast(context,0,intent,0);
+        }
+        else deliveryIntent = null;
+        smsManager.sendTextMessage(destination,scAddress,APP_KEY+message,sentIntent,deliveryIntent);
     }
 
     /**
@@ -138,18 +174,18 @@ public class SmsHandler {
          */
         if(!received && !sent && !delivered) throw new IllegalStateException("Shouldn't register a receiver with no action.");
         IntentFilter filter = new IntentFilter();
+        listeningForIncoming = received;
+        shouldUsePendingIntentSending = sent;
+        shouldUsePendingIntentDelivery = delivered;
         if(received){
             filter.addAction(SMS_HANDLER_RECEIVED_BROADCAST);
-            listeningForIncoming = true;
             if(listener != null) activeIncomingListeners.add(listener);
         }
         if(sent){
             filter.addAction(SMS_HANDLER_SENT_BROADCAST);
-            sentIntent = PendingIntent.getBroadcast(context,0,new Intent(SMS_HANDLER_SENT_BROADCAST),0);
         }
         if(delivered){
             filter.addAction(SMS_HANDLER_DELIVERED_BROADCAST);
-            deliveryIntent = PendingIntent.getBroadcast(context,0,new Intent(SMS_HANDLER_DELIVERED_BROADCAST),0);
         }
         context.registerReceiver(smsEventReceiver,filter);
     }
@@ -161,9 +197,9 @@ public class SmsHandler {
     public void unregisterReceiver(Context context){
         context.unregisterReceiver(smsEventReceiver);
         listeningForIncoming = false;
+        shouldUsePendingIntentSending = false;
+        shouldUsePendingIntentDelivery = false;
         if(listener != null) activeIncomingListeners.remove(listener);
-        sentIntent = null;
-        deliveryIntent = null;
     }
 
     /**
@@ -209,7 +245,8 @@ public class SmsHandler {
         SmsEntity[] messages = db.access().loadAllSms();
         for(SmsEntity sms : messages){
             db.access().deleteSms(sms);
-            if(listener != null) listener.onReceive(sms.address, sms.body);
+            SMSMessage m = new SMSMessage(new SMSPeer(sms.address),sms.body);
+            if(listener != null) listener.onReceive(m);
             Log.e("Unread Message", sms.address+" "+sms.body);
         }
         return messages;
