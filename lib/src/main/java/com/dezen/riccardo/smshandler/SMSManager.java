@@ -52,7 +52,6 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         };
     }
 
-    //TODO sendSMS should send SMSMessage object
     @Override
     public void sendMessage(SMSMessage message) {
         smsHandler.sendSMS(owner,message.getPeer().getAddress(),message.getData());

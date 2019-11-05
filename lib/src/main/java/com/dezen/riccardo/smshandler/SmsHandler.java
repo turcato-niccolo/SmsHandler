@@ -20,8 +20,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SmsHandler {
-
+    /**TODO add owner mechanism: every instance should have a private Context field containing the
+     *  owner of the instance. This field should then be used to check who's calling the methods
+     *  for example, it would be a bad idea to have someone who hasn't registered a receiver with
+     *  registerReceiver(context) be able to cancel it freely.
+     *  See SMSManager for an example of this mechanism, which should be implemented here albeit with a
+     *  private local field instead of a static field (to allow chance to add full non-singleton support
+     *  in the future
+     */
     public static final String APP_KEY = "<#>";
+    //string for future implementation of activity start
     public static final String WAKE_KEY = "<urgent>";
     public static final String SMS_HANDLER_RECEIVED_BROADCAST = "NEW_SMS";
     public static final String SMS_HANDLER_SENT_BROADCAST = "SMS_SENT";
@@ -59,6 +67,10 @@ public class SmsHandler {
         shouldUsePendingIntentDelivery = false;
     }
 
+    /**
+     * The SmsEventReceiver class handling all three the main events is intentional
+     * in order to reduce system resource consumption from having three distinct BroadcastReceivers
+     */
     private class SmsEventReceiver extends BroadcastReceiver{
         /**
          * Default method for BroadcastReceivers. Verifies that there are incoming, sent or delivered text messages and
@@ -126,6 +138,7 @@ public class SmsHandler {
      * @param context the context asking to send the message
      * @param destination the VALID destination address for the message, in phone number format
      * @param message the VALID body of the message to be sent
+     * TODO sendSMS should use SMSMessage object as parameter
      */
     public void sendSMS(Context context, String destination, @NonNull String message){
         PendingIntent sentIntent;
@@ -153,6 +166,7 @@ public class SmsHandler {
      * @param context the Context that wishes to register the receiver.
      */
     public void registerReceiver(Context context){
+        //TODO add call to unregister previous receiver if context equals owner
         registerReceiver(context, true, false, false);
     }
 
@@ -164,7 +178,7 @@ public class SmsHandler {
      * @param sent whether the receiver should listen for sent sms
      * @param delivered whether the receiver should listen for delivered sms
      * @throws IllegalStateException if trying to register the receiver with no action to be received
-     * TODO handle trying to register receiver while one is already active
+     * TODO declare and implement flags instead of boolean fields
      */
     public void registerReceiver(Context context, boolean received, boolean sent, boolean delivered) throws IllegalStateException{
         /**The boolean values allow to enable the three actions the receiver might want to listen to.
@@ -236,6 +250,8 @@ public class SmsHandler {
      * @param context the calling context, used to instantiate the database.
      * @return an array containing the SmsEntity object containing the unread sms data.
      * @throws IllegalStateException if it's run from the main Thread.
+     * TODO method should not clear the database if no listener is present
+     *  should return SMSMessage
      */
     public SmsEntity[] fetchUnreadMessages(Context context){
         SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMS_HANDLER_LOCAL_DATABASE)
