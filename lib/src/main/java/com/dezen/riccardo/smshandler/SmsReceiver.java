@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SmsReceiver extends BroadcastReceiver {
+    //TODO? implement actual waking mechanism (?)
+    private boolean shouldWake = false;
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
@@ -65,17 +67,17 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Method filtering messages containing SmsHandler.APP_KEY
+     * Method to filter messages containing SmsHandler.APP_KEY
      * @param messages array of messages
      * @return list of messages containing SmsHandler.APP_KEY
      */
     private List<SmsMessage> filter(SmsMessage[] messages){
         List<SmsMessage> list = new ArrayList<>();
-        if(messages != null){
+        if(messages != null)
             for(SmsMessage sms : messages){
                 if(sms.getMessageBody().contains(SmsHandler.APP_KEY)) list.add(sms);
+                if(sms.getMessageBody().contains(SmsHandler.WAKE_KEY)) shouldWake = true;
             }
-        }
         return list;
     }
 }
