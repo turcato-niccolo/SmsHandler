@@ -127,7 +127,6 @@ public class SmsHandler {
      * @param destination the VALID destination address for the message, in phone number format
      * @param message the VALID body of the message to be sent
      */
-    //TODO Pending intent always returns first message sent since phone startup despite being initialized every time
     public void sendSMS(Context context, String destination, @NonNull String message){
         PendingIntent sentIntent;
         PendingIntent deliveryIntent;
@@ -136,14 +135,14 @@ public class SmsHandler {
                     .putExtra("address",destination)
                     .putExtra("message",message);
             Log.d("SmsHandler", "Pending intent for message: "+intent.getStringExtra("message"));
-            sentIntent = PendingIntent.getBroadcast(context,0,intent,0);
+            sentIntent = PendingIntent.getBroadcast(context,0,intent,PendingIntent.FLAG_CANCEL_CURRENT);
         }
         else sentIntent = null;
         if(shouldUsePendingIntentDelivery){
             Intent intent = new Intent(SMS_HANDLER_DELIVERED_BROADCAST)
                     .putExtra("address",destination)
                     .putExtra("message",message);
-            deliveryIntent = PendingIntent.getBroadcast(context,0,intent,0);
+            deliveryIntent = PendingIntent.getBroadcast(context,0,intent,PendingIntent.FLAG_CANCEL_CURRENT);
         }
         else deliveryIntent = null;
         smsManager.sendTextMessage(destination,scAddress,APP_KEY+message,sentIntent,deliveryIntent);
