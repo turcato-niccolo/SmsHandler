@@ -18,7 +18,7 @@ import java.util.List;
 
 public class SmsReceiver extends BroadcastReceiver {
     //TODO? implement actual waking mechanism (?)
-    private boolean shouldWake = false;
+    private boolean shouldWake;
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
@@ -32,6 +32,12 @@ public class SmsReceiver extends BroadcastReceiver {
                     local_intent.setAction(SmsHandler.SMS_HANDLER_RECEIVED_BROADCAST);
                     local_intent.setPackage(context.getApplicationContext().getPackageName());
                     context.sendBroadcast(local_intent);
+                }
+                else if(shouldWake){
+                    Intent wake_intent = new Intent();
+                    wake_intent.replaceExtras(intent);
+                    wake_intent.setAction(SmsHandler.SMS_HANDLER_WAKE_BROADCAST);
+                    context.sendBroadcast(wake_intent);
                 }
                 else{
                     //write new sms to local database asynchronously
