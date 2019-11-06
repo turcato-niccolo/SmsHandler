@@ -18,7 +18,7 @@ import java.util.List;
 
 public class SmsReceiver extends BroadcastReceiver {
     //TODO? implement actual waking mechanism (?)
-    private boolean shouldWake;
+    private boolean shouldWake = false;
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
