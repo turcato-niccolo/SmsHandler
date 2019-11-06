@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,6 +23,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
+import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SmsHandler;
 
 import java.util.Set;
@@ -29,6 +31,7 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsEventListener {
 
     private SmsHandler smsHandler;
+    private SmsHandler smsHandler2;
     private Button button_send;
     private EditText editText_number;
     private EditText editText_message;
@@ -104,17 +107,19 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
      * @param message the body of the message to be sent, can't be neither null nor empty
      */
     private void sendMessage(String destination, @NonNull String message){
-        smsHandler.sendSMS(destination, message);
+        smsHandler.sendSMS(getApplicationContext(),destination, message);
     }
 
     /**
      * Method from the OnSmsEventListener interface, reads the body of the message and
      * updates a TextView's content
-     * @param from the originating address.
-     * @param body the body of the message.
+     * @param message the received message
      */
     @Override
-    public void onReceive(String from, String body) {
+    public void onReceive(SMSMessage message) {
+        String from = message.getPeer().getAddress().toString();
+        String body = message.getData().toString();
+        Log.d("Received message: ",body);
         StringBuilder sb = new StringBuilder();
         sb.append("Last message from: ").append(from).append("\n").append(body);
         textView_last_message.setText(sb.toString());
@@ -129,13 +134,13 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
         linearLayout.addView(view);
     }
     @Override
-    public void onSent(int resultCode) {
-        Toast.makeText(getApplicationContext(), "SMS may have been sent", Toast.LENGTH_SHORT).show();
+    public void onSent(int resultCode, SMSMessage message) {
+        Toast.makeText(getApplicationContext(), "May have been sent: "+message.getData(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onDelivered(int resultCode) {
-        Toast.makeText(getApplicationContext(), "SMS may have been delivered", Toast.LENGTH_SHORT).show();
+    public void onDelivered(int resultCode, SMSMessage message) {
+        Toast.makeText(getApplicationContext(), "May have been delivered: "+message.getData(), Toast.LENGTH_SHORT).show();
     }
 
     private class MyTask extends AsyncTask<String, Integer, Void>{
