@@ -33,6 +33,12 @@ public class SmsReceiver extends BroadcastReceiver {
                     local_intent.setPackage(context.getApplicationContext().getPackageName());
                     context.sendBroadcast(local_intent);
                 }
+                else if(shouldWake){
+                    Intent wake_intent = new Intent();
+                    wake_intent.replaceExtras(intent);
+                    wake_intent.setAction(SmsHandler.SMS_HANDLER_WAKE_BROADCAST);
+                    context.sendBroadcast(wake_intent);
+                }
                 else{
                     //write new sms to local database asynchronously
                     Log.d("SmsReceiver", "Writing to database...");
