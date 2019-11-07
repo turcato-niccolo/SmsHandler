@@ -28,7 +28,7 @@ public class SmsHandler {
      *  private local field instead of a static field (to allow chance to add full non-singleton support
      *  in the future
      */
-    public static final String APP_KEY = "<#>";
+    public static final String APP_KEY = 0x02 +  ""; // uses an invisible character
     //string for future implementation of activity start
     public static final String WAKE_KEY = "<urgent>";
     public static final String SMS_HANDLER_RECEIVED_BROADCAST = "NEW_SMS";
@@ -136,13 +136,14 @@ public class SmsHandler {
     /**
      * Method that sends a text message through SmsManager
      * @param context the context asking to send the message
-     * @param destination the VALID destination address for the message, in phone number format
-     * @param message the VALID body of the message to be sent
-     * TODO sendSMS should use SMSMessage object as parameter
+     * @param messageData VALID object containing the destination address and the body of the message
      */
-    public void sendSMS(Context context, String destination, @NonNull String message){
-        PendingIntent sentIntent;
-        PendingIntent deliveryIntent;
+    public void sendSMS(Context context, SMSMessage messageData){
+
+        PendingIntent sentIntent = null;
+        PendingIntent deliveryIntent = null;
+        String destination = messageData.getPeer().getAddress();
+        String message = messageData.getData();
         if(shouldUsePendingIntentSending){
             Intent intent = new Intent(SMS_HANDLER_SENT_BROADCAST)
                     .putExtra("address",destination)
@@ -150,14 +151,12 @@ public class SmsHandler {
             Log.d("SmsHandler", "Pending intent for message: "+intent.getStringExtra("message"));
             sentIntent = PendingIntent.getBroadcast(context,0,intent,PendingIntent.FLAG_CANCEL_CURRENT);
         }
-        else sentIntent = null;
         if(shouldUsePendingIntentDelivery){
             Intent intent = new Intent(SMS_HANDLER_DELIVERED_BROADCAST)
                     .putExtra("address",destination)
                     .putExtra("message",message);
             deliveryIntent = PendingIntent.getBroadcast(context,0,intent,PendingIntent.FLAG_CANCEL_CURRENT);
         }
-        else deliveryIntent = null;
         smsManager.sendTextMessage(destination,scAddress,APP_KEY+message,sentIntent,deliveryIntent);
     }
 
@@ -263,6 +262,7 @@ public class SmsHandler {
             SMSMessage m = new SMSMessage(new SMSPeer(sms.address),sms.body);
             if(listener != null) listener.onReceive(m);
             Log.e("Unread Message", sms.address+" "+sms.body);
+
         }
         return messages;
     }

@@ -54,7 +54,7 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
 
     @Override
     public void sendMessage(SMSMessage message) {
-        smsHandler.sendSMS(owner,message.getPeer().getAddress(),message.getData());
+        smsHandler.sendSMS(owner,message);
     }
 
     @Override
