@@ -1,5 +1,7 @@
 package com.dezen.riccardo.smshandler;
 
+import android.telephony.PhoneNumberUtils;
+
 import androidx.annotation.NonNull;
 
 public class SMSPeer implements Peer<String> {
@@ -30,16 +32,18 @@ public class SMSPeer implements Peer<String> {
     /**
      * @return true if this peer is valid
      */
-    public boolean isValid(){
-        return !isEmpty() && isAddressValid();
-    }
+    public boolean isValid(){ return !isEmpty() && !isBlank() && isAddressValid(); }
+
+    /**
+     * @return true if address is a String of blank spaces
+     */
+    public boolean isBlank(){ return address.replace(" ","").length() == 0; }
 
     /**
      * @return true if address fulfills international phone address standards
      */
     private boolean isAddressValid(){
-        //TODO add proper number validation through PhoneNumberUtils
-        return true;
+        return (PhoneNumberUtils.isGlobalPhoneNumber(address));
     }
 
     /**

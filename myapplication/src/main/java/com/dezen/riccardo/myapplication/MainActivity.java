@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
 
     /***
      * Asks sms-related permission to OS
-     * TODO? close application if user does not accept
+     * and close application if user does not accept
      */
     public void requestSmsPermission()
     {
@@ -76,7 +77,30 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
                 ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS))
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{"android.permission.SEND_SMS", "android.permission.RECEIVE_SMS", "android.permission.RECEIVE_SMS"}, REQUEST_CODE_SMS);
+                    new String[]{"android.permission.SEND_SMS", "android.permission.RECEIVE_SMS"}, REQUEST_CODE_SMS);
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case  REQUEST_CODE_SMS: {
+                if (!(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                  closeNow();
+                }
+                return;
+            }
+        }
+    }
+
+    private void closeNow() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+            finishAffinity();
+        }else{
+            finish();
         }
     }
 

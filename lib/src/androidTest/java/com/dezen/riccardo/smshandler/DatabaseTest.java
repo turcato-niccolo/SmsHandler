@@ -29,21 +29,21 @@ public class DatabaseTest {
     }
 
     @Test
-    public void getCount_correct() {
+    public void getCount() {
         SmsEntity entity = new SmsEntity(1, "3334455666", "text");
         db.access().insert(entity);
         assertEquals(1, db.access().getCount());
     }
 
     @Test
-    public void loadAllSms_correct() {
+    public void loadAllSms() {
         SmsEntity entity = new SmsEntity(1, "3334455666", "text");
         db.access().insert(entity);
         assertEquals(entity.id, db.access().loadAllSms()[0].id);
     }
 
     @Test
-    public void deleteSms_correct() {
+    public void deleteSms() {
         SmsEntity entity = new SmsEntity(1, "3334455666", "text");
         db.access().insert(entity);
         db.access().deleteSms(entity);
