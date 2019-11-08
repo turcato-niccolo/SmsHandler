@@ -38,7 +38,6 @@ public class SmsReceiver extends BroadcastReceiver {
                     context.sendBroadcast(local_intent);
                 }
                 else if(shouldWake){
-
                     Intent wake_intent = new Intent();
                     wake_intent.replaceExtras(intent);
                     wake_intent.setAction(SmsHandler.SMS_HANDLER_WAKE_BROADCAST);
