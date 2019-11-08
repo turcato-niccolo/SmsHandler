@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SmsReceiver extends BroadcastReceiver {
-    //TODO? implement actual waking mechanism (?)
+    //TODO find a better waking mechanism
     private boolean shouldWake = false;
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -25,7 +25,11 @@ public class SmsReceiver extends BroadcastReceiver {
             List<SmsMessage> messages = filter(Telephony.Sms.Intents.getMessagesFromIntent(intent));
             if(messages.size() > 0){
                 if(SmsHandler.shouldHandleIncomingSms()){
-                    //broadcast local intent to wake the local receiver if the app is running
+                    /**
+                     * SmsHandler.shouldHandleIncomingSms() returns true if a suitable listener for
+                     * immediate response is available. A broadcast is the fired to notify said listener
+                     * through the receiver it is attached to.
+                    */
                     Log.d("SmsReceiver", "Forwarding intent...");
                     Intent local_intent = new Intent();
                     local_intent.replaceExtras(intent);
