@@ -24,6 +24,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.dezen.riccardo.smshandler.SMSMessage;
+import com.dezen.riccardo.smshandler.SMSPeer;
 import com.dezen.riccardo.smshandler.SmsHandler;
 
 import java.util.Set;
@@ -55,7 +56,12 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
         button_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendMessage(editText_number.getText().toString(), editText_message.getText().toString());
+
+                SMSPeer phoneNumberPeer = new SMSPeer(editText_number.getText().toString());
+                String messageText = editText_message.getText().toString();
+                SMSMessage messageToBeSent = new SMSMessage(phoneNumberPeer , messageText);
+
+                sendMessage(messageToBeSent);
             }
         });
         if(!isNotificationListenerEnabled(getApplicationContext())) {
@@ -103,11 +109,10 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
 
     /**
      * Sends a message through this activity's instance of SmsHandler
-     * @param destination the destination address for the message, in phone number format
-     * @param message the body of the message to be sent, can't be neither null nor empty
+     * @param message VALID object containing the destination address and the body of the message
      */
-    private void sendMessage(String destination, @NonNull String message){
-        smsHandler.sendSMS(getApplicationContext(),destination, message);
+    private void sendMessage(SMSMessage message){
+        smsHandler.sendSMS(getApplicationContext(),message);
     }
 
     /**

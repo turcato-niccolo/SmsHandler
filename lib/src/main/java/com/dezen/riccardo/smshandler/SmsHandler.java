@@ -28,7 +28,7 @@ public class SmsHandler {
      *  private local field instead of a static field (to allow chance to add full non-singleton support
      *  in the future
      */
-    public static final String APP_KEY = 0x02 +  ""; // uses an invisible character
+    public static final String APP_KEY = 0x02 + ""; // uses an invisible character
     //string for future implementation of activity start
     public static final String WAKE_KEY = "<urgent>";
     public static final String SMS_HANDLER_RECEIVED_BROADCAST = "NEW_SMS";
