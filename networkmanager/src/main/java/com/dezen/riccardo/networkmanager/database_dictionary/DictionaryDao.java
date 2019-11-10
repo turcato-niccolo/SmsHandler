@@ -9,18 +9,19 @@ import androidx.room.Query;
 public interface DictionaryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public void add(DictionaryEntity... entities);
-    @Delete
-    public void remove(DictionaryEntity... peer);
+
+    @Query("DELETE FROM DictionaryEntity WHERE peerAddress =:peerAddress")
+    public void remove(String peerAddress);
 
     @Query("SELECT peerAddress FROM DictionaryEntity WHERE peerAddress NOT IN (SELECT peerAddress FROM DictionaryEntity)")
-    public int getAvailablePeers();
+    public PeerEntity[] getAvailablePeers();
     @Query("SELECT resourceName FROM DictionaryEntity WHERE resourceName NOT IN (SELECT resourceName FROM DictionaryEntity)")
-    public int getAvailableResource();
+    public ResourceEntity[] getAvailableResource();
 
     @Query("SELECT peerAddress FROM DictionaryEntity WHERE resourceName=:resourceName")
-    public int findPeerWithResource(String resourceName);
+    public PeerEntity findPeerWithResource(String resourceName);
     @Query("SELECT resourceName FROM DictionaryEntity WHERE peerAddress=:peerAddress")
-    public int findResourcesForPeer(String peerAddress);
+    public ResourceEntity[] findResourcesForPeer(String peerAddress);
 
 
 }
