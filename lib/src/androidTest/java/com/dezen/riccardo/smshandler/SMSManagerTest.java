@@ -19,7 +19,7 @@ public class SMSManagerTest {
     @Before
     public void createSmsManager(){
         Context context = ApplicationProvider.getApplicationContext();
-        this.smsManager = new SMSManager(context);
+        this.smsManager = SMSManager.getInstance(context);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class SMSManagerTest {
         SMSPeer peer = new SMSPeer("3334455666");
         String data = "body";
         SMSMessage smsMessage = new SMSMessage(peer, data);
-        //TODO? not sendMessage because context not arrive to SmsHandler
+        //TODO? not sendMessage because it does not have SEND_SMS permission
         assertEquals(true, this.smsManager.sendMessage(smsMessage));
     }
 }

@@ -5,7 +5,7 @@ import android.content.Context;
 public class SMSManager extends CommunicationHandler<SMSMessage>{
     private static SMSManager instance;
 
-    private Context owner;
+    private static Context owner;
 
     private SmsHandler smsHandler;
     private ReceivedMessageListener<SMSMessage> rListener;
@@ -13,11 +13,12 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
     private DeliveredMessageListener<SMSMessage> dListener;
     private SmsHandler.OnSmsEventListener fullListener;
 
-    public SMSManager(Context context){
+    public static SMSManager getInstance(Context context){
         if(instance == null){
             instance = new SMSManager();
             owner = context;
         }
+        return instance;
     }
 
     public void drop(Context context){
