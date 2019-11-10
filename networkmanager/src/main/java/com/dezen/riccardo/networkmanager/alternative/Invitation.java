@@ -1,4 +1,4 @@
-package com.dezen.riccardo.networkmanager;
+package com.dezen.riccardo.networkmanager.alternative;
 
 /**
  * Invitation to join a network

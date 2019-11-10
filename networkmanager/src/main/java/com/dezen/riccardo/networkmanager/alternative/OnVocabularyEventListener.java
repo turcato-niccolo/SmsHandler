@@ -1,4 +1,4 @@
-package com.dezen.riccardo.networkmanager;
+package com.dezen.riccardo.networkmanager.alternative;
 
 /**
  * Interface for a listener that allows external classes to react to events regarding the vocabulary
