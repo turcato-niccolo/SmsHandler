@@ -2,9 +2,11 @@ package com.dezen.riccardo.networkmanager;
 
 import com.dezen.riccardo.smshandler.SMSPeer;
 
+import java.util.List;
+
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource>{
-    private SMSPeer[] peers;
-    private StringResource[] resources;
+    private List<SMSPeer> peers;
+    private List<StringResource[]> resources;
     @Override
     public SMSPeer findPeerWithResource(StringResource resource) {
         return null;
