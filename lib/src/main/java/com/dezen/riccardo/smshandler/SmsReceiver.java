@@ -81,7 +81,7 @@ public class SmsReceiver extends BroadcastReceiver {
      * @param messages array of messages
      * @return list of messages containing SmsHandler.APP_KEY
      */
-    private List<SmsMessage> filter(SmsMessage[] messages){
+    private List<SmsMessage> filter(SmsMessage[] messages){ //TODO? SmsMessage or SMSMessage?
         List<SmsMessage> list = new ArrayList<>();
         if(messages != null)
             for(SmsMessage sms : messages){

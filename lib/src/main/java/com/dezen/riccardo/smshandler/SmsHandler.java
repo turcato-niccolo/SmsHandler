@@ -1,5 +1,6 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,6 +10,7 @@ import android.provider.Telephony;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.room.Room;
@@ -150,6 +152,7 @@ public class SmsHandler {
                     .putExtra("message",message);
             Log.d("SmsHandler", "Pending intent for message: "+intent.getStringExtra("message"));
             sentIntent = PendingIntent.getBroadcast(context,0,intent,PendingIntent.FLAG_CANCEL_CURRENT);
+
         }
         else sentIntent = null;
         if(shouldUsePendingIntentDelivery){
@@ -202,6 +205,7 @@ public class SmsHandler {
             filter.addAction(SMS_HANDLER_DELIVERED_BROADCAST);
         }
         context.registerReceiver(smsEventReceiver,filter);
+
     }
 
     /**
