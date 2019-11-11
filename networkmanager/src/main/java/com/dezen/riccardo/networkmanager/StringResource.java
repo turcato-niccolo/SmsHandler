@@ -1,10 +1,10 @@
 package com.dezen.riccardo.networkmanager;
 
-import androidx.annotation.NonNull;
+public class StringResource implements Resource<String, String> {
 
-public class StringResource implements Resource<String> {
     private String name;
     private String value;
+
     public StringResource(String name, String value){
         this.name = name;
         this.value = value;
@@ -13,13 +13,21 @@ public class StringResource implements Resource<String> {
     public String getName() {
         return name;
     }
-    public String getValue(){
+
+    @Override
+    public String getValue() {
         return value;
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return name+"\n"+value;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public boolean isValid(){
+        return this.name != null && !this.name.isEmpty();
     }
 }
