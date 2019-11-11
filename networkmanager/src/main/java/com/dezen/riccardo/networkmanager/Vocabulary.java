@@ -2,8 +2,6 @@ package com.dezen.riccardo.networkmanager;
 
 import com.dezen.riccardo.smshandler.Peer;
 
-import java.util.List;
-
 /**
  * The Address of a Peer is used as it's key
  * @param <P> Peer type
@@ -28,15 +26,15 @@ public interface Vocabulary<P extends Peer, R extends Resource>{
     /**
      * Updates the Peer with the matching key, if it exists
      * @param updatedPeer the new value for the Peer if one with a matching key exists
-     * @return the old value for the Peer, null if it didn't exist
+     * @return true if the Peer was updated, false if it didn't exist
      */
-    P updatePeer(P updatedPeer);
+    boolean updatePeer(P updatedPeer);
 
     /**
-     * Returns a copy of the list of all Peers. Peers are not copied singularly.
-     * @return a list containing all Peers
+     * Returns an array that contains all Peers.
+     * @return an array containing all Peers
      */
-    List<P> getPeers();
+    P[] getPeers();
 
     /**
      * Adds a new resource
@@ -53,15 +51,15 @@ public interface Vocabulary<P extends Peer, R extends Resource>{
     boolean removeResource(R resourceToRemove);
 
     /**
-     * Updates the value of a Resource
+     * Updates the value of a Resource, if it exists
      * @param updatedResource the new value for the Resource
-     * @return the old value for the resource, null if it doesn't exist
+     * @return true if the resource was updated, false otherwise.
      */
-    R updateResource(R updatedResource);
+    boolean updateResource(R updatedResource);
 
     /**
-     * Returns a copy of the list of all Resources. Resources are not copied singularly.
-     * @return a list containing all Resources
+     * Returns an array containing all Resources.
+     * @return an array containing all Resources
      */
-    List<R> getResources();
+    R[] getResources();
 }

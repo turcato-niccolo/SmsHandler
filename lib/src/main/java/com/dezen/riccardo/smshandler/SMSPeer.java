@@ -1,6 +1,7 @@
 package com.dezen.riccardo.smshandler;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class SMSPeer implements Peer<String> {
     private String address;
@@ -48,5 +49,11 @@ public class SMSPeer implements Peer<String> {
     @NonNull
     public String toString(){
         return address;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if(obj instanceof SMSPeer) return ((SMSPeer) obj).address.equals(this.address);
+        else return false;
     }
 }

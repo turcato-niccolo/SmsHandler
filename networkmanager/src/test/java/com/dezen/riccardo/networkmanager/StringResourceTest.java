@@ -36,10 +36,10 @@ public class StringResourceTest {
 
     @Test
     public void setValue() {
-        String name = "I say tired";
-        String value = "More like sad";
+        String name = "exampleName";
+        String value = "exampleValue";
         StringResource stringResource = new StringResource(name, value);
-        String newValue = "Not to mention the fact I'm not really sure about what I'm doing with life in general";
+        String newValue = "modifiedValue";
         stringResource.setValue(newValue);
         assertEquals(newValue, stringResource.getValue());
     }
@@ -47,7 +47,7 @@ public class StringResourceTest {
     @Test
     public void isValid_nullName(){
         String name = null;
-        String value = "I mean, I'm a decent programmer, but apparently everyone just gets better ideas";
+        String value = "exampleValue";
         StringResource stringResource = new StringResource(name, value);
         assertFalse(stringResource.isValid());
     }
@@ -55,15 +55,15 @@ public class StringResourceTest {
     @Test
     public void isValid_emptyName(){
         String name = "";
-        String value = "Am I actually decent? I wonder...";
+        String value = "exampleValue";
         StringResource stringResource = new StringResource(name, value);
         assertFalse(stringResource.isValid());
     }
 
     @Test
     public void isValid(){
-        String name = "Sorry about the rant";
-        String value = "There will be no more of these";
+        String name = "exampleName";
+        String value = "exampleValue";
         StringResource stringResource = new StringResource(name, value);
         assertTrue(stringResource.isValid());
     }
