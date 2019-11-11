@@ -36,6 +36,7 @@ public class SmsHandler {
     public static final String SMS_HANDLER_RECEIVED_BROADCAST = "NEW_SMS";
     public static final String SMS_HANDLER_SENT_BROADCAST = "SMS_SENT";
     public static final String SMS_HANDLER_DELIVERED_BROADCAST = "SMS_DELIVERED";
+    public static final String SMS_HANDLER_WAKE_BROADCAST = "FORCE_WAKE";
     public static final String SMS_HANDLER_LOCAL_DATABASE = "sms-db";
     /**
      * Contains references to all listeners belonging to instances of this class
