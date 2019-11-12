@@ -1,8 +1,11 @@
 package com.dezen.riccardo.smshandler;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
@@ -17,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SmsReceiver extends BroadcastReceiver {
-    //TODO find a better waking mechanism
+    //TODO find a better waking mechanism,
+    // ideally directly starting an activity referenced through the use of reflection
     private boolean shouldWake = false;
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -41,7 +45,7 @@ public class SmsReceiver extends BroadcastReceiver {
                     Intent wake_intent = new Intent();
                     wake_intent.replaceExtras(intent);
                     wake_intent.setAction(SmsHandler.SMS_HANDLER_WAKE_BROADCAST);
-                    context.sendBroadcast(wake_intent);
+                    sendImplicitBroadcast(context, wake_intent);
                 }
                 else{
                     //write new sms to local database asynchronously
@@ -89,5 +93,28 @@ public class SmsReceiver extends BroadcastReceiver {
                 if(sms.getMessageBody().contains(SmsHandler.WAKE_KEY)) shouldWake = true;
             }
         return list;
+    }
+
+    /**
+     * Method to turn an implicit Broadcast into explicit ones. This method is needed in order to
+     * send broadcasts to manifest declared receivers on API 26 and above, since the ability to send
+     * implicit broadcasts to manifest receivers in the same app has been removed.
+     */
+    public void sendImplicitBroadcast(Context context, Intent intent){
+        int flags = 0;
+        PackageManager packageManager = context.getPackageManager();
+        //get all broadcastReceivers for this context.
+        List<ResolveInfo> matchingReceivers = packageManager.queryBroadcastReceivers(intent,flags);
+        for (ResolveInfo resolveInfo : matchingReceivers) {
+            //create and broadcast intent for every matching receiver
+            //this is a specific broadcast because it targets the receivers specifically
+            Intent explicit=new Intent(intent);
+            ComponentName componentName = new ComponentName(
+                    resolveInfo.activityInfo.applicationInfo.packageName,
+                    resolveInfo.activityInfo.name
+            );
+            explicit.setComponent(componentName);
+            context.sendBroadcast(explicit);
+        }
     }
 }
