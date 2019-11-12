@@ -1,19 +1,19 @@
 package com.dezen.riccardo.networkmanager;
 
 import androidx.annotation.Nullable;
-import androidx.collection.ArraySet;
 
 import com.dezen.riccardo.smshandler.SMSPeer;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
-    private Set<PeerItem> peers;
-    private Set<StringResource> resources;
+    private List<PeerItem> peers;
+    private List<StringResource> resources;
 
     public NetworkVocabulary(){
-        peers = new ArraySet<>();
-        resources = new ArraySet<>();
+        peers = new ArrayList<>();
+        resources = new ArrayList<>();
     }
 
     /**
@@ -21,10 +21,10 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
      */
     private class PeerItem{
         private SMSPeer peer;
-        private Set<StringResource> ownedResources;
+        private List<StringResource> ownedResources;
         PeerItem(SMSPeer peer){
             this.peer = peer;
-            ownedResources = new ArraySet<>();
+            ownedResources = new ArrayList<>();
         }
 
         /**
@@ -61,14 +61,14 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
 
         /**
          * Getter for ownedResources
-         * @return the set of resources peer owns
+         * @return the list of resources peer owns
          */
-        public Set<StringResource> getOwnedResources() {
+        public List<StringResource> getOwnedResources() {
             return ownedResources;
         }
 
         /**
-         *
+         * Two PeerItems are equal if their "peer" field is.
          */
         @Override
         public boolean equals(@Nullable Object obj) {
@@ -85,7 +85,9 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
      */
     @Override
     public boolean addPeer(SMSPeer newPeer){
-        return peers.add(new PeerItem(newPeer));
+        if(newPeer == null || contains(newPeer)) return false;
+        peers.add(new PeerItem(newPeer));
+        return true;
     }
 
     /**
@@ -95,7 +97,9 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
      */
     @Override
     public boolean removePeer(SMSPeer peerToRemove) {
-        return peers.remove(new PeerItem(peerToRemove));
+        if(peerToRemove == null || !contains(peerToRemove)) return false;
+        peers.remove(new PeerItem(peerToRemove));
+        return true;
     }
 
     /**
@@ -106,25 +110,22 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
     @Override
     public boolean updatePeer(SMSPeer updatedPeer) {
         if(updatedPeer == null || !contains(updatedPeer)) return false;
-        for(PeerItem oldPeerItem : peers){
-            if(oldPeerItem.getPeer().equals(updatedPeer))
-                oldPeerItem.setPeer(updatedPeer);
-        }
+        //We find the PeerItem whose key matches "updatedPeer" to change it's "peer" field but not
+        //its resources.
+        peers.get(peers.indexOf(new PeerItem(updatedPeer))).setPeer(updatedPeer);
         return true;
     }
 
     /**
-     * Returns a copy of the list of all Peers. Peers are not copied singularly.
+     * Returns an array containing all Peers. Peers are not copied singularly.
      * @return a list containing all Peers
      */
     @Override
     public SMSPeer[] getPeers() {
-        SMSPeer[] allPeers = new SMSPeer[peers.size()];
+        SMSPeer[] peerArray = new SMSPeer[peers.size()];
         int i = 0;
-        for(PeerItem peerItem : peers){
-            allPeers[i++] = peerItem.getPeer();
-        }
-        return allPeers;
+        for(PeerItem peerItem : peers) peerArray[i++] = peerItem.getPeer();
+        return peerArray;
     }
 
     //TODO Resources management
@@ -176,8 +177,7 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
      */
     public boolean contains(SMSPeer peer){
         PeerItem tempItem = new PeerItem(peer);
-        for(PeerItem item : peers) if(item.equals(tempItem)) return true;
-        return false;
+        return peers.contains(tempItem);
     }
 
     /**
