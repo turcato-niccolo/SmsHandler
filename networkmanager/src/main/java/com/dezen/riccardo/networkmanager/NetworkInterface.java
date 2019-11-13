@@ -49,5 +49,11 @@ public abstract class NetworkInterface<P extends Peer, R extends Resource, V ext
      * Setter for a listener that should listen for Resources being obtained.
      * @param listener the class listening for Resource events.
      */
-    public abstract void setListener(OnResourceObtainedListener<R> listener);
+    public abstract void setListener(OnNetworkEventListener<R> listener);
+
+    /**
+     * Method to send some kind of broadcast to the whole network
+     * @param action the action to broadcast
+     */
+    public abstract void broadcast(String action);
 }
