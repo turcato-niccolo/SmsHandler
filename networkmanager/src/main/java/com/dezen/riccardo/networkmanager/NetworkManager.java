@@ -1,6 +1,7 @@
 package com.dezen.riccardo.networkmanager;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
@@ -14,7 +15,8 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
     private final String[] invitationMessages = {"INVITATION_PROPOSED", "INVITATION_ACCEPTED"};
     private final int propose = 0, accept = 1;
     Context context;
-    ArrayList<SMSPeer> pendingInvitations;
+    ArrayList<String> pendingInvitations;
+    private final String MANAGER_TAG = "MANAGER_TAG";
 
     public NetworkManager(Context registerContext)
     {
@@ -23,7 +25,7 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
          handler.registerReceiver(registerContext, true, true, true);
          handler.setListener(this);
          context = registerContext;
-         pendingInvitations = new ArrayList<SMSPeer>();
+         pendingInvitations = new ArrayList<String>();
     }
 
     /**
@@ -44,7 +46,7 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
     @Override
     public void invite(SMSPeer newPeer) {
         handler.sendSMS(context, newPeer.getAddress(), invitationMessages[propose]);
-
+        pendingInvitations.add(newPeer.getAddress());
     }
 
     /**
@@ -59,11 +61,10 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
 
     private void onInviteAccepted(SMSPeer invited)
     {
-        if(pendingInvitations.contains(invited))
-        {
-            peersVocabulary.addPeer(invited);
-            pendingInvitations.remove(invited);
-        }
+        Log.d(MANAGER_TAG, invited.getAddress() +" has accepted");
+        peersVocabulary.addPeer(invited);
+            //pendingInvitations.remove(invited.getAddress());
+
     }
 
     /**
@@ -121,7 +122,7 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
             acceptInvite(inviter);
         }
 
-        if(receivedMessageString.contains(invitationMessages[propose]))
+        if(receivedMessageString.contains(invitationMessages[accept]))
         {//Message contains invitation acceptance
             SMSPeer acceptingPeer = message.getPeer();
             onInviteAccepted(acceptingPeer);

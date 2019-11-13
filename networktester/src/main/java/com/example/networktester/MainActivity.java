@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 peers = new ArrayList<String>(Arrays.asList(GetSMSPeersInArray(updatedPeers)));
                 peersListView.setAdapter(peersListViewAdapter);
                 peersListViewAdapter.notifyDataSetChanged();
-                Log.d(NETWORK_TESTER_TAG, peers.get(0));
+                Log.d(NETWORK_TESTER_TAG, ""+peers.size());
             }
         });
 
