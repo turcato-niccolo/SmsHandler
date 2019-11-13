@@ -1,16 +1,17 @@
 package com.dezen.riccardo.networkmanager.database_dictionary;
 
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity
+@Entity(primaryKeys = {"peerAddress","resourceName"})
 public class DictionaryEntity {
     public DictionaryEntity(String peerAddress, String resourceName) {
         this.peerAddress = peerAddress;
         this.resourceName = resourceName;
     }
-    @PrimaryKey
+    @NonNull
     public String peerAddress;
-    @PrimaryKey
+    @NonNull
     public String resourceName;
 }

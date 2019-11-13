@@ -116,9 +116,9 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
 
     /**
      * Updates the Peer with the matching key, if it exists.
-     * Null Peer will not be updated. Since a matching key is required to update, and being "address"
+     * Null Peer will not be updated. Since a matching key is required to update, and being "peerAddress"
      * the key for Peers, this method only updates any extra fields the Peer might have besides
-     * "address" itself.
+     * "peerAddress" itself.
      * @param updatedPeer the new value for the Peer if one with a matching key exists
      * @return true if the Peer was found and updated, false otherwise
      */
@@ -172,7 +172,7 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
     /**
      * Updates the value of a Resource. Null or invalid Resource won't be updated.
      * Since a matching key is required to update, and being "name" the key for Resources, this
-     * method only updates any extra fields the Resource might have besides "address" itself.
+     * method only updates any extra fields the Resource might have besides "peerAddress" itself.
      * @param updatedResource the new value for the Resource
      * @return true if the resource was found and updated, false otherwise.
      */

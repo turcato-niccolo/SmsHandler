@@ -8,8 +8,6 @@ import com.dezen.riccardo.networkmanager.database_dictionary.DictionaryDatabase;
 import com.dezen.riccardo.networkmanager.database_dictionary.DictionaryEntity;
 import com.dezen.riccardo.networkmanager.database_dictionary.PeerEntity;
 import com.dezen.riccardo.networkmanager.database_dictionary.ResourceEntity;
-import com.dezen.riccardo.smshandler.Peer;
-import com.dezen.riccardo.smshandler.SMSPeer;
 
 import static com.dezen.riccardo.smshandler.SmsHandler.SMS_HANDLER_LOCAL_DATABASE;
 
@@ -25,13 +23,13 @@ public class NetworkDictionaryDatabase implements DictionaryDb<PeerEntity, Resou
 
     @Override
     public PeerEntity findPeerWithResource(ResourceEntity resource) {
-        PeerEntity peer = db.access().findPeerWithResource(resource.name);
+        PeerEntity peer = db.access().findPeerWithResource(resource.resourceName);
         return peer;
     }
 
     @Override
     public ResourceEntity[] findResourcesForPeer(PeerEntity peer) {
-        ResourceEntity[] resourcesDb = db.access().findResourcesForPeer(peer.address);
+        ResourceEntity[] resourcesDb = db.access().findResourcesForPeer(peer.peerAddress);
         return resourcesDb;
     }
 
@@ -48,11 +46,11 @@ public class NetworkDictionaryDatabase implements DictionaryDb<PeerEntity, Resou
     @Override
     public void add(PeerEntity peer, ResourceEntity[] resources) {
         for(ResourceEntity resource : resources)
-            db.access().add(new DictionaryEntity(peer.address, resource.name));
+            db.access().add(new DictionaryEntity(peer.peerAddress, resource.resourceName));
     }
 
     @Override
     public void remove(PeerEntity peer) {
-        db.access().remove(peer.address);
+        db.access().remove(peer.peerAddress);
     }
 }

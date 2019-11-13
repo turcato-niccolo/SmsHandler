@@ -1,14 +1,14 @@
 package com.dezen.riccardo.networkmanager.database_dictionary;
 
-import androidx.room.ColumnInfo;
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 @Entity
 public class PeerEntity {
-    public PeerEntity(String address) {
-        this.address = address;
+    public PeerEntity(String peerAddress) {
+        this.peerAddress = peerAddress;
     }
-    @PrimaryKey
-    public String address;
+    @PrimaryKey @NonNull
+    public String peerAddress;
 }
