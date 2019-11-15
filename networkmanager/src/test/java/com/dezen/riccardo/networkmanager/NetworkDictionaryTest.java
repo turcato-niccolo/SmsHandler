@@ -10,7 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 //TODO add a reusable NetworkVocabulary for tests
-public class NetworkVocabularyTest {
+public class NetworkDictionaryTest {
 
     //Reusable fields for Peer management tests
 
@@ -25,7 +25,7 @@ public class NetworkVocabularyTest {
 
     @Test
     public void addPeerAddsValidPeer() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertTrue(networkVocabulary.addPeer(peer));
         assertEquals(1,networkVocabulary.getPeers().length);
     }
@@ -33,14 +33,14 @@ public class NetworkVocabularyTest {
     @Test
     public void addPeerIgnoresNullPeer(){
         SMSPeer nullPeer = null;
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertFalse(networkVocabulary.addPeer(nullPeer));
         assertEquals(0,networkVocabulary.getPeers().length);
     }
 
     @Test
     public void addPeerIgnoresExistingPeer(){
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addPeer(peer);
         assertFalse(networkVocabulary.addPeer(peer));
         assertEquals(1,networkVocabulary.getPeers().length);
@@ -49,13 +49,13 @@ public class NetworkVocabularyTest {
     @Test
     public void removePeerIgnoresNullPeer() {
         SMSPeer nullPeer = null;
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertFalse(networkVocabulary.removePeer(nullPeer));
     }
 
     @Test
     public void removePeerRemovesExistingPeer(){
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertTrue(networkVocabulary.addPeer(peer));
         assertTrue(networkVocabulary.removePeer(peer));
         assertEquals(0,networkVocabulary.getPeers().length);
@@ -65,7 +65,7 @@ public class NetworkVocabularyTest {
     public void removePeerIgnoresNonExistingPeer(){
         String existingAddress = "I exist";
         SMSPeer existingPeer = new SMSPeer(existingAddress);
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addPeer(existingPeer);
         String nonExistingAddress = "I don't";
         SMSPeer nonExistingPeer = new SMSPeer(nonExistingAddress);
@@ -76,7 +76,7 @@ public class NetworkVocabularyTest {
     @Test
     public void updatePeerIgnoresNullPeer() {
         SMSPeer peer = null;
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertFalse(networkVocabulary.updatePeer(peer));
     }
 
@@ -84,7 +84,7 @@ public class NetworkVocabularyTest {
     public void updatePeerUpdatesExistingPeer() {
         String address = "example";
         SMSPeer peer = new SMSPeer(address);
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addPeer(peer);
         assertTrue(networkVocabulary.updatePeer(peer));
         assertEquals(peer,networkVocabulary.getPeers()[0]);
@@ -94,7 +94,7 @@ public class NetworkVocabularyTest {
     public void updatePeerIgnoresNonExistingPeer() {
         String existingAddress = "I exist";
         SMSPeer existingPeer = new SMSPeer(existingAddress);
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addPeer(existingPeer);
         String nonExistingAddress = "I don't";
         SMSPeer nonExistingPeer = new SMSPeer(nonExistingAddress);
@@ -106,7 +106,7 @@ public class NetworkVocabularyTest {
     public void getPeersReturnsCopy() {
         String address = "I should remain";
         SMSPeer peer = new SMSPeer(address);
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addPeer(peer);
         SMSPeer[] peers = networkVocabulary.getPeers();
         peers = new SMSPeer[0];
@@ -115,7 +115,7 @@ public class NetworkVocabularyTest {
 
     @Test
     public void addResourceAddsValidResource() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertTrue(networkVocabulary.addResource(resource));
         assertEquals(1,networkVocabulary.getResources().length);
     }
@@ -123,14 +123,14 @@ public class NetworkVocabularyTest {
     @Test
     public void addResourceIgnoresNullResource(){
         StringResource nullResource = null;
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertFalse(networkVocabulary.addResource(nullResource));
         assertEquals(0,networkVocabulary.getResources().length);
     }
 
     @Test
     public void addResourceIgnoresExistingResource(){
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(resource);
         assertFalse(networkVocabulary.addResource(resource));
         assertEquals(1,networkVocabulary.getResources().length);
@@ -139,13 +139,13 @@ public class NetworkVocabularyTest {
     @Test
     public void removeResourceIgnoreNullResource() {
         StringResource nullResource = null;
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertFalse(networkVocabulary.removeResource(nullResource));
     }
 
     @Test
     public void removeResourceRemovesExistingResource(){
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertTrue(networkVocabulary.addResource(resource));
         assertTrue(networkVocabulary.removeResource(resource));
         assertEquals(0,networkVocabulary.getResources().length);
@@ -156,7 +156,7 @@ public class NetworkVocabularyTest {
         String existingName = "I exist";
         String existingValue = "I'm the existing value";
         StringResource existing_resource = new StringResource(existingName, existingValue);
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(existing_resource);
         String nonExistingName = "I don't";
         String nonExistingValue = "I'm the non-existing value";
@@ -168,13 +168,13 @@ public class NetworkVocabularyTest {
     @Test
     public void updateResourceIgnoresNullResource() {
         StringResource nullResource = null;
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         assertFalse(networkVocabulary.updateResource(nullResource));
     }
 
     @Test
     public void updateResourceUpdatesExistingResource() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(resource);
         assertTrue(networkVocabulary.updateResource(resource));
         assertEquals(resource,networkVocabulary.getResources()[0]);
@@ -185,7 +185,7 @@ public class NetworkVocabularyTest {
         String existingName = "I exist";
         String existingValue = "I'm the existing value";
         StringResource existingResource = new StringResource(existingName, existingValue);
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(existingResource);
         String nonExistingName = "I don't";
         String nonExistingValue = "I'm the non-existing value";
@@ -196,7 +196,7 @@ public class NetworkVocabularyTest {
 
     @Test
     public void getResourcesReturnsCopy() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(resource);
         StringResource[] resources = networkVocabulary.getResources();
         resources = new StringResource[0];
@@ -205,14 +205,14 @@ public class NetworkVocabularyTest {
 
     @Test
     public void containsPeerPositive() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addPeer(peer);
         assertTrue(networkVocabulary.contains(peer));
     }
 
     @Test
     public void containsPeerNegative() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addPeer(peer);
         String nonExistingAddress = "I'm not a thing";
         SMSPeer nonExistingPeer = new SMSPeer(nonExistingAddress);
@@ -221,7 +221,7 @@ public class NetworkVocabularyTest {
 
     @Test
     public void containsPeerIgnoresNull() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addPeer(peer);
         SMSPeer nullPeer = null;
         assertFalse(networkVocabulary.contains(nullPeer));
@@ -229,14 +229,14 @@ public class NetworkVocabularyTest {
 
     @Test
     public void containsResourcePositive() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(resource);
         assertTrue(networkVocabulary.contains(resource));
     }
 
     @Test
     public void containsResourceNegative() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(resource);
         String nonExistingName = "I don't exist";
         String nonExistingValue = "I'm the non-existing value";
@@ -246,7 +246,7 @@ public class NetworkVocabularyTest {
 
     @Test
     public void containsResourceIgnoresNull() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(resource);
         StringResource nullResource = null;
         assertFalse(networkVocabulary.contains(nullResource));
@@ -254,7 +254,7 @@ public class NetworkVocabularyTest {
 
     @Test
     public void containsResourceIgnoresInvalid() {
-        NetworkVocabulary networkVocabulary = new NetworkVocabulary();
+        NetworkDictionary networkVocabulary = new NetworkDictionary();
         networkVocabulary.addResource(resource);
         StringResource invalidResource = new StringResource("", "");
         assertFalse(invalidResource.isValid());

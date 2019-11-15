@@ -3,7 +3,7 @@ package com.dezen.riccardo.networkmanager;
 import com.dezen.riccardo.smshandler.CommunicationHandler;
 import com.dezen.riccardo.smshandler.Peer;
 
-public abstract class NetworkInterface<P extends Peer, R extends Resource, V extends Vocabulary<P,R>>{
+public abstract class NetworkInterface<P extends Peer, R extends Resource, V extends Dictionary<P,R>>{
     //Vocabulary to assign at runtime
     protected V vocabulary;
     //CommunicationHandler to be used

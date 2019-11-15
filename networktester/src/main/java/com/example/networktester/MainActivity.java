@@ -36,8 +36,6 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
             Manifest.permission.SEND_SMS,
             Manifest.permission.RECEIVE_SMS
     };
-    private static final int REQUEST_CODE_PHONE_STATE = 2;
-    private static final int REQUEST_CODE_SMS = 1;
     private static final int ALL_PERMISSIONS_REQUEST_CODE = 0;
     private static final String NETWORK_TESTER_TAG = "NETWORK_TESTER";
 
@@ -59,6 +57,10 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
         else init();
     }
 
+    /**
+     * Method containing the initialization of UI elements typically contained in onCreate.
+     * It is located here to prevent it's execution if permissions are missing.
+     */
     private void init(){
         sampleText = findViewById(R.id.sampleText);
         txtNumber = findViewById(R.id.txtnumber);
@@ -124,12 +126,11 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
      * @return true if at least one permission is missing, false otherwise
      */
     private boolean arePermissionsMissing(){
-        boolean missing = false;
         for(String permission : neededPermissions){
             if(ContextCompat.checkSelfPermission(this,permission)
-                    != PackageManager.PERMISSION_GRANTED) missing = true;
+                    != PackageManager.PERMISSION_GRANTED) return true;
         }
-        return missing;
+        return false;
     }
 
     private void requestPermissions(){
@@ -156,40 +157,6 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
     public void onMessageReceived(SMSMessage message) {
         if(message.getData().contains("SMILE")) imageView.setImageDrawable(getDrawable(R.drawable.vector_smile_green));
     }
-
-    /*public void requestPhoneStatePermission()
-    {
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.READ_PHONE_STATE},
-                REQUEST_CODE_PHONE_STATE);
-    }
-
-    public boolean PhoneStatePermissionGranted()
-    {
-        return (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED);
-    }
-
-    public boolean CheckPhoneStatePermission()
-    {
-        return checkPermission(Manifest.permission.READ_PHONE_STATE, android.os.Process.myPid(), android.os.Process.myUid())  == PackageManager.PERMISSION_GRANTED;
-    }
-
-    public boolean SmsPermissionGranted()
-    {
-        return (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED);
-    }
-
-    public void requestSmsPermission()
-    {
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS,
-                        Manifest.permission.READ_SMS},
-                REQUEST_CODE_SMS);
-    }*/
-
-
 }
 
 

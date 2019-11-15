@@ -9,14 +9,16 @@ import com.dezen.riccardo.smshandler.SmsHandler;
 
 import java.util.ArrayList;
 
-public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,NetworkVocabulary> implements SmsHandler.OnSmsEventListener {
+public class NetworkManager extends NetworkInterface<SMSPeer,StringResource, NetworkDictionary> implements SmsHandler.OnSmsEventListener {
     private enum Actions{
-        INVITE(0),ACCEPT(1),ADD_USER(2),REMOVE_USER(3),NOTIFY_USER(4),SMILE(5);
+        INVITE(0),ACCEPT(1),
+        ADD_USER(2),REMOVE_USER(3),
+        NOTIFY_USER(4),SMILE(5);
         private int val;
         Actions(int num){
             val = num;
         }
-        public int getVal(){return val;}
+        public int value(){return val;}
     }
     private static final String[] actionMessages = {
             "INVITE",
@@ -29,14 +31,14 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
 
     private SMSPeer myPeer;
     private OnNetworkEventListener<StringResource> listener;
-    private NetworkVocabulary peersVocabulary;
+    private NetworkDictionary peersVocabulary;
     private SmsHandler handler;
     private Context context;
     private ArrayList<String> pendingInvitations;
     private final String MANAGER_TAG = "MANAGER_TAG";
 
     public NetworkManager(Context registerContext) {
-         peersVocabulary = new NetworkVocabulary();
+         peersVocabulary = new NetworkDictionary();
          handler = new SmsHandler();
          handler.registerReceiver(registerContext, true, true, true);
          handler.setListener(this);
@@ -61,7 +63,7 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
      */
     @Override
     public void invite(SMSPeer newPeer) {
-        handler.sendSMS(context, newPeer.getAddress(), actionMessages[Actions.INVITE.getVal()]);
+        handler.sendSMS(context, newPeer.getAddress(), actionMessages[Actions.INVITE.value()]);
         pendingInvitations.add(newPeer.getAddress());
     }
 
@@ -71,7 +73,7 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
      */
     @Override
     public void acceptInvite(SMSPeer inviter) {
-        handler.sendSMS(context, inviter.getAddress(), actionMessages[Actions.ACCEPT.getVal()]);
+        handler.sendSMS(context, inviter.getAddress(), actionMessages[Actions.ACCEPT.value()]);
         peersVocabulary.addPeer(inviter);
     }
 
@@ -82,8 +84,8 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
     private void onInviteAccepted(SMSPeer invited) {
         Log.d(MANAGER_TAG, invited.getAddress() +" has accepted");
         peersVocabulary.addPeer(invited);
-        broadcast(actionMessages[Actions.ADD_USER.getVal()]+" "+invited.getAddress());
-        broadcast(actionMessages[Actions.NOTIFY_USER.getVal()]+" "+invited.getAddress());
+        broadcast(actionMessages[Actions.ADD_USER.value()]+" "+invited.getAddress());
+        broadcast(actionMessages[Actions.NOTIFY_USER.value()]+" "+invited.getAddress());
     }
 
     /**
@@ -143,35 +145,35 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource,Netw
     }
 
     public void smile(){
-        broadcast(actionMessages[Actions.SMILE.getVal()]);
+        broadcast(actionMessages[Actions.SMILE.value()]);
     }
 
     @Override
     public void onReceive(SMSMessage message) {
         String receivedMessageString = message.getData();
-        if(receivedMessageString.contains(actionMessages[Actions.INVITE.getVal()])){
+        if(receivedMessageString.contains(actionMessages[Actions.INVITE.value()])){
             //Message contains invitation
             SMSPeer inviter = message.getPeer();
             acceptInvite(inviter);
         }
 
-        if(receivedMessageString.contains(actionMessages[Actions.ACCEPT.getVal()])){
+        if(receivedMessageString.contains(actionMessages[Actions.ACCEPT.value()])){
             //Message contains invitation acceptance
             SMSPeer acceptingPeer = message.getPeer();
             onInviteAccepted(acceptingPeer);
         }
 
-        if(receivedMessageString.contains(actionMessages[Actions.ADD_USER.getVal()])){
+        if(receivedMessageString.contains(actionMessages[Actions.ADD_USER.value()])){
             //Add the specified user
             peersVocabulary.addPeer(new SMSPeer(receivedMessageString.split(" ")[1]));
         }
 
-        if(receivedMessageString.contains(actionMessages[Actions.NOTIFY_USER.getVal()])){
+        if(receivedMessageString.contains(actionMessages[Actions.NOTIFY_USER.value()])){
             //Notifies the specified user that it should add this user
-            broadcast(actionMessages[Actions.ADD_USER.getVal()]+" "+myPeer.getAddress());
+            broadcast(actionMessages[Actions.ADD_USER.value()]+" "+myPeer.getAddress());
         }
 
-        if(receivedMessageString.contains(actionMessages[Actions.SMILE.getVal()])){
+        if(receivedMessageString.contains(actionMessages[Actions.SMILE.value()])){
             if(listener != null) listener.onMessageReceived(message);
         }
     }

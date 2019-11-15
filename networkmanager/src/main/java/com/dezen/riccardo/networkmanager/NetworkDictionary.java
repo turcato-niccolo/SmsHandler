@@ -8,11 +8,11 @@ import com.dezen.riccardo.smshandler.SMSPeer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
+public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     private List<PeerItem> peers;
     private List<StringResource> resources;
 
-    public NetworkVocabulary(){
+    public NetworkDictionary(){
         peers = new ArrayList<>();
         resources = new ArrayList<>();
     }
@@ -47,17 +47,25 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
         /**
          * Method to add a Resource to the list of Resources owned by the Peer if not owned already
          * @param resource the Resource to add
+         * @return true if resource was added, false otherwise
          */
-        public void addResource(StringResource resource){
-            if(ownsResource(resource)) ownedResources.add(resource);
+        public boolean addResource(StringResource resource){
+            if(!ownsResource(resource)){
+                ownedResources.add(resource);
+                return true;
+            }
+            return false;
         }
 
         /**
          * Method to remove a Resource from the list of owned Resources
          * @param resource the Resource to remove
+         * @return true if resource was removed, false otherwise
          */
-        public void removeResource(StringResource resource){
+        public boolean removeResource(StringResource resource){
+            if(!ownsResource(resource)) return false;
             ownedResources.remove(resource);
+            return true;
         }
 
         /**
@@ -253,27 +261,24 @@ public class NetworkVocabulary implements Vocabulary<SMSPeer, StringResource>{
      * Method to grant ownership of a non already owned valid Resource.
      * @param owner the Peer gaining the ownership
      * @param resource the Resource being given
-     * @return true if the Resource's ownership was granted (or already was), false otherwise
+     * @return true if the Resource's ownership was granted, false otherwise
      */
     public boolean addOwnerForResource(SMSPeer owner, StringResource resource){
-        if(owner == null || !contains(owner) || resource == null || !resource.isValid() || !contains(resource))
+        if(!contains(owner) || !contains(resource))
             return false;
-        getItemFor(owner).addResource(resource);
-        return true;
+        return getItemFor(owner).addResource(resource);
     }
 
     /**
      * Method to revoke ownership of an already owned valid Resource.
      * @param owner the Peer losing the ownership
      * @param resource the Resource whose ownership is being revoked
-     * @return true if the Resource's ownership was revoked or resource wasn't already owned,
-     * and false otherwise.
+     * @return true if the Resource's ownership was revoked and false otherwise.
      */
     public boolean removeOwnerForResource(SMSPeer owner, StringResource resource){
         if(owner == null || !contains(owner) || resource == null || !resource.isValid() || !contains(resource))
             return false;
-        getItemFor(owner).removeResource(resource);
-        return true;
+        return getItemFor(owner).removeResource(resource);
     }
 
     /**

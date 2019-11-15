@@ -1,14 +1,16 @@
-package com.dezen.riccardo.networkmanager;
+package com.dezen.riccardo.networkmanager.deprecated;
 
+import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.smshandler.Peer;
 //TODO add sizeP() and sizeR() methods. Update tests accordingly.
+
 /**
  * The Address of a Peer is used as it's key
  * @param <P> Peer type
  * The Name of a Resource is used as it's key
  * @param <R> Resource type
  */
-public interface Vocabulary<P extends Peer, R extends Resource>{
+interface Vocabulary<P extends Peer, R extends Resource>{
     /**
      * Adds a new Peer
      * @param newPeer the new Peer, whose key does not already exist
@@ -62,4 +64,19 @@ public interface Vocabulary<P extends Peer, R extends Resource>{
      * @return an array containing all Resources
      */
     R[] getResources();
+
+    /**
+     * Returns whether the given user exists in this Vocabulary
+     * @param peer the Peer to find
+     * @return true if it exists (an instance of PeerItem exists whose "peer" value equals the "peer"
+     * passed as parameter), false otherwise.
+     */
+    boolean contains(P peer);
+
+    /**
+     * Method to tell whether the given Resource exists in this Vocabulary
+     * @param resource the Resource to find
+     * @return true if resource exists, false otherwise.
+     */
+    boolean contains(R resource);
 }
