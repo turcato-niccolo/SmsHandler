@@ -7,6 +7,10 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
+/**
+ * @author Riccardo De Zen
+ * Interface defining methods to access the unread sms database.
+ */
 @Dao
 public interface SmsDao{
     @Insert(onConflict = OnConflictStrategy.REPLACE)

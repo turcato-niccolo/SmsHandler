@@ -9,6 +9,10 @@ import com.dezen.riccardo.smshandler.SmsHandler;
 
 import java.util.ArrayList;
 
+/**
+ * @author Niccolò Turcato. Invitation sending and receiving. Switch actions on Message received.
+ * @author Riccardo De Zen. User management and synchronization. Enumeration to define actions.
+ */
 public class NetworkManager extends NetworkInterface<SMSPeer,StringResource, NetworkDictionary> implements SmsHandler.OnSmsEventListener {
     private enum Actions{
         INVITE(0),ACCEPT(1),

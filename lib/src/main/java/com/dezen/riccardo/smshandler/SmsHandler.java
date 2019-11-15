@@ -21,14 +21,19 @@ import com.dezen.riccardo.smshandler.database.SmsEntity;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class meant to be the main body of the library. Handles sending and receiving SMS messages, also
+ * handles notifying of sending and delivery confirms.
+ * @author Riccardo De Zen.
+ */
 public class SmsHandler {
     /**TODO add owner mechanism: every instance should have a private Context field containing the
      *  owner of the instance. This field should then be used to check who's calling the methods
      *  for example, it would be a bad idea to have someone who hasn't registered a receiver with
      *  registerReceiver(context) be able to cancel it freely.
-     *  See SMSManager for an example of this mechanism, which should be implemented here albeit with a
+     *  @see SMSManager for an example of this mechanism, which should be implemented here albeit with a
      *  private local field instead of a static field (to allow chance to add full non-singleton support
-     *  in the future
+     *  in the future).
      */
     public static final String APP_KEY = "<#>";
     //string for future implementation of activity start
@@ -250,7 +255,7 @@ public class SmsHandler {
 
     /**
      * Method to clear and forward the unread messages from the database to the listener. Due to database access restrictions
-     * this method cannot be thrown from the main thread. If no listener is present, this method simply clears
+     * this method cannot be called from the main thread. If no listener is present, this method simply clears
      * the database returning the cleared values.
      * @param context the calling context, used to instantiate the database.
      * @return an array containing the SmsEntity object containing the unread sms data.

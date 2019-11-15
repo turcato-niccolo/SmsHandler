@@ -5,6 +5,14 @@ import android.provider.Telephony;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
+/**
+ * Service meant to block incoming notifications if they pertain to this library.
+ * The filtering work on messages is voluntarily repeated between this Service and SmsReceiver in
+ * order to avoid forcing the Service to attach unnecessary resources to itself, thus making it less
+ * likely to be shut down by the system.
+ * @author Niccolò Turcato based on suggestion from Dr. Li Dao Hong.
+ * Small tweaks from Riccardo De Zen to avoid redundant use of String objects.
+ */
 public class NotificationCatcherService extends NotificationListenerService {
 
     @Override

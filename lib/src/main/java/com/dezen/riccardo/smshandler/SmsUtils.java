@@ -17,6 +17,10 @@ import com.dezen.riccardo.smshandler.database.SmsEntity;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class with experimental methods to help testing of some features.
+ * @author Riccardo De Zen
+ */
 public class SmsUtils {
     //projection to use for SMS Inbox query
     private static String[] inboxProjection = {

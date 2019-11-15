@@ -1,5 +1,10 @@
 package com.dezen.riccardo.smshandler;
 
+/**
+ * @author Riccardo De Zen
+ * @param <M> The type of Message delivered
+ */
+
 public interface DeliveredMessageListener<M extends Message>{
     /**
      * Method called when a sent message might have been delivered to the associated peer

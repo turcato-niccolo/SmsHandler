@@ -2,6 +2,10 @@ package com.dezen.riccardo.smshandler;
 
 import android.content.Context;
 
+/**
+ * Class to implement CommunicationHandler through use of SMS messages.
+ * @author Riccardo De Zen based on decisions of whole class. Model proposed by Marco Cognolato and Luca Crema.
+ */
 public class SMSManager extends CommunicationHandler<SMSMessage>{
     private static SMSManager instance;
 
@@ -21,10 +25,9 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         return instance;
     }
 
-    public void drop(Context context){
+    public static void drop(Context context){
         if(context.equals(owner)){
-            smsHandler.unregisterReceiver(owner);
-            smsHandler.clearListener();
+            instance.removeReceiveListener();
             owner = null;
         }
     }
@@ -73,5 +76,5 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         smsHandler.unregisterReceiver(owner);
     }
 
-    //TODO implementation of sending and delivery confirm
+    //TODO implementation of sending and delivery confirm (?)
 }
