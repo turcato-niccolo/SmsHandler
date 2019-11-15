@@ -1,4 +1,4 @@
-package com.dezen.riccardo.networkmanager.database_dictionary;
+package com.dezen.riccardo.networkmanager.deprecated;
 
 import androidx.room.Dao;
 import androidx.room.Delete;

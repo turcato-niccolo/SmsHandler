@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-
+/**
+ * @author Giorgia Bortoletti
+ */
 @Entity
 public class ResourceEntity {
     public ResourceEntity(String keyName, String value) {

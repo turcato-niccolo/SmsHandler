@@ -42,7 +42,7 @@ public class NetworkManager extends NetworkInterface<SMSPeer,StringResource, Net
     private final String MANAGER_TAG = "MANAGER_TAG";
 
     public NetworkManager(Context registerContext) {
-         peersVocabulary = new NetworkDictionary();
+         peersVocabulary = new NetworkDictionary(registerContext);
          handler = new SmsHandler();
          handler.registerReceiver(registerContext, true, true, true);
          handler.setListener(this);

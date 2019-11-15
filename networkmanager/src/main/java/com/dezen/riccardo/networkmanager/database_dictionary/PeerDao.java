@@ -7,10 +7,15 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
+/**
+ * @author Giorgia Bortoletti
+ */
 @Dao
 public interface PeerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public void add(PeerEntity... peerEntities);
+    @Update
+    public void update(PeerEntity... peerEntities);
     @Delete
     public void remove(PeerEntity... peerEntities);
 

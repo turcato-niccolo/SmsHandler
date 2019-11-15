@@ -7,6 +7,9 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
+/**
+ * @author Giorgia Bortoletti
+ */
 @Dao
 public interface ResourceDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -18,6 +18,9 @@ import java.io.IOException;
 
 import static junit.framework.TestCase.assertEquals;
 
+/**
+ * @author Giorgia Bortoletti
+ */
 @RunWith(AndroidJUnit4.class)
 public class ResourceDatabaseTest {
 

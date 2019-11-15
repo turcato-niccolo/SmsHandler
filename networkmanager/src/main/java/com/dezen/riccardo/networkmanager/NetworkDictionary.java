@@ -1,106 +1,73 @@
 package com.dezen.riccardo.networkmanager;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource.
  * Due to trouble with testing android class. Lists have been used.
- * @author Riccardo De Zen.
+ * @author Riccardo De Zen, Giorgia Bortoletti
  */
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
-    private List<PeerItem> peers;
-    private List<StringResource> resources;
+    private Map<String, String>  peers;
+    private Map<String, String> resources;
+    private NetworkDictionaryDatabase database;
 
-    public NetworkDictionary(){
-        peers = new ArrayList<>();
-        resources = new ArrayList<>();
+    public NetworkDictionary(Context context){
+        database = new NetworkDictionaryDatabase(context);
+        peers = new HashMap<>();
+        resources = new HashMap<>();
     }
 
+
+    //TODO? make this method asynchronous
     /**
-     * Class used to contain references to Peers and their associated resources
+     * Import resources and peers from database to variables Map
      */
-    private class PeerItem{
-        private SMSPeer peer;
-        private List<StringResource> ownedResources;
-        PeerItem(@NonNull SMSPeer peer){
-            this.peer = peer;
-            ownedResources = new ArrayList<>();
-        }
+    private void importFromDatabase(){
+        SMSPeer[] smsPeers = database.getPeers();
+        StringResource[] stringResources = database.getResources();
 
-        /**
-         * @return the Peer for this item
-         */
-        public SMSPeer getPeer(){
-            return peer;
-        }
+        for(SMSPeer peer : smsPeers)
+            peers.put(peer.getAddress(), "");
 
-        /**
-         * Method to update the value of this PeerItems's Peer.
-         * Peer key is considered unique, so it must be equal for field "peer" and parameter "newPeer".
-         * @param newPeer the new valid value for the Peer
-         */
-        public void setPeer(SMSPeer newPeer){
-            this.peer = newPeer;
-        }
+        for(StringResource resource : stringResources)
+            resources.put(resource.getName(), resource.getName());
 
-        /**
-         * Method to add a Resource to the list of Resources owned by the Peer if not owned already
-         * @param resource the Resource to add
-         * @return true if resource was added, false otherwise
-         */
-        public boolean addResource(StringResource resource){
-            if(!ownsResource(resource)){
-                ownedResources.add(resource);
-                return true;
+    }
+
+    //TODO? make this method asynchronous
+    /**
+     * Export resources and peer from maps to database
+     */
+    private void exportToDatabase(){
+
+        for(Map.Entry<String, String> peerEntry : peers.entrySet())
+        {
+            SMSPeer smsPeer = new SMSPeer(peerEntry.getKey());
+            if(!database.containsPeer(smsPeer))
+            {
+                database.addPeer(smsPeer);
             }
-            return false;
         }
 
-        /**
-         * Method to remove a Resource from the list of owned Resources
-         * @param resource the Resource to remove
-         * @return true if resource was removed, false otherwise
-         */
-        public boolean removeResource(StringResource resource){
-            if(!ownsResource(resource)) return false;
-            ownedResources.remove(resource);
-            return true;
-        }
-
-        /**
-         * Method to check ownership of valid Resource
-         * @param resource the Resource to check
-         * @return true if "peer" owns the resource, false if not
-         */
-        public boolean ownsResource(StringResource resource){
-            return ownedResources.contains(resource);
-        }
-
-        /**
-         * Getter for ownedResources
-         * @return the array of resources "peer" owns
-         */
-        public StringResource[] getOwnedResources() {
-            StringResource[] ownedResourcesArray = new StringResource[ownedResources.size()];
-            ownedResources.toArray(ownedResourcesArray);
-            return ownedResourcesArray;
-        }
-
-        /**
-         * Two PeerItems are equal if their "peer" field is.
-         */
-        @Override
-        public boolean equals(@Nullable Object obj) {
-            if(obj instanceof PeerItem){
-                return this.peer.equals(((PeerItem) obj).peer);
+        for(Map.Entry<String, String> resourceEntry : resources.entrySet())
+        {
+            StringResource stringResource = new StringResource(resourceEntry.getKey(), resourceEntry.getValue());
+            if(!database.containsResource(stringResource)){
+                database.addResource(stringResource);
+            }else{
+                database.updateResource(stringResource);
             }
-            else return false;
         }
     }
 
@@ -111,7 +78,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     @Override
     public boolean addPeer(SMSPeer newPeer){
         if(newPeer == null || contains(newPeer)) return false;
-        peers.add(new PeerItem(newPeer));
+        peers.put(newPeer.getAddress(), "");
         return true;
     }
 
@@ -123,24 +90,20 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     @Override
     public boolean removePeer(SMSPeer peerToRemove) {
         if(peerToRemove == null || !contains(peerToRemove)) return false;
-        peers.remove(new PeerItem(peerToRemove));
+        peers.remove(peerToRemove.getAddress());
         return true;
     }
 
     /**
      * Updates the Peer with the matching key, if it exists.
-     * Null Peer will not be updated. Since a matching key is required to update, and being "peerAddress"
-     * the key for Peers, this method only updates any extra fields the Peer might have besides
-     * "peerAddress" itself.
      * @param updatedPeer the new value for the Peer if one with a matching key exists
      * @return true if the Peer was found and updated, false otherwise
      */
     @Override
     public boolean updatePeer(SMSPeer updatedPeer) {
         if(updatedPeer == null || !contains(updatedPeer)) return false;
-        //We find the PeerItem whose key matches "updatedPeer" to change it's "peer" field but not
-        //its resources.
-        getItemFor(updatedPeer).setPeer(updatedPeer);
+        peers.remove(updatedPeer.getAddress());
+        peers.put(updatedPeer.getAddress(),"");
         return true;
     }
 
@@ -152,19 +115,32 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     public SMSPeer[] getPeers() {
         SMSPeer[] peerArray = new SMSPeer[peers.size()];
         int i = 0;
-        for(PeerItem peerItem : peers) peerArray[i++] = peerItem.getPeer();
+        for(Map.Entry<String, String> peerEntry : peers.entrySet())
+        {
+            peerArray[i++] = new SMSPeer(peerEntry.getKey());
+        }
+
         return peerArray;
     }
 
-    //TODO Resources management
+    /**
+     * Returns whether the given user exists in this Vocabulary
+     * @param peer the Peer to find
+     * @return true if it exists, false otherwise.
+     */
+    public boolean contains(SMSPeer peer){
+        if(peer == null) return false;
+        return peers.containsKey(peer.getAddress());
+    }
+
     /**
      * Adds a new resource. Null or invalid Resource won't be added.
      * @param newResource the new Resource, whose key does not already exist
      */
     @Override
     public boolean addResource(StringResource newResource) {
-        if(newResource == null || !newResource.isValid() ||contains(newResource)) return false;
-        resources.add(newResource);
+        if(newResource == null || !newResource.isValid() || contains(newResource)) return false;
+        resources.put(newResource.getName(), newResource.getValue());
         return true;
     }
 
@@ -178,14 +154,12 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     public boolean removeResource(StringResource resourceToRemove) {
         if(resourceToRemove == null || !resourceToRemove.isValid() || !contains(resourceToRemove))
             return false;
-        resources.remove(resourceToRemove);
+        resources.remove(resourceToRemove.getName());
         return true;
     }
 
     /**
      * Updates the value of a Resource. Null or invalid Resource won't be updated.
-     * Since a matching key is required to update, and being "name" the key for Resources, this
-     * method only updates any extra fields the Resource might have besides "peerAddress" itself.
      * @param updatedResource the new value for the Resource
      * @return true if the resource was found and updated, false otherwise.
      */
@@ -193,7 +167,8 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     public boolean updateResource(StringResource updatedResource) {
         if(updatedResource == null || !updatedResource.isValid() || !contains(updatedResource))
             return false;
-        resources.set(resources.indexOf(updatedResource), updatedResource);
+        resources.remove(updatedResource.getName());
+        resources.put(updatedResource.getName(), updatedResource.getName());
         return true;
     }
 
@@ -203,22 +178,14 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public StringResource[] getResources() {
-        StringResource[] resourceArray = new StringResource[resources.size()];
+        StringResource[] resourcesArray = new StringResource[resources.size()];
         int i = 0;
-        for(StringResource resource : resources) resourceArray[i++] = resource;
-        return resourceArray;
-    }
+        for(Map.Entry<String, String> resourceEntry : resources.entrySet())
+        {
+            resourcesArray[i++] = new StringResource(resourceEntry.getKey(), resourceEntry.getValue());
+        }
 
-    /**
-     * Returns whether the given user exists in this Vocabulary
-     * @param peer the Peer to find
-     * @return true if it exists (an instance of PeerItem exists whose "peer" value equals the "peer"
-     * passed as parameter), false otherwise.
-     */
-    public boolean contains(SMSPeer peer){
-        if(peer == null) return false;
-        PeerItem tempItem = new PeerItem(peer);
-        return peers.contains(tempItem);
+        return resourcesArray;
     }
 
     /**
@@ -227,69 +194,11 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      * @return true if resource exists, false otherwise.
      */
     public boolean contains(StringResource resource){
-        return resources.contains(resource);
+        if(resource == null) return false;
+        return resources.containsKey(resource.getName());
     }
 
-    /**
-     * Method to get all Resources owned by a specific Peer.
-     * @param peer the Peer
-     * @return an array containing the resources owned by parameter "peer"
-     */
-    public StringResource[] getResourcesForPeer(SMSPeer peer){
-        StringResource[] peerResources = new StringResource[0];
-        if(peer == null || !contains(peer)) return peerResources;
-        for(PeerItem peerItem : peers){
-            if(peerItem.getPeer().equals(peer)){
-                return peerItem.getOwnedResources();
-            }
-        }
-        return peerResources;
-    }
 
-    /**
-     * Method to get all Peers which own a specific Resource.
-     * @param resource the Resource
-     * @return an array containing the Peers who own the parameter "resource"
-     */
-    public SMSPeer[] getResourceOwners(StringResource resource){
-        List<SMSPeer> owners = new ArrayList<>();
-        if(resource == null || !resource.isValid() ||!contains(resource)) return new SMSPeer[0];
-        for(PeerItem peerItem : peers){
-            if(peerItem.ownsResource(resource)){
-                owners.add(peerItem.getPeer());
-            }
-        }
-        return owners.toArray(new SMSPeer[0]);
-    }
 
-    /**
-     * Method to grant ownership of a non already owned valid Resource.
-     * @param owner the Peer gaining the ownership
-     * @param resource the Resource being given
-     * @return true if the Resource's ownership was granted, false otherwise
-     */
-    public boolean addOwnerForResource(SMSPeer owner, StringResource resource){
-        if(!contains(owner) || !contains(resource))
-            return false;
-        return getItemFor(owner).addResource(resource);
-    }
 
-    /**
-     * Method to revoke ownership of an already owned valid Resource.
-     * @param owner the Peer losing the ownership
-     * @param resource the Resource whose ownership is being revoked
-     * @return true if the Resource's ownership was revoked and false otherwise.
-     */
-    public boolean removeOwnerForResource(SMSPeer owner, StringResource resource){
-        if(owner == null || !contains(owner) || resource == null || !resource.isValid() || !contains(resource))
-            return false;
-        return getItemFor(owner).removeResource(resource);
-    }
-
-    /**
-     * @return the PeerItem corresponding to an existing Peer
-     */
-    private PeerItem getItemFor(SMSPeer peer){
-        return peers.get(peers.indexOf(new PeerItem(peer)));
-    }
 }
