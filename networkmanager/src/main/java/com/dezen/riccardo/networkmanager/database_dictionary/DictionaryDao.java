@@ -7,7 +7,7 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 @Dao
 public interface DictionaryDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    /*@Insert(onConflict = OnConflictStrategy.REPLACE)
     public void add(DictionaryEntity... entities);
 
     @Query("DELETE FROM DictionaryEntity WHERE peerAddress =:peerAddress")
@@ -23,7 +23,7 @@ public interface DictionaryDao {
     public PeerEntity findPeerWithResource(String resourceName);
 
     @Query("SELECT resourceName FROM DictionaryEntity WHERE peerAddress=:peerAddress")
-    public ResourceEntity[] findResourcesForPeer(String peerAddress);
+    public ResourceEntity[] findResourcesForPeer(String peerAddress);*/
 
 
 }

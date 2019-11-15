@@ -7,12 +7,12 @@ import androidx.room.PrimaryKey;
 
 @Entity
 public class ResourceEntity {
-    public ResourceEntity(String resourceName, String value) {
-        this.resourceName = resourceName;
+    public ResourceEntity(String keyName, String value) {
+        this.keyName = keyName;
         this.value = value;
     }
     @PrimaryKey @NonNull
-    public String resourceName;
+    public String keyName;
     @ColumnInfo(name = "value")
     public String value;
 }
