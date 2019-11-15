@@ -6,9 +6,9 @@ import androidx.room.PrimaryKey;
 
 @Entity
 public class PeerEntity {
-    public PeerEntity(String peerAddress) {
-        this.peerAddress = peerAddress;
+    public PeerEntity(String address) {
+        this.address = address;
     }
     @PrimaryKey @NonNull
-    public String peerAddress;
+    public String address;
 }
