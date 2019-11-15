@@ -10,6 +10,7 @@ import com.dezen.riccardo.smshandler.database.SmsDatabase;
 import com.dezen.riccardo.smshandler.database.SmsEntity;
 
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -23,11 +24,14 @@ public class DatabaseTest {
     @Before
     public void createDb() {
         Context context = ApplicationProvider.getApplicationContext();
-        db = Room.databaseBuilder(context, SmsDatabase.class, "sms-db")
-                .enableMultiInstanceInvalidation()
-                .build();
+        db = Room.inMemoryDatabaseBuilder(context, SmsDatabase.class).build();
     }
 
+    @After
+    public void closeDb() throws IOException {
+        db.close();
+    }
+    
     @Test
     public void getCount() {
         SmsEntity entity = new SmsEntity(1, "3334455666", "text");
