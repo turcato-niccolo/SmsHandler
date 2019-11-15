@@ -4,8 +4,9 @@ public abstract class CommunicationHandler<M extends Message> {
     /**
      * method to send a Message to its associated Peer
      * @param message the valid message to send
+     * @return true if the message is valid and it has been sent
      */
-    public abstract void sendMessage(M message);
+    public abstract boolean sendMessage(M message);
 
     /**
      * method that adds a listener to wait for incoming messages directed to the library

@@ -1,6 +1,6 @@
 package com.dezen.riccardo.networkmanager.database_dictionary;
 
-import androidx.room.ColumnInfo;
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -9,6 +9,6 @@ public class PeerEntity {
     public PeerEntity(String address) {
         this.address = address;
     }
-    @PrimaryKey
+    @PrimaryKey @NonNull
     public String address;
 }
