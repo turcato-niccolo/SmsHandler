@@ -1,5 +1,6 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,6 +10,7 @@ import android.provider.Telephony;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.room.Room;
@@ -34,6 +36,7 @@ public class SmsHandler {
     public static final String SMS_HANDLER_RECEIVED_BROADCAST = "NEW_SMS";
     public static final String SMS_HANDLER_SENT_BROADCAST = "SMS_SENT";
     public static final String SMS_HANDLER_DELIVERED_BROADCAST = "SMS_DELIVERED";
+    public static final String SMS_HANDLER_WAKE_BROADCAST = "FORCE_WAKE";
     public static final String SMS_HANDLER_LOCAL_DATABASE = "sms-db";
     /**
      * Contains references to all listeners belonging to instances of this class
@@ -149,6 +152,7 @@ public class SmsHandler {
                     .putExtra("message",message);
             Log.d("SmsHandler", "Pending intent for message: "+intent.getStringExtra("message"));
             sentIntent = PendingIntent.getBroadcast(context,0,intent,PendingIntent.FLAG_CANCEL_CURRENT);
+
         }
         else sentIntent = null;
         if(shouldUsePendingIntentDelivery){
@@ -201,6 +205,7 @@ public class SmsHandler {
             filter.addAction(SMS_HANDLER_DELIVERED_BROADCAST);
         }
         context.registerReceiver(smsEventReceiver,filter);
+
     }
 
     /**
