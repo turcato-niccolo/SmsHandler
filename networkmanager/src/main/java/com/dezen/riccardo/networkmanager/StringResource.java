@@ -2,6 +2,10 @@ package com.dezen.riccardo.networkmanager;
 
 import androidx.annotation.Nullable;
 
+/**
+ * String key and value implementation for Resource interface.
+ * @author Riccardo De Zen.
+ */
 public class StringResource implements Resource<String, String> {
 
     private String name;

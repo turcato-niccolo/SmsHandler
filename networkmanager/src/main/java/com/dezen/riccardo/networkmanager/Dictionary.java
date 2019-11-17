@@ -7,6 +7,7 @@ import com.dezen.riccardo.smshandler.Peer;
  * @param <P> Peer type
  * The Name of a Resource is used as it's key
  * @param <R> Resource type
+ * @author Riccardo De Zen.
  */
 public interface Dictionary<P extends Peer, R extends Resource>{
     /**

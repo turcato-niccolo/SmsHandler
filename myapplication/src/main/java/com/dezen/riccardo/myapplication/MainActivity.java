@@ -29,10 +29,16 @@ import com.dezen.riccardo.smshandler.SmsHandler;
 
 import java.util.Set;
 
+/**
+ * @author Riccardo De Zen.
+ */
 public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsEventListener {
 
     private SmsHandler smsHandler;
-    private SmsHandler smsHandler2;
+    /*If a second instance of smsHandler is created and registered, both trigger their events.
+    This is intentional behaviour. Object pool or standard implementation should be considered as
+    a future addition.*/
+    //private SmsHandler smsHandler2;
     private Button button_send;
     private EditText editText_number;
     private EditText editText_message;

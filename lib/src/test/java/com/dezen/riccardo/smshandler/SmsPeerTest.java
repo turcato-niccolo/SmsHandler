@@ -3,7 +3,13 @@ package com.dezen.riccardo.smshandler;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+/**
+ * @author ???
+ * Small tweaks by Riccardo De Zen.
+ */
 public class SmsPeerTest {
 
     private SMSPeer peer;
@@ -19,21 +25,21 @@ public class SmsPeerTest {
     public void isEmpty(){
         String address = "";
         peer = new SMSPeer(address);
-        assertEquals(true, peer.isEmpty());
+        assertFalse(peer.isValid());
     }
 
     @Test
     public void isBlank(){
         String address = " ";
         peer = new SMSPeer(address);
-        assertEquals(true, peer.isBlank());
+        assertFalse(peer.isValid());
     }
 
     @Test
     public void isValid(){
         String address = "3336";
         peer = new SMSPeer(address);
-        assertEquals(true, peer.isValid());
+        assertTrue(peer.isValid());
     }
 
 }

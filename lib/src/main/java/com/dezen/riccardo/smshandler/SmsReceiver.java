@@ -19,9 +19,18 @@ import com.dezen.riccardo.smshandler.database.SmsEntity;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class meant to intercept SMSMessages coming from the Android system.
+ * The filtering work on messages is voluntarily repeated between this Receiver and
+ * NotificationCatcherService in order to make the Service lighter.
+ * The class checks whether pertinent messages have been received. Then proceeds to check whether a
+ * suitable listener is available for immediate response. If not then proceeds to either fire a
+ * broadcast meant to wake some other process or writes the messages to a database for later use.
+ * @author Riccardo De Zen
+ */
 public class SmsReceiver extends BroadcastReceiver {
-    //TODO find a better waking mechanism,
-    // ideally directly starting an activity referenced through the use of reflection
+    //TODO find a better waking mechanism, ideally directly starting an activity referenced
+    // through the use of reflection or serialization.
     private boolean shouldWake = false;
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -31,8 +40,8 @@ public class SmsReceiver extends BroadcastReceiver {
                 if(SmsHandler.shouldHandleIncomingSms()){
                     /**
                      * SmsHandler.shouldHandleIncomingSms() returns true if a suitable listener for
-                     * immediate response is available. A broadcast is the fired to notify said listener
-                     * through the receiver it is attached to.
+                     * immediate response is available. A broadcast event is therefore fired to
+                     * notify said listener through the receiver it is attached to.
                     */
                     Log.d("SmsReceiver", "Forwarding intent...");
                     Intent local_intent = new Intent();
@@ -81,11 +90,12 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Method to filter messages containing SmsHandler.APP_KEY
-     * @param messages array of messages
+     * Method to filter messages containing SmsHandler.APP_KEY.
+     * Messages are meant to be the ones coming directly from the received Intent.
+     * @param messages array of SmsMessage.
      * @return list of messages containing SmsHandler.APP_KEY
      */
-    private List<SmsMessage> filter(SmsMessage[] messages){ //TODO? SmsMessage or SMSMessage?
+    private List<SmsMessage> filter(SmsMessage[] messages){
         List<SmsMessage> list = new ArrayList<>();
         if(messages != null)
             for(SmsMessage sms : messages){
@@ -99,6 +109,7 @@ public class SmsReceiver extends BroadcastReceiver {
      * Method to turn an implicit Broadcast into explicit ones. This method is needed in order to
      * send broadcasts to manifest declared receivers on API 26 and above, since the ability to send
      * implicit broadcasts to manifest receivers in the same app has been removed.
+     * //TODO test this method on APIs below 26.
      */
     public void sendImplicitBroadcast(Context context, Intent intent){
         int flags = 0;

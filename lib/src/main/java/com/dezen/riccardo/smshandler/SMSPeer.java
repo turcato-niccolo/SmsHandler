@@ -5,6 +5,9 @@ import android.telephony.PhoneNumberUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+/**
+ * @author Riccardo De Zen. Based on decisions of whole class.
+ */
 public class SMSPeer implements Peer<String> {
     private String address;
 
@@ -24,21 +27,21 @@ public class SMSPeer implements Peer<String> {
     }
 
     /**
-     * @return true if address is empty string
-     */
-    public boolean isEmpty(){
-        return address.isEmpty();
-    }
-
-    /**
      * @return true if this peer is valid
      */
     public boolean isValid(){ return !isEmpty() && !isBlank() && isAddressValid(); }
 
     /**
+     * @return true if address is empty string
+     */
+    private boolean isEmpty(){
+        return address.isEmpty();
+    }
+
+    /**
      * @return true if address is a String of blank spaces
      */
-    public boolean isBlank(){ return address.replace(" ","").length() == 0; }
+    private boolean isBlank(){ return address.replace(" ","").isEmpty(); }
 
     /**
      * @return true if address fulfills international phone address standards

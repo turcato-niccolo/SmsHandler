@@ -8,6 +8,11 @@ import com.dezen.riccardo.smshandler.SMSPeer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource.
+ * Due to trouble with testing android class. Lists have been used.
+ * @author Riccardo De Zen.
+ */
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     private List<PeerItem> peers;
     private List<StringResource> resources;

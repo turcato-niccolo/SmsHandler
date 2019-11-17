@@ -27,7 +27,11 @@ import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.ArrayList;
 
-
+/**
+ * @author Niccolò Turcato. [...]
+ * @author Riccardo De Zen. Fixed user list. Added interface callbacks. Fixed Permission-related
+ * initialization.
+ */
 public class MainActivity extends AppCompatActivity implements OnNetworkEventListener {
 
     private static final String[] neededPermissions = {
