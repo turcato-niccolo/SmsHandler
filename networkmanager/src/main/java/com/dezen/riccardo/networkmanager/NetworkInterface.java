@@ -1,20 +1,17 @@
 package com.dezen.riccardo.networkmanager;
 
-import com.dezen.riccardo.smshandler.CommunicationHandler;
+import com.dezen.riccardo.smshandler.Message;
 import com.dezen.riccardo.smshandler.Peer;
 
 /**
- * Possible interface for Network Dictionary sharing.
+ * Possible interface for Network Dictionary sharing. By default this interface defines only read
+ * behaviour.
  * @author Riccardo De Zen.
  * @param <P>
  * @param <R>
- * @param <V>
+ * @param <D>
  */
-public abstract class NetworkInterface<P extends Peer, R extends Resource, V extends Dictionary<P,R>>{
-    //Vocabulary to assign at runtime
-    protected V vocabulary;
-    //CommunicationHandler to be used
-    protected CommunicationHandler communicationHandler;
+public abstract class NetworkInterface<M extends Message, P extends Peer, R extends Resource, D extends Dictionary<P,R>>{
 
     /**
      * Method to send an invitation to a new User (Peer)
@@ -29,16 +26,10 @@ public abstract class NetworkInterface<P extends Peer, R extends Resource, V ext
     public abstract void acceptInvite(P inviter);
 
     /**
-     * Method to create a new valid Resource, become it's owner and send it through the network
-     * @param newResource the new Resource
-     */
-    public abstract void createResource(R newResource);
-
-    /**
      * Method to request a Resource from the network.
-     * @param resource the Resource to request.
+     * @param key the key of Resource to request.
      */
-    public abstract void requestResource(R resource);
+    public abstract R getResource(String key);
 
     /**
      * Method to get an array of the Peers.
@@ -56,11 +47,5 @@ public abstract class NetworkInterface<P extends Peer, R extends Resource, V ext
      * Setter for a listener that should listen for Resources being obtained.
      * @param listener the class listening for Resource events.
      */
-    public abstract void setListener(OnNetworkEventListener<R> listener);
-
-    /**
-     * Method to send some kind of broadcast to the whole network
-     * @param action the action to broadcast
-     */
-    public abstract void broadcast(String action);
+    public abstract void setListener(OnNetworkEventListener<M, R> listener);
 }
