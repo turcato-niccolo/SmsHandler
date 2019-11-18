@@ -25,6 +25,11 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         return instance;
     }
 
+    /**
+     * Method that should be called when context stops being valid or instance stops being used to
+     * avoid a memory leak.
+     * @param context the owning context dropping the ownership.
+     */
     public static void drop(Context context){
         if(context.equals(owner)){
             instance.removeReceiveListener();

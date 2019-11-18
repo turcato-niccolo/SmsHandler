@@ -9,7 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource.
+ * @deprecated following the 14/11/19 lesson this class is being replaced by a similar class not
+ * involving relationships between Peers and Resources.
+ * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource,
+ * also allowing Peer ownership of Resources.
  * Due to trouble with testing android class. Lists have been used.
  * @author Riccardo De Zen.
  */

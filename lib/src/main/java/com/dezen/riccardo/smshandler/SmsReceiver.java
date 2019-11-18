@@ -22,7 +22,8 @@ import java.util.List;
 /**
  * Class meant to intercept SMSMessages coming from the Android system.
  * The filtering work on messages is voluntarily repeated between this Receiver and
- * NotificationCatcherService in order to make the Service lighter.
+ * NotificationCatcherService in order to avoid attaching the Receiver to the Service and keep it
+ * lighter.
  * The class checks whether pertinent messages have been received. Then proceeds to check whether a
  * suitable listener is available for immediate response. If not then proceeds to either fire a
  * broadcast meant to wake some other process or writes the messages to a database for later use.
@@ -68,6 +69,9 @@ public class SmsReceiver extends BroadcastReceiver {
         }
     }
 
+    /**
+     * Class defining a task that writes the smsMessages to the local database.
+     */
     private static class WriteToDbTask extends AsyncTask<String,Integer,Void>{
         private List<SmsMessage> smsMessages;
         private SmsDatabase db;

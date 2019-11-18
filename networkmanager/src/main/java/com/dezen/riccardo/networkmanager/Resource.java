@@ -1,7 +1,7 @@
 package com.dezen.riccardo.networkmanager;
 
 /**
- * Interface similar to Message, except it is meant to represent a resource in the peersVocabulary instead
+ * Interface meant to represent a resource in the peersVocabulary instead
  * of a message travelling through the network.
  * @author Riccardo De Zen.
  * TODO As suggested by Mattia Fanan, Resource should be an abstract class to allow guaranteed
