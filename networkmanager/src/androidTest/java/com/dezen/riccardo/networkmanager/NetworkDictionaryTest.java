@@ -16,7 +16,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 //TODO add a reusable NetworkVocabulary for tests
-//TODO transform this test in an AndroidTest with context
 
 @RunWith(AndroidJUnit4.class)
 public class NetworkDictionaryTest {
