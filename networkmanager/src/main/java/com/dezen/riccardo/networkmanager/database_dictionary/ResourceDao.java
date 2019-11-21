@@ -12,6 +12,8 @@ import androidx.room.Update;
  */
 @Dao
 public interface ResourceDao {
+    public static final String nameDb="resourceentity";
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public void add(ResourceEntity... resourceEntities);
     @Update
@@ -19,9 +21,9 @@ public interface ResourceDao {
     @Delete
     public void remove(ResourceEntity... resourceEntities);
 
-    @Query("SELECT * FROM resourceentity")
+    @Query("SELECT * FROM "+nameDb)
     public ResourceEntity[] getAll();
 
-    @Query("SELECT 1 FROM resourceentity WHERE keyName=:key")
+    @Query("SELECT 1 FROM "+nameDb+" WHERE keyName=:key")
     public boolean contains(String key);
 }

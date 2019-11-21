@@ -18,6 +18,7 @@ import static com.dezen.riccardo.smshandler.SmsHandler.SMS_HANDLER_LOCAL_DATABAS
 /**
  * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource.
  * Due to trouble with testing android class. Maps have been used.
+ *
  * @author Riccardo De Zen, Giorgia Bortoletti
  */
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
@@ -25,6 +26,10 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     private Map<String, String> resources;
     private NetworkDictionaryDatabase database;
 
+    /**
+     * Constructor of NetworkDictionary
+     * @param context
+     */
     public NetworkDictionary(Context context){
         database = new NetworkDictionaryDatabase(context);
         peers = new HashMap<>();
@@ -76,10 +81,11 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     /**
      * Adds a new Peer. Null Peer will not be inserted.
      * @param newPeer the new Peer, whose key does not already exist
+     * @return true if the newPeer is was added, false otherwise
      */
     @Override
     public boolean addPeer(SMSPeer newPeer){
-        if(newPeer == null || contains(newPeer)) return false;
+        if(contains(newPeer)) return false;
         peers.put(newPeer.getAddress(), "");
         return true;
     }
@@ -91,7 +97,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean removePeer(SMSPeer peerToRemove) {
-        if(peerToRemove == null || !contains(peerToRemove)) return false;
+        if(!contains(peerToRemove)) return false;
         peers.remove(peerToRemove.getAddress());
         return true;
     }
@@ -103,7 +109,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean updatePeer(SMSPeer updatedPeer) {
-        if(updatedPeer == null || !contains(updatedPeer)) return false;
+        if(!contains(updatedPeer)) return false;
         peers.remove(updatedPeer.getAddress());
         peers.put(updatedPeer.getAddress(),"");
         return true;
@@ -128,33 +134,33 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     /**
      * Returns whether the given user exists in this Vocabulary
      * @param peer the Peer to find
-     * @return true if it exists, false otherwise.
+     * @return true if Peer exists, false otherwise.
      */
     public boolean contains(SMSPeer peer){
-        if(peer == null) return false;
+        if(peer == null && !peer.isValid()) return false;
         return peers.containsKey(peer.getAddress());
     }
 
     /**
      * Adds a new resource. Null or invalid Resource won't be added.
      * @param newResource the new Resource, whose key does not already exist
+     * @return true if it is added, false otherwise.
      */
     @Override
     public boolean addResource(StringResource newResource) {
-        if(newResource == null || !newResource.isValid() || contains(newResource)) return false;
+        if(contains(newResource)) return false;
         resources.put(newResource.getName(), newResource.getValue());
         return true;
     }
 
     /**
      * Removes the Resource with the matching key, if it exists.
-     * Null or invalid Resource won't be searched for.
      * @param resourceToRemove the Resource to remove
      * @return true if it was removed, false otherwise
      */
     @Override
     public boolean removeResource(StringResource resourceToRemove) {
-        if(resourceToRemove == null || !resourceToRemove.isValid() || !contains(resourceToRemove))
+        if(!contains(resourceToRemove))
             return false;
         resources.remove(resourceToRemove.getName());
         return true;
@@ -167,7 +173,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean updateResource(StringResource updatedResource) {
-        if(updatedResource == null || !updatedResource.isValid() || !contains(updatedResource))
+        if(!contains(updatedResource))
             return false;
         resources.remove(updatedResource.getName());
         resources.put(updatedResource.getName(), updatedResource.getName());
@@ -196,7 +202,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      * @return true if resource exists, false otherwise.
      */
     public boolean contains(StringResource resource){
-        if(resource == null) return false;
+        if(resource == null && !resource.isValid()) return false;
         return resources.containsKey(resource.getName());
     }
 
@@ -206,9 +212,14 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     private class NetworkDictionaryDatabase{
 
+        //TODO? add return boolean in the methods
         private ResourceDatabase resourceDatabase;
         private PeerDatabase peerDatabase;
 
+        /**
+         * Constructor of NetworkDictionaryDatabase
+         * @param context
+         */
         private NetworkDictionaryDatabase(Context context) {
             this.resourceDatabase = Room.databaseBuilder(context, ResourceDatabase.class, SMS_HANDLER_LOCAL_DATABASE)
                     .enableMultiInstanceInvalidation()
