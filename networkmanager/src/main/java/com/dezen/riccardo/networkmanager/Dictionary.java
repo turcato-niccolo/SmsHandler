@@ -3,9 +3,10 @@ package com.dezen.riccardo.networkmanager;
 import com.dezen.riccardo.smshandler.Peer;
 //TODO add sizeP() and sizeR() methods. Update tests accordingly.
 /**
- * The Address of a Peer is used as it's key
+ * The Dictionary interface, meant to contain two tables/maps/sets, a Peer set and a Resource set.
+ * The Address of a Peer is used as it's key for the sake of equals()
  * @param <P> Peer type
- * The Name of a Resource is used as it's key
+ * The Name of a Resource is used as it's key for the sake of equals()
  * @param <R> Resource type
  * @author Riccardo De Zen.
  */
