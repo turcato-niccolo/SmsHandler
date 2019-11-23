@@ -55,6 +55,11 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         return false;
     }
 
+    /**
+     * Method to send an SMSMessage classified as urgent (containing the code to fire a global broadcast)
+     * @param message the valid SMSMessage to send
+     * @return true if the message is valid and it has been sent, false otherwise
+     */
     public boolean sendUrgentMessage(SMSMessage message) {
         if(message.isValid()) {
             smsHandler.sendSMS(message.getPeer().getAddress(), message.getData(), true);
