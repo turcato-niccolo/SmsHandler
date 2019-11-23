@@ -7,6 +7,7 @@ import android.content.Context;
  * @author Riccardo De Zen based on decisions of whole class. Model proposed by Marco Cognolato and Luca Crema.
  */
 public class SMSManager extends CommunicationHandler<SMSMessage>{
+
     private static SMSManager instance;
 
     private static Context currentContext;
@@ -37,8 +38,18 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         if(context.equals(SMSManager.currentContext)){
             instance.removeReceiveListener();
             instance.smsHandler.onContextDestroyed();
+            instance = null;
             SMSManager.currentContext = null;
         }
+    }
+
+    /**
+     * Method to check ownership of the instance. Should be called after getInstance to assert whether
+     * a new instance was created or it still was the old one.
+     * @return true if given context is equal to the current owning context
+     */
+    public boolean isOwner(Context context){
+        return context.equals(currentContext);
     }
 
     /**
@@ -68,10 +79,14 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         return false;
     }
 
+    /**
+     * Setter for receivedListener in SMSHandler
+     * @param newReceivedListener the new listener
+     */
     @Override
-    public void setReceiveListener(ReceivedMessageListener<SMSMessage> listener) {
+    public void setReceiveListener(ReceivedMessageListener<SMSMessage> newReceivedListener) {
         removeReceiveListener();
-        smsHandler.setReceivedListener(listener);
+        smsHandler.setReceivedListener(newReceivedListener);
     }
 
     @Override
@@ -80,7 +95,7 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
     }
 
     /**
-     * Setter for sentListener
+     * Setter for sentListener in SMSHandler
      * @param newSentListener the new listener
      */
     public void setSentListener(SentMessageListener<SMSMessage> newSentListener) {
@@ -96,7 +111,7 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
     }
 
     /**
-     * Setter for deliveredListener
+     * Setter for deliveredListener in SMSHandler
      * @param newDeliveredListener the new listener
      */
     public void setDeliveredListener(DeliveredMessageListener<SMSMessage> newDeliveredListener) {
