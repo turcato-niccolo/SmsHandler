@@ -9,6 +9,10 @@ import androidx.room.PrimaryKey;
  */
 @Entity
 public class PeerEntity {
+    /**
+     * Constructor of PeerEntity
+     * @param address
+     */
     public PeerEntity(String address) {
         this.address = address;
     }

@@ -12,6 +12,8 @@ import androidx.room.Update;
  */
 @Dao
 public interface PeerDao {
+    public static final String nameDb="peerentity";
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public void add(PeerEntity... peerEntities);
     @Update
@@ -19,9 +21,10 @@ public interface PeerDao {
     @Delete
     public void remove(PeerEntity... peerEntities);
 
-    @Query("SELECT * FROM peerentity")
+    @Query("SELECT * FROM "+nameDb)
     public PeerEntity[] getAll();
 
-    @Query("SELECT 1 FROM peerentity WHERE address=:address")
+    @Query("SELECT 1 FROM " +nameDb+" WHERE address=:address")
     public boolean contains(String address);
+
 }

@@ -9,6 +9,12 @@ import androidx.room.PrimaryKey;
  */
 @Entity
 public class ResourceEntity {
+
+    /**
+     * Constructor of ResourceEntity
+     * @param keyName
+     * @param value
+     */
     public ResourceEntity(String keyName, String value) {
         this.keyName = keyName;
         this.value = value;
