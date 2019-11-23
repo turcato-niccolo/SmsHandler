@@ -67,7 +67,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     public NetworkManager(Context registerContext) {
          dictionary = new NetworkDictionary();
          handler = SMSManager.getInstance(registerContext);
-         handler.addReceiveListener(this);
+         handler.setReceiveListener(this);
          context = registerContext;
          isPartOfNetwork = false;
     }
