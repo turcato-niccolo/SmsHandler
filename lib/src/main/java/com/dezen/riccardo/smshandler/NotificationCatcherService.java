@@ -7,7 +7,7 @@ import android.service.notification.StatusBarNotification;
 
 /**
  * Service meant to block incoming notifications if they pertain to this library.
- * The filtering work on messages is voluntarily repeated between this Service and SmsReceiver in
+ * The filtering work on messages is voluntarily repeated between this Service and SMSReceiver in
  * order to avoid forcing the Service to attach unnecessary resources to itself, thus making it less
  * likely to be shut down by the system.
  * @author Niccolò Turcato based on suggestion from Dr. Li Dao Hong.
@@ -25,7 +25,7 @@ public class NotificationCatcherService extends NotificationListenerService {
             notificationText = notification.tickerText.toString();
             //Expected structure of SMS Notification:
             // "ContactName: <#>text"
-            if(sbn.getPackageName().equals(defaultSmsApplication) && !notificationText.equals("") && notificationText.contains(SmsHandler.APP_KEY))
+            if(sbn.getPackageName().equals(defaultSmsApplication) && !notificationText.equals("") && notificationText.contains(SMSHandler.APP_KEY))
                 cancelNotification(sbn.getKey()); //blocks notifications
         }
     }

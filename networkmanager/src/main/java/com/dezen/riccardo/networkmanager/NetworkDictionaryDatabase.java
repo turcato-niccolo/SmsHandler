@@ -10,7 +10,7 @@ import com.dezen.riccardo.networkmanager.database_dictionary.ResourceDatabase;
 import com.dezen.riccardo.networkmanager.database_dictionary.ResourceEntity;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
-import static com.dezen.riccardo.smshandler.SmsHandler.SMS_HANDLER_LOCAL_DATABASE;
+import static com.dezen.riccardo.smshandler.SMSHandler.UNREAD_SMS_DATABASE_NAME;
 
 public class NetworkDictionaryDatabase implements Dictionary<SMSPeer, StringResource>{
 
@@ -18,10 +18,10 @@ public class NetworkDictionaryDatabase implements Dictionary<SMSPeer, StringReso
     private PeerDatabase peerDatabase;
 
     public NetworkDictionaryDatabase(Context context) {
-        this.resourceDatabase = Room.databaseBuilder(context, ResourceDatabase.class, SMS_HANDLER_LOCAL_DATABASE)
+        this.resourceDatabase = Room.databaseBuilder(context, ResourceDatabase.class, UNREAD_SMS_DATABASE_NAME)
                 .enableMultiInstanceInvalidation()
                 .build();
-        this.peerDatabase = Room.databaseBuilder(context, PeerDatabase.class, SMS_HANDLER_LOCAL_DATABASE)
+        this.peerDatabase = Room.databaseBuilder(context, PeerDatabase.class, UNREAD_SMS_DATABASE_NAME)
                 .enableMultiInstanceInvalidation()
                 .build();
     }
