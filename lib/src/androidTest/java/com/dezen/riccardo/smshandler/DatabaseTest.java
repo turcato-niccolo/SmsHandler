@@ -3,27 +3,32 @@ package com.dezen.riccardo.smshandler;
 import android.content.Context;
 
 import androidx.room.Room;
-import androidx.test.core.app.ApplicationProvider;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.dezen.riccardo.smshandler.database.SmsDatabase;
 import com.dezen.riccardo.smshandler.database.SmsEntity;
 
-import org.junit.Before;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+
 import static junit.framework.TestCase.assertEquals;
 
-@RunWith(AndroidJUnit4.class)
+/**
+ * @author Giorgia Bortoletti
+ */
+@RunWith(AndroidJUnit4ClassRunner.class)
 public class DatabaseTest {
 
     private SmsDatabase db;
 
     @Before
     public void createDb() {
-        Context context = ApplicationProvider.getApplicationContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
         db = Room.inMemoryDatabaseBuilder(context, SmsDatabase.class).build();
     }
 

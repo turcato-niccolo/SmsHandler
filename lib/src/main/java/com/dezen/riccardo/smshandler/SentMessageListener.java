@@ -1,5 +1,9 @@
 package com.dezen.riccardo.smshandler;
 
+/**
+ * @author Riccardo De Zen
+ * @param <M> The type of Message sent.
+ */
 public interface SentMessageListener<M extends Message> {
     /**
      * Called when a message is sent

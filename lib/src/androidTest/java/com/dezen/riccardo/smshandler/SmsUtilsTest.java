@@ -3,8 +3,13 @@ package com.dezen.riccardo.smshandler;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+/**
+ * @author Riccardo De Zen
+ */
 public class SmsUtilsTest {
 
     private String formattedNumber = "+393928402034";
@@ -14,26 +19,38 @@ public class SmsUtilsTest {
     private String invalidCountryCode = "it";
 
     @Test
-    public void formatSMSNumber_nullNumber() {
+    public void formatSMSNumberNullNumber() {
         assertNull(SmsUtils.formatSMSNumber(null, null));
         assertNull(SmsUtils.formatSMSNumber(null,validCountryCode));
     }
 
     @Test
-    public void formatSMSNumber_nullCountryCode() {
+    public void formatSMSNumberNullCountryCode() {
         assertEquals(invalidNumber,SmsUtils.formatSMSNumber(invalidNumber, null));
         assertEquals(validNumber,SmsUtils.formatSMSNumber(validNumber,null));
     }
 
     @Test
-    public void formatSMSNumber_invalidCountryCode() {
+    public void formatSMSNumberInvalidCountryCode() {
         assertEquals(invalidNumber,SmsUtils.formatSMSNumber(invalidNumber, invalidCountryCode));
         assertEquals(validNumber, SmsUtils.formatSMSNumber(validNumber,invalidCountryCode));
     }
 
     @Test
-    public void formatSMSNumber_validCountryCode() {
+    public void formatSMSNumberValidCountryCode() {
         assertEquals(invalidNumber,SmsUtils.formatSMSNumber(invalidNumber,validCountryCode));
         assertEquals(formattedNumber, SmsUtils.formatSMSNumber(validNumber, validCountryCode));
+    }
+
+    @Test
+    public void isMessagePertinentTrue(){
+        String message = SMSHandler.APP_KEY;
+        assertTrue(SmsUtils.isMessagePertinent(message));
+    }
+
+    @Test
+    public void isMessagePertinentFalse(){
+        String message = "Hello" + SMSHandler.APP_KEY;
+        assertFalse(SmsUtils.isMessagePertinent(message));
     }
 }

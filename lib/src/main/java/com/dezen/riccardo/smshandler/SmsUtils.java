@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.telephony.PhoneNumberUtils;
+import android.telephony.SmsMessage;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -17,6 +18,10 @@ import com.dezen.riccardo.smshandler.database.SmsEntity;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class with experimental methods to help testing of some features.
+ * @author Riccardo De Zen
+ */
 public class SmsUtils {
     //projection to use for SMS Inbox query
     private static String[] inboxProjection = {
@@ -56,7 +61,7 @@ public class SmsUtils {
      * @param context The calling context, used to instantiate the database.
      */
     public static void logUnreadMessages(@NonNull Context context){
-        SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SmsHandler.SMS_HANDLER_LOCAL_DATABASE)
+        SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMSHandler.UNREAD_SMS_DATABASE_NAME)
                 .enableMultiInstanceInvalidation()
                 .build();
         new LogTask(db).execute();
@@ -113,5 +118,40 @@ public class SmsUtils {
     public static String formatSMSNumber(String number, String countryCode){
         String formattedNumber = PhoneNumberUtils.formatNumberToE164(number,countryCode);
         return (formattedNumber != null) ? formattedNumber : number;
+    }
+
+    /**
+     * Method to detect whether the given message is ok to be sent through the library
+     * @param message the main body of the message
+     * @param urgent whether it should include SMSHandler.WAKE_KEY
+     */
+    static boolean isMessageValid(String message, boolean urgent){
+        String body = SMSHandler.APP_KEY + message + (urgent ? SMSHandler.WAKE_KEY : "");
+        return body.length() <= 160;
+    }
+
+    /**
+     * Method to compose the body of a message that passed isMessageValid
+     */
+    static String composeMessage(String message, boolean urgent){
+        return SMSHandler.APP_KEY + message + (urgent ? SMSHandler.WAKE_KEY : "");
+    }
+
+    /**
+     * Methods to tell whether the message is pertinent to the app or not
+     */
+    static boolean isMessagePertinent(String body){
+        String messageHead = body.substring(0,3);
+        return messageHead.equals(SMSHandler.APP_KEY);
+    }
+    static boolean isMessagePertinent(SMSMessage message){
+        String messageBody = message.getData();
+        String messageHead = messageBody.substring(0,3);
+        return messageHead.equals(SMSHandler.APP_KEY);
+    }
+    static boolean isMessagePertinent(SmsMessage message){
+        String messageBody = message.getMessageBody();
+        String messageHead = messageBody.substring(0,3);
+        return messageHead.equals(SMSHandler.APP_KEY);
     }
 }

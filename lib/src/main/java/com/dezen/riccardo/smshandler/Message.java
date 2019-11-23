@@ -1,5 +1,10 @@
 package com.dezen.riccardo.smshandler;
 
+/**
+ * @author Riccardo De Zen based on decisions of whole class.
+ * @param <D> The type of data this message contains.
+ * @param <P> The type of Peer this message allows to communicate.
+ */
 public interface Message<D, P extends Peer>{
     /**
      * @return the data in this message

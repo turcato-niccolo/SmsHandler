@@ -12,3 +12,4 @@
 /captures
 .externalNativeBuild
 /painanddespair
+/lib/src/test/java/com/dezen/riccardo/smshandler/SmsReceiverTest.java
