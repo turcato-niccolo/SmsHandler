@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 /**
  * @author Riccardo De Zen. Based on decisions of whole class.
  */
-public class SMSPeer implements Peer<String> {
+public class SMSPeer extends Peer<String> {
     private String address;
 
     /**
@@ -29,19 +29,20 @@ public class SMSPeer implements Peer<String> {
     /**
      * @return true if this peer is valid
      */
-    public boolean isValid(){ return !isEmpty() && !isBlank() && isAddressValid(); }
+    @Override
+    public boolean isValid(){ return !isAddressEmpty() && !isAddressBlank() && isAddressValid(); }
 
     /**
      * @return true if address is empty string
      */
-    private boolean isEmpty(){
+    private boolean isAddressEmpty(){
         return address.isEmpty();
     }
 
     /**
      * @return true if address is a String of blank spaces
      */
-    private boolean isBlank(){ return address.replace(" ","").isEmpty(); }
+    private boolean isAddressBlank(){ return address.replace(" ","").isEmpty(); }
 
     /**
      * @return true if address fulfills international phone address standards

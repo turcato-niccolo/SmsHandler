@@ -1,12 +1,12 @@
 package com.dezen.riccardo.networkmanager;
 
-import androidx.annotation.Nullable;
+import android.os.Bundle;
 
 /**
  * String key and value implementation for Resource interface.
  * @author Riccardo De Zen.
  */
-public class StringResource implements Resource<String, String> {
+public class StringResource extends Resource<String, String> {
 
     private String name;
     private String value;
@@ -15,36 +15,52 @@ public class StringResource implements Resource<String, String> {
         this.name = name;
         this.value = value;
     }
+
+    /**
+     * @return the name of this Resource
+     */
     @Override
     public String getName() {
         return name;
     }
 
+    /**
+     * @return the value of this Resource
+     */
     @Override
     public String getValue() {
         return value;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    /**
+     * Setter for value
+     * @param value the new value
+     */
     public void setValue(String value) {
         this.value = value;
     }
 
+    /**
+     * Method to check whether this Resource is valid
+     * @return true if this Resource is valid, false if not
+     */
+    @Override
     public boolean isValid(){
         return this.name != null && !this.name.isEmpty();
     }
 
+    /**
+     * Method to return extras for this Resource type, no extras are implemented for this type.
+     * @return extras attached to this Resource, if any, an empty Bundle otherwise
+     */
     @Override
-    public boolean equals(@Nullable Object obj) {
-        if(obj instanceof StringResource){
-            return ((StringResource) obj).getName().equals(this.name);
-        }
-        else return false;
+    public Bundle getExtras() {
+        return new Bundle();
     }
 
+    /**
+     * @return a default invalid Resource
+     */
     public static StringResource getDefaultInvalid(){
         return new StringResource("","");
     }

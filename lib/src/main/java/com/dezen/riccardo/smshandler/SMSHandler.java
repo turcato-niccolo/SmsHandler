@@ -133,6 +133,7 @@ public class SMSHandler {
      * Method that sends a text message through SmsManager
      * @param destination the valid destination address for the message, in phone number format
      * @param message the valid body of the message to be sent
+     * @param urgent whether this message should contain the code to fire a broadcast
      */
     public void sendSMS(String destination, @NonNull String message, boolean urgent){
         if(!SmsUtils.isMessageValid(message,urgent)) return;

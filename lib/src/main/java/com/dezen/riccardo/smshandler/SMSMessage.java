@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
  * Class implementing Message to represent an SMS-type message.
  * @author Riccardo De Zen based on decisions of whole class.
  */
-public class SMSMessage implements Message<String, SMSPeer>{
+public class SMSMessage extends Message<String, SMSPeer>{
     private String data;
     private SMSPeer peer;
 

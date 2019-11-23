@@ -47,6 +47,7 @@ public class SmsMessageTest {
 
     @Test
     public void isValid(){
+        createMessage();
         assertEquals(true, message.isValid());
     }
 
