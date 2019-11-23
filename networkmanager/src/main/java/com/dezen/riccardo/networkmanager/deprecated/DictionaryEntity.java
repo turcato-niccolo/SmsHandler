@@ -1,8 +1,7 @@
-package com.dezen.riccardo.networkmanager.database_dictionary;
+package com.dezen.riccardo.networkmanager.deprecated;
 
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
 @Entity(primaryKeys = {"peerAddress","resourceName"})
 public class DictionaryEntity {

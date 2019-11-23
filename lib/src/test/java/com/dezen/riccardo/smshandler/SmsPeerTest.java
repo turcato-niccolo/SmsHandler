@@ -7,7 +7,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author ???
+ * @author Giorgia Bortoletti
  * Small tweaks by Riccardo De Zen.
  */
 public class SmsPeerTest {
