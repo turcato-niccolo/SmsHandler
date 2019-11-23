@@ -23,22 +23,32 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import androidx.room.Room;
 
+import com.dezen.riccardo.smshandler.DeliveredMessageListener;
+import com.dezen.riccardo.smshandler.Message;
+import com.dezen.riccardo.smshandler.ReceivedMessageListener;
+import com.dezen.riccardo.smshandler.SMSHandler;
+import com.dezen.riccardo.smshandler.SMSManager;
 import com.dezen.riccardo.smshandler.SMSMessage;
-import com.dezen.riccardo.smshandler.SmsHandler;
+import com.dezen.riccardo.smshandler.SMSPeer;
+import com.dezen.riccardo.smshandler.SentMessageListener;
+import com.dezen.riccardo.smshandler.database.SmsDatabase;
+import com.dezen.riccardo.smshandler.database.SmsEntity;
 
 import java.util.Set;
 
 /**
  * @author Riccardo De Zen.
  */
-public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsEventListener {
+public class MainActivity extends AppCompatActivity implements ReceivedMessageListener, SentMessageListener, DeliveredMessageListener
+{
 
-    private SmsHandler smsHandler;
+    private SMSManager smsManager;
     /*If a second instance of smsHandler is created and registered, both trigger their events.
     This is intentional behaviour. Object pool or standard implementation should be considered as
     a future addition.*/
-    //private SmsHandler smsHandler2;
+    //private SMSHandler smsHandler2;
     private Button button_send;
     private EditText editText_number;
     private EditText editText_message;
@@ -50,9 +60,10 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        smsHandler = new SmsHandler();
-        smsHandler.registerReceiver(getApplicationContext(), true, true, true);
-        smsHandler.setListener(this);
+        smsManager = SMSManager.getInstance(getApplicationContext());
+        smsManager.setReceiveListener(this);
+        smsManager.setSentListener(this);
+        smsManager.setDeliveredListener(this);
 
         button_send = findViewById(R.id.button_send);
         editText_number = findViewById(R.id.editText_number);
@@ -127,26 +138,36 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        smsHandler.clearListener();
-        smsHandler.unregisterReceiver(getApplicationContext());
+        SMSManager.onContextDestroyed(getApplicationContext());
     }
 
     /**
-     * Sends a message through this activity's instance of SmsHandler
+     * Sends a message through this activity's instance of SMSHandler
      * @param destination the destination address for the message, in phone number format
      * @param message the body of the message to be sent, can't be neither null nor empty
      */
     private void sendMessage(String destination, @NonNull String message){
-        smsHandler.sendSMS(getApplicationContext(),destination, message);
+        SMSPeer peer = new SMSPeer(destination);
+        SMSMessage smsMessage = new SMSMessage(peer,message);
+        smsManager.sendMessage(smsMessage);
     }
 
     /**
-     * Method from the OnSmsEventListener interface, reads the body of the message and
-     * updates a TextView's content
-     * @param message the received message
+     * Method called when a sent message might have been delivered to the associated peer
+     * @param resultCode result code of the deliver operation (success or failure)
+     * @param message    the message the operation tried to deliver
      */
     @Override
-    public void onReceive(SMSMessage message) {
+    public void onMessageDelivered(int resultCode, Message message) {
+        Toast.makeText(getApplicationContext(), "May have been delivered: "+message.getData(), Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Called when a message is received
+     * @param message the received message that needs to be forwarded
+     */
+    @Override
+    public void onMessageReceived(Message message) {
         String from = message.getPeer().getAddress().toString();
         String body = message.getData().toString();
         Log.d("Received message: ",body);
@@ -163,14 +184,16 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
         }
         linearLayout.addView(view);
     }
-    @Override
-    public void onSent(int resultCode, SMSMessage message) {
-        Toast.makeText(getApplicationContext(), "May have been sent: "+message.getData(), Toast.LENGTH_SHORT).show();
-    }
 
+    /**
+     * Called when a message is sent
+     *
+     * @param resultCode result code of the sending operation (success or failure)
+     * @param message    the message the operation tried to send
+     */
     @Override
-    public void onDelivered(int resultCode, SMSMessage message) {
-        Toast.makeText(getApplicationContext(), "May have been delivered: "+message.getData(), Toast.LENGTH_SHORT).show();
+    public void onMessageSent(int resultCode, Message message) {
+        Toast.makeText(getApplicationContext(), "May have been sent: "+message.getData(), Toast.LENGTH_SHORT).show();
     }
 
     private class MyTask extends AsyncTask<String, Integer, Void>{
@@ -181,7 +204,15 @@ public class MainActivity extends AppCompatActivity implements SmsHandler.OnSmsE
         }
         @Override
         protected Void doInBackground(String... strings) {
-            smsHandler.fetchUnreadMessages(context);
+            SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMSHandler.UNREAD_SMS_DATABASE_NAME)
+                    .enableMultiInstanceInvalidation()
+                    .build();
+            SmsEntity[] messages = db.access().loadAllSms();
+            for(SmsEntity sms : messages){
+                db.access().deleteSms(sms);
+                SMSMessage m = new SMSMessage(new SMSPeer(sms.address),sms.body);
+                onMessageReceived(m);
+            }
             return null;
         }
     }

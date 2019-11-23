@@ -2,6 +2,9 @@ package com.dezen.riccardo.networkmanager;
 
 import android.content.Context;
 
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import org.junit.Assert;
@@ -12,8 +15,6 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import androidx.test.core.app.ApplicationProvider;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 //TODO add a reusable NetworkVocabulary for tests
 

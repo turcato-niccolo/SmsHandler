@@ -52,7 +52,6 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
             "ADD_RESOURCE",
             "REMOVE_RESOURCE"
     };
-    //TODO add action private class to allow easier code reading.
     //TODO add questioning whether invited user is already part of the network.
     //TODO add support for multiple networks.
 
@@ -65,7 +64,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     private final String MANAGER_TAG = "MANAGER_TAG";
 
     public NetworkManager(Context registerContext) {
-         dictionary = new NetworkDictionary();
+         dictionary = new NetworkDictionary(context);
          handler = SMSManager.getInstance(registerContext);
          handler.setReceiveListener(this);
          context = registerContext;
@@ -185,6 +184,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
 
     @Override
     public void onMessageReceived(SMSMessage message) {
+        //SWITCH???
         String receivedMessageString = message.getData().toString();
         if(receivedMessageString.contains(actionMessages[ACTIONS.INVITE.value()])){
             //Message contains invitation

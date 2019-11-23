@@ -2,7 +2,6 @@ package com.dezen.riccardo.networkmanager;
 
 import com.dezen.riccardo.networkmanager.database_dictionary.PeerEntity;
 import com.dezen.riccardo.networkmanager.database_dictionary.ResourceEntity;
-import com.dezen.riccardo.smshandler.Peer;
 
 /**
  * @author Giorgia Bortoletti

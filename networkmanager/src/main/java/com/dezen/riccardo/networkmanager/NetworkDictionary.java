@@ -13,12 +13,13 @@ import com.dezen.riccardo.smshandler.SMSPeer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.dezen.riccardo.smshandler.SmsHandler.SMS_HANDLER_LOCAL_DATABASE;
+import static com.dezen.riccardo.smshandler.SMSHandler.UNREAD_SMS_DATABASE_NAME;
 
 /**
- * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource.
- * Due to trouble with testing android class. Maps have been used.
- *
+ * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource,
+ * also allowing Peer ownership of Resources.
+ * Due to trouble with testing android class. Lists have been used.
+ * @author Riccardo De Zen.
  * @author Riccardo De Zen, Giorgia Bortoletti
  */
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
@@ -222,10 +223,10 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @param context
          */
         private NetworkDictionaryDatabase(Context context) {
-            this.resourceDatabase = Room.databaseBuilder(context, ResourceDatabase.class, SMS_HANDLER_LOCAL_DATABASE)
+            this.resourceDatabase = Room.databaseBuilder(context, ResourceDatabase.class, UNREAD_SMS_DATABASE_NAME)
                     .enableMultiInstanceInvalidation()
                     .build();
-            this.peerDatabase = Room.databaseBuilder(context, PeerDatabase.class, SMS_HANDLER_LOCAL_DATABASE)
+            this.peerDatabase = Room.databaseBuilder(context, PeerDatabase.class, UNREAD_SMS_DATABASE_NAME)
                     .enableMultiInstanceInvalidation()
                     .build();
         }
