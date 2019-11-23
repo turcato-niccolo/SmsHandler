@@ -81,25 +81,25 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     /**
      * Adds a new Peer. Null Peer will not be inserted.
      * @param newPeer the new Peer, whose key does not already exist
-     * @return true if the newPeer is was added, false otherwise
+     * @return true if the newPeer has been added, false otherwise
      */
     @Override
     public boolean addPeer(SMSPeer newPeer){
         if(contains(newPeer)) return false;
         peers.put(newPeer.getAddress(), "");
-        return true;
+        return contains(newPeer);
     }
 
     /**
      * Removes the Peer with the matching key, if it exists. Null Peer will not be removed.
      * @param peerToRemove Peer to remove
-     * @return true if it was removed, false otherwise
+     * @return true if peerToRemove has been removed, false otherwise
      */
     @Override
     public boolean removePeer(SMSPeer peerToRemove) {
         if(!contains(peerToRemove)) return false;
         peers.remove(peerToRemove.getAddress());
-        return true;
+        return !contains(peerToRemove);
     }
 
     /**
@@ -112,7 +112,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         if(!contains(updatedPeer)) return false;
         peers.remove(updatedPeer.getAddress());
         peers.put(updatedPeer.getAddress(),"");
-        return true;
+        return contains(updatedPeer);
     }
 
     /**
@@ -142,6 +142,16 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     }
 
     /**
+     * Method to tell whether the given Resource exists in this Vocabulary
+     * @param resource the Resource to find
+     * @return true if resource exists, false otherwise.
+     */
+    public boolean contains(StringResource resource){
+        if(resource == null && !resource.isValid()) return false;
+        return resources.containsKey(resource.getName());
+    }
+
+    /**
      * Adds a new resource. Null or invalid Resource won't be added.
      * @param newResource the new Resource, whose key does not already exist
      * @return true if it is added, false otherwise.
@@ -150,7 +160,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     public boolean addResource(StringResource newResource) {
         if(contains(newResource)) return false;
         resources.put(newResource.getName(), newResource.getValue());
-        return true;
+        return contains(newResource);
     }
 
     /**
@@ -163,7 +173,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         if(!contains(resourceToRemove))
             return false;
         resources.remove(resourceToRemove.getName());
-        return true;
+        return !contains(resourceToRemove);
     }
 
     /**
@@ -177,7 +187,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
             return false;
         resources.remove(updatedResource.getName());
         resources.put(updatedResource.getName(), updatedResource.getName());
-        return true;
+        return contains(updatedResource);
     }
 
     /**
@@ -196,15 +206,6 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         return resourcesArray;
     }
 
-    /**
-     * Method to tell whether the given Resource exists in this Vocabulary
-     * @param resource the Resource to find
-     * @return true if resource exists, false otherwise.
-     */
-    public boolean contains(StringResource resource){
-        if(resource == null && !resource.isValid()) return false;
-        return resources.containsKey(resource.getName());
-    }
 
     /**
      * Class to interact with Peer Database e Resource Database
@@ -232,25 +233,31 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         /**
          * Adds a new Peer. Null Peer will not be inserted.
          * @param newPeer the new Peer, whose key does not already exist
+         * @return true if peer has been added, false otherwise.
          */
-        private void addPeer(SMSPeer newPeer){
+        private boolean addPeer(SMSPeer newPeer){
             peerDatabase.access().add(new PeerEntity(newPeer.getAddress()));
+            return containsPeer(newPeer);
         }
 
         /**
          * Removes the Peer with the matching key, if it exists. Null Peer will not be removed.
          * @param peerToRemove Peer to remove
+         * @return true if peer doesn't exist, false otherwise.
          */
-        private void removePeer(SMSPeer peerToRemove) {
+        private boolean removePeer(SMSPeer peerToRemove) {
             peerDatabase.access().remove(new PeerEntity(peerToRemove.getAddress()));
+            return !containsPeer(peerToRemove);
         }
 
         /**
          * Updates the value of a Peer. Null or invalid Resource won't be updated.
          * @param updatedPeer the new value for the Peer
+         * @return true if peer has been updated, false otherwise.
          */
-        private void updatePeer(SMSPeer updatedPeer) {
+        private boolean updatePeer(SMSPeer updatedPeer) {
             peerDatabase.access().update(new PeerEntity(updatedPeer.getAddress()));
+            return containsPeer(updatedPeer);
         }
 
         /**
@@ -278,26 +285,32 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         /**
          * Adds a new resource. Null or invalid Resource won't be added.
          * @param newResource the new Resource, whose key does not already exist
+         * @return true if resource has been added, false otherwise.
          */
-        private void addResource(StringResource newResource) {
+        private boolean addResource(StringResource newResource) {
             resourceDatabase.access().add(new ResourceEntity(newResource.getName(), newResource.getValue()));
+            return containsResource(newResource);
         }
 
         /**
          * Removes the Resource with the matching key, if it exists.
          * Null or invalid Resource won't be searched for.
          * @param resourceToRemove the Resource to remove
+         * @return true if resource doesn't exist, false otherwise.
          */
-        private void removeResource(StringResource resourceToRemove) {
+        private boolean removeResource(StringResource resourceToRemove) {
             resourceDatabase.access().remove(new ResourceEntity(resourceToRemove.getName(), resourceToRemove.getValue()));
+            return !containsResource(resourceToRemove);
         }
 
         /**
          * Updates the value of a Resource. Null or invalid Resource won't be updated.
          * @param updatedResource the new value for the Resource
+         * @return return !true if resource has been updated, false otherwise.
          */
-        private void updateResource(StringResource updatedResource) {
+        private boolean updateResource(StringResource updatedResource) {
             resourceDatabase.access().update(new ResourceEntity(updatedResource.getName(), updatedResource.getName()));
+            return !containsResource(updatedResource);
         }
 
         /**
