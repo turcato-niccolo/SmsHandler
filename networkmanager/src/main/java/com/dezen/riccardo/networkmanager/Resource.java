@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 /**
- * Interface similar to Message, except it is meant to represent a resource in the peersVocabulary instead
+ * Interface meant to represent a resource in the peersVocabulary instead
  * of a message travelling through the network.
  * @author Riccardo De Zen.
  */

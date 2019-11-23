@@ -11,6 +11,9 @@ import org.junit.runner.RunWith;
 
 import static junit.framework.TestCase.assertEquals;
 
+/**
+ * @author Giorgia Bortoletti
+ */
 @RunWith(AndroidJUnit4ClassRunner.class)
 public class SMSManagerTest {
 

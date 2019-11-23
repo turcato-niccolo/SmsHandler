@@ -1,4 +1,4 @@
-package com.dezen.riccardo.networkmanager.database_dictionary;
+package com.dezen.riccardo.networkmanager.deprecated;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;

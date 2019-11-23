@@ -1,5 +1,7 @@
 package com.dezen.riccardo.smshandler;
 
+import android.telephony.SmsMessage;
+
 import androidx.annotation.NonNull;
 
 
@@ -18,6 +20,14 @@ public class SMSMessage extends Message<String, SMSPeer>{
     public SMSMessage(SMSPeer peer, String data){
         this.peer = peer;
         this.data = data;
+    }
+
+    /**
+     * Constructor from a valid SmsMessage
+     */
+    public SMSMessage(SmsMessage message){
+        this.peer = new SMSPeer(message.getOriginatingAddress());
+        this.data = message.getMessageBody();
     }
 
     /**

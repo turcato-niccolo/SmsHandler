@@ -5,6 +5,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+/**
+ * @author Giorgia Bortoletti
+ */
 public class SmsMessageTest {
 
     private SMSMessage message;

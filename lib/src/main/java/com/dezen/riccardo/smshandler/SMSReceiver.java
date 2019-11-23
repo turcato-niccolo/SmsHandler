@@ -9,7 +9,6 @@ import android.content.pm.ResolveInfo;
 import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
-import android.util.Log;
 
 import androidx.room.Room;
 
@@ -22,52 +21,51 @@ import java.util.List;
 /**
  * Class meant to intercept SMSMessages coming from the Android system.
  * The filtering work on messages is voluntarily repeated between this Receiver and
- * NotificationCatcherService in order to make the Service lighter.
+ * NotificationCatcherService in order to avoid attaching the Receiver to the Service and keep it
+ * lighter.
  * The class checks whether pertinent messages have been received. Then proceeds to check whether a
  * suitable listener is available for immediate response. If not then proceeds to either fire a
  * broadcast meant to wake some other process or writes the messages to a database for later use.
  * @author Riccardo De Zen
  */
-public class SmsReceiver extends BroadcastReceiver {
-    //TODO find a better waking mechanism, ideally directly starting an activity referenced
-    // through the use of reflection or serialization.
+public class SMSReceiver extends BroadcastReceiver {
     private boolean shouldWake = false;
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
             List<SmsMessage> messages = filter(Telephony.Sms.Intents.getMessagesFromIntent(intent));
-            if(messages.size() > 0){
-                if(SmsHandler.shouldHandleIncomingSms()){
-                    /**
-                     * SmsHandler.shouldHandleIncomingSms() returns true if a suitable listener for
-                     * immediate response is available. A broadcast event is therefore fired to
-                     * notify said listener through the receiver it is attached to.
-                    */
-                    Log.d("SmsReceiver", "Forwarding intent...");
-                    Intent local_intent = new Intent();
-                    local_intent.replaceExtras(intent);
-                    local_intent.setAction(SmsHandler.SMS_HANDLER_RECEIVED_BROADCAST);
-                    local_intent.setPackage(context.getApplicationContext().getPackageName());
-                    context.sendBroadcast(local_intent);
-                }
-                else if(shouldWake){
-                    Intent wake_intent = new Intent();
-                    wake_intent.replaceExtras(intent);
-                    wake_intent.setAction(SmsHandler.SMS_HANDLER_WAKE_BROADCAST);
-                    sendImplicitBroadcast(context, wake_intent);
-                }
-                else{
-                    //write new sms to local database asynchronously
-                    Log.d("SmsReceiver", "Writing to database...");
-                    SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SmsHandler.SMS_HANDLER_LOCAL_DATABASE)
-                            .enableMultiInstanceInvalidation()
-                            .build();
-                    new WriteToDbTask(messages,db).execute();
-                }
+            if(messages.size() < 1) return;
+            if(SMSHandler.shouldHandleIncomingSms()){
+                /*
+                 * SMSHandler.shouldHandleIncomingSms() returns true if a suitable listener for
+                 * immediate response is available. A broadcast event is therefore fired to
+                 * notify said listener through the receiver it is attached to.
+                 */
+                Intent local_intent = new Intent();
+                local_intent.replaceExtras(intent);
+                local_intent.setAction(SMSHandler.RECEIVED_BROADCAST);
+                local_intent.setPackage(context.getApplicationContext().getPackageName());
+                context.sendBroadcast(local_intent);
+            }
+            else if(shouldWake){
+                Intent wake_intent = new Intent();
+                wake_intent.replaceExtras(intent);
+                wake_intent.setAction(SMSHandler.WAKE_BROADCAST);
+                sendImplicitBroadcast(context, wake_intent);
+            }
+            else{
+                //write new sms to local database asynchronously
+                SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMSHandler.UNREAD_SMS_DATABASE_NAME)
+                        .enableMultiInstanceInvalidation()
+                        .build();
+                new WriteToDbTask(messages,db).execute();
             }
         }
     }
 
+    /**
+     * Class defining a task that writes the smsMessages to the local database.
+     */
     private static class WriteToDbTask extends AsyncTask<String,Integer,Void>{
         private List<SmsMessage> smsMessages;
         private SmsDatabase db;
@@ -90,17 +88,17 @@ public class SmsReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Method to filter messages containing SmsHandler.APP_KEY.
+     * Method to filter messages containing SMSHandler.APP_KEY.
      * Messages are meant to be the ones coming directly from the received Intent.
      * @param messages array of SmsMessage.
-     * @return list of messages containing SmsHandler.APP_KEY
+     * @return list of messages containing SMSHandler.APP_KEY
      */
     private List<SmsMessage> filter(SmsMessage[] messages){
         List<SmsMessage> list = new ArrayList<>();
         if(messages != null)
             for(SmsMessage sms : messages){
-                if(sms.getMessageBody().contains(SmsHandler.APP_KEY)) list.add(sms);
-                if(sms.getMessageBody().contains(SmsHandler.WAKE_KEY)) shouldWake = true;
+                if(sms.getMessageBody().contains(SMSHandler.APP_KEY)) list.add(sms);
+                if(sms.getMessageBody().contains(SMSHandler.WAKE_KEY)) shouldWake = true;
             }
         return list;
     }
