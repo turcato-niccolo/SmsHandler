@@ -44,4 +44,8 @@ public class StringResource implements Resource<String, String> {
         }
         else return false;
     }
+
+    public static StringResource getDefaultInvalid(){
+        return new StringResource("","");
+    }
 }

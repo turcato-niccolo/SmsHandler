@@ -21,8 +21,7 @@ import androidx.core.content.ContextCompat;
 
 import com.dezen.riccardo.networkmanager.NetworkManager;
 import com.dezen.riccardo.networkmanager.OnNetworkEventListener;
-import com.dezen.riccardo.networkmanager.Resource;
-import com.dezen.riccardo.smshandler.SMSMessage;
+import com.dezen.riccardo.smshandler.Message;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.ArrayList;
@@ -153,13 +152,8 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
     }
 
     @Override
-    public void onResourceObtained(Resource obtRes) {
-
-    }
-
-    @Override
-    public void onMessageReceived(SMSMessage message) {
-        if(message.getData().contains("SMILE")) imageView.setImageDrawable(getDrawable(R.drawable.vector_smile_green));
+    public void onMessageReceived(Message message) {
+        if(message.getData().toString().contains("SMILE")) imageView.setImageDrawable(getDrawable(R.drawable.vector_smile_green));
     }
 }
 
