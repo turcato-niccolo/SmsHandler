@@ -71,11 +71,13 @@ public class SMSHandler {
     }
 
     /**
-     * Method to be called only when the context that instantiated the object ceases to be valid.
+     * Method to be called only when the context that instantiated the object ceases to be valid,
+     * this instance becomes invalid as well and will throw an exception when used.
      * The user is responsible for creating a new instance of this class with a new valid context.
      */
     public void onContextDestroyed(){
         currentContext.unregisterReceiver(smsEventReceiver);
+        currentContext = null;
     }
 
     /**
