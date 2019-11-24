@@ -21,9 +21,15 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
         smsHandler = new SMSHandler(currentContext);
     }
 
+    /**
+     * Method to get the only valid instance of this class. A new instance is created only if it was
+     * null previously. The used context is always the parent application context of the parameter.
+     * @param context The calling context.
+     * @return the SMSManager instance.
+     */
     public static SMSManager getInstance(Context context){
         if(instance == null){
-            SMSManager.currentContext = context;
+            SMSManager.currentContext = context.getApplicationContext();
             instance = new SMSManager();
         }
         return instance;
@@ -31,11 +37,12 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
 
     /**
      * Method that should be called when currentContext stops being valid or instance stops being used to
-     * avoid a memory leak.
+     * avoid a memory leak. The instance is made null so that calling getInstance again will provide
+     * a new valid instance.
      * @param context the owning currentContext dropping the ownership.
      */
     public static void onContextDestroyed(Context context){
-        if(context.equals(SMSManager.currentContext)){
+        if(context.getApplicationContext().equals(SMSManager.currentContext)){
             instance.removeReceiveListener();
             instance.smsHandler.onContextDestroyed();
             instance = null;
@@ -49,7 +56,7 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
      * @return true if given context is equal to the current owning context
      */
     public boolean isOwner(Context context){
-        return context.equals(currentContext);
+        return context.getApplicationContext().equals(currentContext);
     }
 
     /**
