@@ -22,7 +22,6 @@ import static java.lang.Long.valueOf;
  * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource,
  * also allowing Peer ownership of Resources.
  * Due to trouble with testing android class. Lists have been used.
- * @author Riccardo De Zen.
  * @author Riccardo De Zen, Giorgia Bortoletti
  */
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
@@ -102,7 +101,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean addPeer(SMSPeer newPeer){
-        if(contains(newPeer)) return false;
+        if(newPeer == null || contains(newPeer)) return false;
         peers.put(newPeer.getAddress(), "");
         return contains(newPeer);
     }
@@ -114,7 +113,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean removePeer(SMSPeer peerToRemove) {
-        if(!contains(peerToRemove)) return false;
+        if(peerToRemove == null || !contains(peerToRemove)) return false;
         peers.remove(peerToRemove.getAddress());
         return !contains(peerToRemove);
     }
@@ -126,7 +125,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean updatePeer(SMSPeer updatedPeer) {
-        if(!contains(updatedPeer)) return false;
+        if(updatedPeer == null || !contains(updatedPeer)) return false;
         peers.remove(updatedPeer.getAddress());
         peers.put(updatedPeer.getAddress(),"");
         return contains(updatedPeer);
@@ -175,7 +174,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean addResource(StringResource newResource) {
-        if(contains(newResource)) return false;
+        if(newResource == null || contains(newResource)) return false;
         resources.put(newResource.getName(), newResource.getValue());
         return contains(newResource);
     }
@@ -187,8 +186,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean removeResource(StringResource resourceToRemove) {
-        if(!contains(resourceToRemove))
-            return false;
+        if(resourceToRemove == null || !contains(resourceToRemove)) return false;
         resources.remove(resourceToRemove.getName());
         return !contains(resourceToRemove);
     }
@@ -200,8 +198,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     @Override
     public boolean updateResource(StringResource updatedResource) {
-        if(!contains(updatedResource))
-            return false;
+        if(updatedResource == null || !contains(updatedResource)) return false;
         resources.remove(updatedResource.getName());
         resources.put(updatedResource.getName(), updatedResource.getName());
         return contains(updatedResource);

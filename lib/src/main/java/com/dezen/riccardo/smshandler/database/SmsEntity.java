@@ -11,12 +11,11 @@ import androidx.room.PrimaryKey;
 //TODO evaluate advantages of fusion of this class with SMSMessage
 @Entity
 public class SmsEntity{
-    public SmsEntity(int id, String address, String body) {
-        this.id = id;
+    public SmsEntity(String address, String body) {
         this.address = address;
         this.body = body;
     }
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
     public int id;
     @ColumnInfo(name = "address")
     public String address;

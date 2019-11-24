@@ -78,8 +78,7 @@ public class SMSReceiver extends BroadcastReceiver {
         @Override
         protected Void doInBackground(String... strings) {
             for(SmsMessage sms : smsMessages){
-                SmsEntity s = new SmsEntity(db.access().getCount(),
-                        sms.getOriginatingAddress(),
+                SmsEntity s = new SmsEntity(sms.getOriginatingAddress(),
                         sms.getDisplayMessageBody());
                 db.access().insert(s);
             }

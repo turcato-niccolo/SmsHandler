@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 /**
  * @author Riccardo De Zen. Based on decisions of whole class.
  */
-public class SMSPeer implements Peer<String> {
+public class SMSPeer extends Peer<String> {
     private String address;
 
     /**
