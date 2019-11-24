@@ -2,7 +2,6 @@ package com.dezen.riccardo.smshandler;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsMessage;
@@ -10,10 +9,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.room.Room;
-
-import com.dezen.riccardo.smshandler.database.SmsDatabase;
-import com.dezen.riccardo.smshandler.database.SmsEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,34 +49,6 @@ public class SmsUtils {
             mCursor.close();
         }
         return list;
-    }
-
-    /**
-     * Method to log the unread messages in the database.
-     * @param context The calling context, used to instantiate the database.
-     */
-    public static void logUnreadMessages(@NonNull Context context){
-        SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMSHandler.UNREAD_SMS_DATABASE_NAME)
-                .enableMultiInstanceInvalidation()
-                .build();
-        new LogTask(db).execute();
-    }
-
-    //AsyncTask to access database since it cannot be accessed from main Thread
-    private static class LogTask extends AsyncTask<String, Integer, Void>{
-        private SmsDatabase db;
-        public LogTask(SmsDatabase db){
-            this.db = db;
-        }
-        @Override
-        protected Void doInBackground(String... strings) {
-            SmsEntity[] messages = db.access().loadAllSms();
-            for(SmsEntity sms : messages){
-                db.access().deleteSms(sms);
-                Log.e("Unread Message", sms.address+" "+sms.body);
-            }
-            return null;
-        }
     }
 
     /**

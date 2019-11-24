@@ -15,9 +15,9 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
     private SMSHandler smsHandler;
 
     private SMSManager(){
-        //prevent use of reflection to change constructor to public at runtime
+        //prevent use of reflection to change constructor to public during runtime
         if (instance != null)
-            throw new RuntimeException("This class uses the singleton building pattern. Use getInstance() to get a reference to the single instance of this class");
+            throw new RuntimeException("This class uses the singleton design pattern. Use getInstance() to get a reference to the single instance of this class");
         smsHandler = new SMSHandler(currentContext);
     }
 
@@ -131,5 +131,13 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
      */
     public void removeDeliveredListener(){
         smsHandler.clearDeliveredListener();
+    }
+
+    /**
+     * Method to load the unread sms messages and forward them to the listener asynchronously.
+     * @return true if the listener is assigned and an attempt has been made, false otherwise.
+     */
+    public boolean loadUnread(){
+        return smsHandler.loadUnread();
     }
 }

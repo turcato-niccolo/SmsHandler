@@ -6,14 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
 
-import androidx.room.Room;
-
-import com.dezen.riccardo.smshandler.database.SmsDatabase;
-import com.dezen.riccardo.smshandler.database.SmsEntity;
+import com.dezen.riccardo.smshandler.database.SMSDatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +29,8 @@ public class SMSReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
-            List<SmsMessage> messages = filter(Telephony.Sms.Intents.getMessagesFromIntent(intent));
-            if(messages.size() < 1) return;
+            SmsMessage[] messages = filter(Telephony.Sms.Intents.getMessagesFromIntent(intent));
+            if(messages.length < 1) return;
             if(SMSHandler.shouldHandleIncomingSms()){
                 /*
                  * SMSHandler.shouldHandleIncomingSms() returns true if a suitable listener for
@@ -54,36 +50,8 @@ public class SMSReceiver extends BroadcastReceiver {
                 sendImplicitBroadcast(context, wake_intent);
             }
             else{
-                //write new sms to local database asynchronously
-                SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMSHandler.UNREAD_SMS_DATABASE_NAME)
-                        .enableMultiInstanceInvalidation()
-                        .build();
-                new WriteToDbTask(messages,db).execute();
+                SMSDatabaseManager.getInstance(context).addSMS(messages);
             }
-        }
-    }
-
-    /**
-     * Class defining a task that writes the smsMessages to the local database.
-     */
-    private static class WriteToDbTask extends AsyncTask<String,Integer,Void>{
-        private List<SmsMessage> smsMessages;
-        private SmsDatabase db;
-
-        WriteToDbTask(List<SmsMessage> smsMessages, SmsDatabase db) {
-            this.smsMessages = smsMessages;
-            this.db = db;
-        }
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            for(SmsMessage sms : smsMessages){
-                SmsEntity s = new SmsEntity(db.access().getCount(),
-                        sms.getOriginatingAddress(),
-                        sms.getDisplayMessageBody());
-                db.access().insert(s);
-            }
-            return null;
         }
     }
 
@@ -93,14 +61,14 @@ public class SMSReceiver extends BroadcastReceiver {
      * @param messages array of SmsMessage.
      * @return list of messages containing SMSHandler.APP_KEY
      */
-    private List<SmsMessage> filter(SmsMessage[] messages){
+    private SmsMessage[] filter(SmsMessage[] messages){
         List<SmsMessage> list = new ArrayList<>();
         if(messages != null)
             for(SmsMessage sms : messages){
                 if(sms.getMessageBody().contains(SMSHandler.APP_KEY)) list.add(sms);
                 if(sms.getMessageBody().contains(SMSHandler.WAKE_KEY)) shouldWake = true;
             }
-        return list;
+        return list.toArray(new SmsMessage[0]);
     }
 
     /**

@@ -8,13 +8,10 @@ import android.content.IntentFilter;
 import android.provider.Telephony;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.room.Room;
 
-import com.dezen.riccardo.smshandler.database.SmsDatabase;
-import com.dezen.riccardo.smshandler.database.SmsEntity;
+import com.dezen.riccardo.smshandler.database.SMSDatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -245,25 +242,15 @@ public class SMSHandler {
     static boolean shouldHandleIncomingSms(){ return !activeReceivedListeners.isEmpty();}
 
     /**
-     * Method to clear and forward the unread messages from the database to the smsEventListener. Due to database access restrictions
-     * this method cannot be called from the main thread. If no smsEventListener is present, this method simply clears
-     * the database returning the cleared values.
-     * @param context the calling context, used to instantiate the database.
-     * @return an array containing the SmsEntity object containing the unread sms data.
-     * @throws IllegalStateException if it's run from the main Thread.
-     * TODO move to dedicated class
+     * Method to load the unread sms messages and forward them to the listener asynchronously.
+     * @return true if the listener is assigned and an attempt has been made, false otherwise.
      */
-    public SmsEntity[] fetchUnreadMessages(Context context){
-        SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, UNREAD_SMS_DATABASE_NAME)
-                .enableMultiInstanceInvalidation()
-                .build();
-        SmsEntity[] messages = db.access().loadAllSms();
-        for(SmsEntity sms : messages){
-            db.access().deleteSms(sms);
-            SMSMessage m = new SMSMessage(new SMSPeer(sms.address),sms.body);
-            if(receivedListener != null) receivedListener.onMessageReceived(m);
-            Log.e("Unread Message", sms.address+" "+sms.body);
+    public boolean loadUnread(){
+        if(receivedListener != null){
+            SMSDatabaseManager manager = SMSDatabaseManager.getInstance(currentContext);
+            manager.forwardAllSMS(receivedListener);
+            return true;
         }
-        return messages;
+        else return false;
     }
 }
