@@ -276,4 +276,15 @@ public class NetworkDictionaryTest {
         assertFalse(invalidResource.isValid());
         assertFalse(networkVocabulary.contains(invalidResource));
     }
+
+    @Test
+    public void importFromDatabaseCanCancel() {
+        NetworkDictionary networkVocabulary = new NetworkDictionary(context);
+        networkVocabulary.addResource(resource);
+        /*
+        networkVocabulary.importFromDatabase();
+        networkVocabulary.cancelImportFromDatabase();
+        assertTrue(networkVocabulary.importFromDatabaseIsCanceled());
+        */
+    }
 }
