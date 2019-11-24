@@ -1,6 +1,7 @@
 package com.dezen.riccardo.networkmanager;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import androidx.room.Room;
 
@@ -8,12 +9,14 @@ import com.dezen.riccardo.networkmanager.database_dictionary.PeerDatabase;
 import com.dezen.riccardo.networkmanager.database_dictionary.PeerEntity;
 import com.dezen.riccardo.networkmanager.database_dictionary.ResourceDatabase;
 import com.dezen.riccardo.networkmanager.database_dictionary.ResourceEntity;
+import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.dezen.riccardo.smshandler.SMSHandler.UNREAD_SMS_DATABASE_NAME;
+import static java.lang.Long.valueOf;
 
 /**
  * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource,
@@ -25,10 +28,12 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     private Map<String, String>  peers;
     private Map<String, String> resources;
     private NetworkDictionaryDatabase database;
+    private ImportFromDatabasesTask importFromDatabasesTask;
+    private ExportToDatabaseTask exportToDatabaseTask;
 
     /**
      * Constructor of NetworkDictionary
-     * @param context
+     * @param context application context
      */
     public NetworkDictionary(Context context){
         database = new NetworkDictionaryDatabase(context);
@@ -36,46 +41,57 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         resources = new HashMap<>();
     }
 
-    //TODO? make this method asynchronous
     /**
      * Imports resources and peers from database to variables Map
      */
     private void importFromDatabase(){
-        SMSPeer[] smsPeers = database.getPeers();
-        StringResource[] stringResources = database.getResources();
-
-        for(SMSPeer peer : smsPeers)
-            peers.put(peer.getAddress(), "");
-
-        for(StringResource resource : stringResources)
-            resources.put(resource.getName(), resource.getName());
-
+        importFromDatabasesTask = new ImportFromDatabasesTask();
+        importFromDatabasesTask.execute(database);
     }
 
-    //TODO? make this method asynchronous
+    /**
+     * @author Niccolo' Turcato
+     * @param mayInterruptIfRunning true if the thread executing this task should be interrupted; otherwise, in-progress tasks are allowed to complete
+     */
+    private void cancelImportFromDatabase(boolean mayInterruptIfRunning)
+    {
+        importFromDatabasesTask.cancel(mayInterruptIfRunning);
+    }
+
+    /**
+     * @author Niccolo' Turcato
+     * @return Returns true if this task was cancelled before it completed normally.
+     */
+    private boolean importFromDatabaseIsCanceled()
+    {
+        return importFromDatabasesTask.isCancelled();
+    }
+
+
     /**
      * Exports resources and peer from maps to database
      */
     private void exportToDatabase(){
+        exportToDatabaseTask = new ExportToDatabaseTask();
+        exportToDatabaseTask.execute(database);
+    }
 
-        for(Map.Entry<String, String> peerEntry : peers.entrySet())
-        {
-            SMSPeer smsPeer = new SMSPeer(peerEntry.getKey());
-            if(!database.containsPeer(smsPeer))
-            {
-                database.addPeer(smsPeer);
-            }
-        }
+    /**
+     * @author Niccolo' Turcato
+     * @param mayInterruptIfRunning true if the thread executing this task should be interrupted; otherwise, in-progress tasks are allowed to complete
+     */
+    private void cancelexportToDatabase(boolean mayInterruptIfRunning)
+    {
+        exportToDatabaseTask.cancel(mayInterruptIfRunning);
+    }
 
-        for(Map.Entry<String, String> resourceEntry : resources.entrySet())
-        {
-            StringResource stringResource = new StringResource(resourceEntry.getKey(), resourceEntry.getValue());
-            if(!database.containsResource(stringResource)){
-                database.addResource(stringResource);
-            }else{
-                database.updateResource(stringResource);
-            }
-        }
+    /**
+     * @author Niccolo' Turcato
+     * @return Returns true if this task was cancelled before it completed normally.
+     */
+    private boolean exportToDatabaseIsCanceled()
+    {
+        return exportToDatabaseTask.isCancelled();
     }
 
     /**
@@ -137,7 +153,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      * @return true if Peer exists, false otherwise.
      */
     public boolean contains(SMSPeer peer){
-        if(peer == null && !peer.isValid()) return false;
+        if(peer == null || !peer.isValid()) return false;
         return peers.containsKey(peer.getAddress());
     }
 
@@ -147,7 +163,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      * @return true if resource exists, false otherwise.
      */
     public boolean contains(StringResource resource){
-        if(resource == null && !resource.isValid()) return false;
+        if(resource == null || !resource.isValid()) return false;
         return resources.containsKey(resource.getName());
     }
 
@@ -211,13 +227,13 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     private class NetworkDictionaryDatabase{
 
-        //TODO? add return boolean in the methods
+
         private ResourceDatabase resourceDatabase;
         private PeerDatabase peerDatabase;
 
         /**
          * Constructor of NetworkDictionaryDatabase
-         * @param context
+         * @param context application context
          */
         private NetworkDictionaryDatabase(Context context) {
             this.resourceDatabase = Room.databaseBuilder(context, ResourceDatabase.class, UNREAD_SMS_DATABASE_NAME)
@@ -336,5 +352,93 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
 
     }
 
+    /**
+     * @author Niccolo' Turcato
+     *
+     * Imports resources and peers from database to variables Map in async Task
+     */
+    private class ImportFromDatabasesTask extends AsyncTask<NetworkDictionaryDatabase, Integer, Long>
+    {
+        /**
+         * @param database array of databases from which extract peers and resources
+         * @return 1 if task has been canceled, 0 if task has been executed
+         */
+        protected Long doInBackground(NetworkDictionaryDatabase ... database)
+        {
+            for (NetworkDictionaryDatabase db: database) {
+                SMSPeer[] smsPeers = db.getPeers();
+                StringResource[] stringResources = db.getResources();
 
+                //Could this be done better?
+                // Maybe return the arrays so that maps are handled in main thread?
+                for(SMSPeer peer : smsPeers)
+                    peers.put(peer.getAddress(), "");
+
+                for(StringResource resource : stringResources)
+                    resources.put(resource.getName(), resource.getName());
+
+                if (isCancelled()) return valueOf(1);
+            }
+            return  valueOf(0);
+        }
+
+        protected void onProgressUpdate(Integer ... progress)
+        {
+
+        }
+
+        protected void onPostExecute(Long result)
+        {
+
+        }
+    }
+
+    /**
+     * @author Niccolo' Turcato
+     *
+     * Exports resources and peer from maps to database in async Task
+     */
+    private class ExportToDatabaseTask extends AsyncTask<NetworkDictionaryDatabase, Integer, Long>
+    {
+        /**
+         * @param database array of databases to which export peers and resources
+         * @return 1 if task has been canceled, 0 if task has been executed
+         */
+        protected Long doInBackground(NetworkDictionaryDatabase ... database)
+        {
+            for (NetworkDictionaryDatabase db: database) {
+                for(Map.Entry<String, String> peerEntry : peers.entrySet())
+                {
+                    SMSPeer smsPeer = new SMSPeer(peerEntry.getKey());
+                    if(!db.containsPeer(smsPeer))
+                    {
+                        db.addPeer(smsPeer);
+                    }
+                }
+
+                for(Map.Entry<String, String> resourceEntry : resources.entrySet())
+                {
+                    StringResource stringResource = new StringResource(resourceEntry.getKey(), resourceEntry.getValue());
+                    if(!db.containsResource(stringResource)){
+                        db.addResource(stringResource);
+                    }else{
+                        db.updateResource(stringResource);
+                    }
+                }
+
+                if (isCancelled()) return valueOf(1);
+            }
+            return  valueOf(0);
+        }
+
+        protected void onProgressUpdate(Integer ... progress)
+        {
+
+        }
+
+        protected void onPostExecute(Long result)
+        {
+
+        }
+    }
 }
