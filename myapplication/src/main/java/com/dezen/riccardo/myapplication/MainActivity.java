@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -23,18 +22,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
-import androidx.room.Room;
 
 import com.dezen.riccardo.smshandler.DeliveredMessageListener;
 import com.dezen.riccardo.smshandler.Message;
 import com.dezen.riccardo.smshandler.ReceivedMessageListener;
-import com.dezen.riccardo.smshandler.SMSHandler;
 import com.dezen.riccardo.smshandler.SMSManager;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
 import com.dezen.riccardo.smshandler.SentMessageListener;
-import com.dezen.riccardo.smshandler.database.SmsDatabase;
-import com.dezen.riccardo.smshandler.database.SmsEntity;
 
 import java.util.Set;
 
@@ -79,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
         if(!isNotificationListenerEnabled(getApplicationContext())) {
             openNotificationListenSettings(null);
         }
-        new MyTask(getApplicationContext()).execute();
+        smsManager.loadUnread();
 
         requestSmsPermission();
     }
@@ -194,26 +189,5 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
     @Override
     public void onMessageSent(int resultCode, Message message) {
         Toast.makeText(getApplicationContext(), "May have been sent: "+message.getData(), Toast.LENGTH_SHORT).show();
-    }
-
-    private class MyTask extends AsyncTask<String, Integer, Void>{
-        Context context;
-        public MyTask(Context context){
-            super();
-            this.context = context;
-        }
-        @Override
-        protected Void doInBackground(String... strings) {
-            SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMSHandler.UNREAD_SMS_DATABASE_NAME)
-                    .enableMultiInstanceInvalidation()
-                    .build();
-            SmsEntity[] messages = db.access().loadAllSms();
-            for(SmsEntity sms : messages){
-                db.access().deleteSms(sms);
-                SMSMessage m = new SMSMessage(new SMSPeer(sms.address),sms.body);
-                onMessageReceived(m);
-            }
-            return null;
-        }
     }
 }
