@@ -40,7 +40,7 @@ public class SMSHandler {
 
     private static final String EXTRA_ADDRESS_KEY = "address";
     private static final String EXTRA_MESSAGE_KEY = "message";
-    private static final int PI_REQUEST_CODE = 0;
+    private static final int PI_DEFAULT_REQUEST_CODE = 0;
 
     private static final String[] ERRORS = {
             "A ReceivedMessageListener is already attached to this instance.",
@@ -93,10 +93,8 @@ public class SMSHandler {
                 if(intent.getAction().equals(RECEIVED_BROADCAST)) {
                     if (receivedListener != null){
                         for(SmsMessage message : Telephony.Sms.Intents.getMessagesFromIntent(intent)){
-                            if(message.getMessageBody().contains(APP_KEY)){
-                                SMSMessage m = new SMSMessage(message);
-                                receivedListener.onMessageReceived(m);
-                            }
+                            if(SmsUtils.isMessagePertinent(message))
+                                receivedListener.onMessageReceived(new SMSMessage(message));
                         }
                     }
                 }
@@ -165,9 +163,17 @@ public class SMSHandler {
     private PendingIntent getPertinentPendingIntent(Intent intent){
         return PendingIntent.getBroadcast(
                 currentContext,
-                PI_REQUEST_CODE,intent,
+                generateRequestCode(),intent,
                 PendingIntent.FLAG_CANCEL_CURRENT
         );
+    }
+
+    /**
+     * Method to generate a unique request code based on current system time
+     * @return an int value ranging from 0 to Integer.MAX_VALUE
+     */
+    private int generateRequestCode(){
+        return (int)(System.currentTimeMillis()%Integer.MAX_VALUE);
     }
 
     /**
