@@ -12,33 +12,37 @@ import static org.junit.Assert.assertTrue;
  */
 public class SmsPeerTest {
 
-    private SMSPeer peer;
-
     @Test
     public void getAddress(){
-        String address = "335";
-        peer = new SMSPeer(address);
+        String address = "+12025550100";
+        SMSPeer peer = new SMSPeer(address);
         assertEquals(address, peer.getAddress());
+    }
+
+    @Test
+    public void isNull(){
+        SMSPeer peer = new SMSPeer(null);
+        assertFalse(peer.isValid());
     }
 
     @Test
     public void isEmpty(){
         String address = "";
-        peer = new SMSPeer(address);
+        SMSPeer peer = new SMSPeer(address);
         assertFalse(peer.isValid());
     }
 
     @Test
     public void isBlank(){
         String address = " ";
-        peer = new SMSPeer(address);
+        SMSPeer peer = new SMSPeer(address);
         assertFalse(peer.isValid());
     }
 
     @Test
     public void isValid(){
-        String address = "3336";
-        peer = new SMSPeer(address);
+        String address = "+12025550100";
+        SMSPeer peer = new SMSPeer(address);
         assertTrue(peer.isValid());
     }
 

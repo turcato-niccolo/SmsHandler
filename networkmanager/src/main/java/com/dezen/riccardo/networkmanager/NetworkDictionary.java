@@ -39,6 +39,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         database = new NetworkDictionaryDatabase(context);
         peers = new HashMap<>();
         resources = new HashMap<>();
+        importFromDatabase();
     }
 
     /**
@@ -71,7 +72,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     /**
      * Exports resources and peer from maps to database
      */
-    private void exportToDatabase(){
+    public void exportToDatabase(){
         exportToDatabaseTask = new ExportToDatabaseTask();
         exportToDatabaseTask.execute(database);
     }

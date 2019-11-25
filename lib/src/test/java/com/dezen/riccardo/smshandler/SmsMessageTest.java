@@ -1,9 +1,13 @@
 package com.dezen.riccardo.smshandler;
 
+import android.telephony.SmsMessage;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Giorgia Bortoletti
@@ -16,7 +20,7 @@ public class SmsMessageTest {
 
     @Before
     public void createMessage(){
-        peer = new SMSPeer("335");
+        peer = new SMSPeer("+12025550100");
         data = "body";
         message = new SMSMessage(peer, data);
     }
@@ -32,22 +36,36 @@ public class SmsMessageTest {
     }
 
     @Test
-    public void isNotValidPeer(){
-        peer = new SMSPeer("");
-        message = new SMSMessage(peer, data);
-        assertEquals(false, message.isValid());
+    public void isEmptyPeer(){
+        SMSPeer peerEmpty = new SMSPeer("");
+        SMSMessage newMessage = new SMSMessage(peerEmpty, data);
+        assertFalse(newMessage.isValid());
     }
 
     @Test
-    public void isNotValidData(){
-        data = "";
-        message = new SMSMessage(peer, data);
-        assertEquals(false, message.isValid());
+    public void isNullPeer(){
+        SMSPeer peerNull = new SMSPeer(null);
+        SMSMessage newMessage = new SMSMessage(peerNull, data);
+        assertFalse(newMessage.isValid());
+    }
+
+    @Test
+    public void isBlankPeer(){
+        SMSPeer peerBlank = new SMSPeer("  ");
+        SMSMessage newMessage = new SMSMessage(peerBlank, data);
+        assertFalse(newMessage.isValid());
+    }
+
+    @Test
+    public void isEmptyData(){
+        String dataEmpty = "";
+        SMSMessage newMessage = new SMSMessage(peer, dataEmpty);
+        assertFalse(newMessage.isValid());
     }
 
     @Test
     public void isValid(){
-        assertEquals(true, message.isValid());
+        assertTrue(message.isValid());
     }
 
 }

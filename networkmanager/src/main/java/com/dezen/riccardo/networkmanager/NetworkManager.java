@@ -64,10 +64,10 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     private final String MANAGER_TAG = "MANAGER_TAG";
 
     public NetworkManager(Context registerContext) {
-         dictionary = new NetworkDictionary(context);
          handler = SMSManager.getInstance(registerContext);
          handler.setReceiveListener(this);
          context = registerContext;
+         dictionary = new NetworkDictionary(context);
          isPartOfNetwork = false;
     }
 
@@ -184,8 +184,8 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
 
     @Override
     public void onMessageReceived(SMSMessage message) {
-        //SWITCH???
         String receivedMessageString = message.getData().toString();
+
         if(receivedMessageString.contains(actionMessages[ACTIONS.INVITE.value()])){
             //Message contains invitation
             SMSPeer inviter = message.getPeer();
@@ -227,5 +227,9 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
             String name = receivedMessageString.split(" ")[1];
             dictionary.removeResource(new StringResource(name,""));
         }
+    }
+
+    public void onClose(){
+        dictionary.exportToDatabase();
     }
 }

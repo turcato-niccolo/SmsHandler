@@ -5,6 +5,9 @@ import android.telephony.PhoneNumberUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author Riccardo De Zen. Based on decisions of whole class.
  */
@@ -29,7 +32,7 @@ public class SMSPeer extends Peer<String> {
     /**
      * @return true if this peer is valid
      */
-    public boolean isValid(){ return !isEmpty() && !isBlank() && isAddressValid(); }
+    public boolean isValid(){ return address != null && !isEmpty() && !isBlank() && isAddressValid(); }
 
     /**
      * @return true if address is empty string
@@ -47,7 +50,10 @@ public class SMSPeer extends Peer<String> {
      * @return true if address fulfills international phone address standards
      */
     private boolean isAddressValid(){
-        return (PhoneNumberUtils.isGlobalPhoneNumber(address));
+        String PHONE_VERIFICATION = "[\\+]?[0-9.-]+";
+        Pattern phonePattern = Pattern.compile(PHONE_VERIFICATION);
+        Matcher matcher = phonePattern.matcher(address);
+        return matcher.matches();
     }
 
     /**
