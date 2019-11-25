@@ -51,15 +51,6 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
     }
 
     /**
-     * Method to check ownership of the instance. Should be called after getInstance to assert whether
-     * a new instance was created or it still was the old one.
-     * @return true if given context is equal to the current owning context
-     */
-    public boolean isOwner(Context context){
-        return context.getApplicationContext().equals(currentContext);
-    }
-
-    /**
      * method to send an SMSMessage to its associated Peer
      * @param message the valid SMSMessage to send
      * @return true if the message is valid and it has been sent, false otherwise
