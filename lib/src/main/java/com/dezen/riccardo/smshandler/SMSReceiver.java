@@ -1,11 +1,8 @@
 package com.dezen.riccardo.smshandler;
 
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
 
@@ -37,17 +34,14 @@ public class SMSReceiver extends BroadcastReceiver {
                  * immediate response is available. A broadcast event is therefore fired to
                  * notify said listener through the receiver it is attached to.
                  */
-                Intent local_intent = new Intent();
-                local_intent.replaceExtras(intent);
-                local_intent.setAction(SMSHandler.RECEIVED_BROADCAST);
-                local_intent.setPackage(context.getApplicationContext().getPackageName());
-                context.sendBroadcast(local_intent);
+                Intent localIntent = new Intent();
+                localIntent.replaceExtras(intent);
+                localIntent.setAction(SMSHandler.RECEIVED_BROADCAST);
+                localIntent.setPackage(context.getApplicationContext().getPackageName());
+                context.sendBroadcast(localIntent);
             }
             else if(shouldWake){
-                Intent wake_intent = new Intent();
-                wake_intent.replaceExtras(intent);
-                wake_intent.setAction(SMSHandler.WAKE_BROADCAST);
-                sendImplicitBroadcast(context, wake_intent);
+                wakeActivity(context, intent);
             }
             else{
                 SMSDatabaseManager.getInstance(context).addSMS(messages);
@@ -72,26 +66,29 @@ public class SMSReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Method to turn an implicit Broadcast into explicit ones. This method is needed in order to
-     * send broadcasts to manifest declared receivers on API 26 and above, since the ability to send
-     * implicit broadcasts to manifest receivers in the same app has been removed.
-     * //TODO test this method on APIs below 26.
+     * Method to start an activity from its canonical name, if such an activity has been specified
+     * in the apposite file.
+     * @param context the context starting the Activity.
+     * @param intentWithExtras the Intent containing any extras to be passed along.
      */
-    public void sendImplicitBroadcast(Context context, Intent intent){
-        int flags = 0;
-        PackageManager packageManager = context.getPackageManager();
-        //get all broadcastReceivers for this context.
-        List<ResolveInfo> matchingReceivers = packageManager.queryBroadcastReceivers(intent,flags);
-        for (ResolveInfo resolveInfo : matchingReceivers) {
-            //create and broadcast intent for every matching receiver
-            //this is a specific broadcast because it targets the receivers specifically
-            Intent explicit=new Intent(intent);
-            ComponentName componentName = new ComponentName(
-                    resolveInfo.activityInfo.applicationInfo.packageName,
-                    resolveInfo.activityInfo.name
-            );
-            explicit.setComponent(componentName);
-            context.sendBroadcast(explicit);
+    private void wakeActivity(Context context, Intent intentWithExtras){
+        try{
+            Class activityClass = getActivityToWake();
+            if(activityClass == null) return;
+            Intent wakeIntent = new Intent(context, activityClass);
+            wakeIntent.replaceExtras(intentWithExtras);
+            wakeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(wakeIntent);
+        }catch(Exception e){
+            e.printStackTrace();
         }
+    }
+
+    /**
+     * Reads from disk the name of the activity that should be started and returns its class;
+     * @return The class of the Activity that should be woken up, null if none is present.
+     */
+    private Class getActivityToWake(){
+        return null;
     }
 }
