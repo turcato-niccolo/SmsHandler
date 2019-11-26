@@ -3,6 +3,7 @@ package com.dezen.riccardo.smshandler;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
 
@@ -73,7 +74,7 @@ public class SMSReceiver extends BroadcastReceiver {
      */
     private void wakeActivity(Context context, Intent intentWithExtras){
         try{
-            Class activityClass = getActivityToWake();
+            Class activityClass = getActivityToWake(context);
             if(activityClass == null) return;
             Intent wakeIntent = new Intent(context, activityClass);
             wakeIntent.replaceExtras(intentWithExtras);
@@ -85,10 +86,26 @@ public class SMSReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Reads from disk the name of the activity that should be started and returns its class;
-     * @return The class of the Activity that should be woken up, null if none is present.
+     * Reads from preferences the name of the activity that should be started and returns its class;
+     * @return The class of the Activity that should be woken up, null if none is present or the
+     * saved value is invalid.
      */
-    private Class getActivityToWake(){
-        return null;
+    private Class getActivityToWake(Context context){
+        final String DEFAULT = "";
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
+                SMSHandler.PREFERENCES_FILE_NAME,
+                Context.MODE_PRIVATE
+        );
+        String activityClassName = sharedPreferences.getString(
+                SMSHandler.PREFERENCE_WAKE_ACTIVITY_KEY,
+                DEFAULT
+        );
+        try{
+            return Class.forName(activityClassName);
+        }
+        catch(ClassNotFoundException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.provider.Telephony;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
@@ -33,6 +34,7 @@ public class SMSHandler {
     static final String SENT_BROADCAST = "SMS_HANDLER_SMS_SENT";
     static final String DELIVERED_BROADCAST = "SMS_HANDLER_SMS_DELIVERED";
 
+    public static final String UNREAD_SMS_DATABASE_NAME = "sms-database";
     static final String PREFERENCES_FILE_NAME = "smshandler.PREFERENCES_FILE_NAME";
     static final String PREFERENCE_WAKE_ACTIVITY_KEY = "smshandler.ACTIVITY_TO_WAKE";
 
@@ -262,9 +264,12 @@ public class SMSHandler {
      */
     public boolean setActivityToWake(Activity activity){
         String activityClassName = activity.getClass().getCanonicalName();
-        PreferenceManager preferenceManager = PreferenceManager.getManagerForFile(PREFERENCES_FILE_NAME);
-        if(preferenceManager != null)
-            return preferenceManager.putString(PREFERENCE_WAKE_ACTIVITY_KEY, activityClassName);
-        return false;
+        SharedPreferences sharedPreferences = currentContext.getSharedPreferences(
+                PREFERENCES_FILE_NAME,
+                Context.MODE_PRIVATE
+        );
+        SharedPreferences.Editor editor = sharedPreferences.edit()
+                .putString(PREFERENCE_WAKE_ACTIVITY_KEY, activityClassName);
+        return editor.commit();
     }
 }
