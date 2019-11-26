@@ -259,11 +259,14 @@ public class SMSHandler {
 
     /**
      * Method to save String name for the Activity that should wake up on urgent messages.
-     * @param activity the Activity that should wake up.
+     * @param activityClass the Activity that should wake up.
+     * @throws IllegalArgumentException if the passed class does not extend Activity.
      * @return true if the value was set, false otherwise.
      */
-    public boolean setActivityToWake(Activity activity){
-        String activityClassName = activity.getClass().getCanonicalName();
+    public boolean setActivityToWake(Class activityClass){
+        if(!Activity.class.isAssignableFrom(activityClass))
+            throw new IllegalArgumentException("This method requires a class extending Activity");;
+        String activityClassName = activityClass.getCanonicalName();
         SharedPreferences sharedPreferences = currentContext.getSharedPreferences(
                 PREFERENCES_FILE_NAME,
                 Context.MODE_PRIVATE
