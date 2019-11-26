@@ -1,5 +1,6 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.content.Context;
 
 /**
@@ -130,5 +131,14 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
      */
     public boolean loadUnread(){
         return smsHandler.loadUnread();
+    }
+
+    /**
+     * Method to save String name for the Activity that should wake up on urgent messages.
+     * @param activity the Activity that should wake up.
+     * @return true if the value was set, false otherwise.
+     */
+    public boolean setActivityToWake(Activity activity){
+        return smsHandler.setActivityToWake(activity);
     }
 }

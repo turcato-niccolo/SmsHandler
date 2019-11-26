@@ -1,5 +1,6 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,12 +29,12 @@ public class SMSHandler {
     public static final String APP_KEY = "<#>";
     public static final String WAKE_KEY = "<urgent>";
 
-    public static final String WAKE_BROADCAST = "SMS_HANDLER_FORCE_WAKE";
     static final String RECEIVED_BROADCAST = "SMS_HANDLER_NEW_SMS";
     static final String SENT_BROADCAST = "SMS_HANDLER_SMS_SENT";
     static final String DELIVERED_BROADCAST = "SMS_HANDLER_SMS_DELIVERED";
 
-    public static final String UNREAD_SMS_DATABASE_NAME = "UNREAD_SMS_DATABASE";
+    static final String PREFERENCES_FILE_NAME = "smshandler.PREFERENCES_FILE_NAME";
+    static final String PREFERENCE_WAKE_ACTIVITY_KEY = "smshandler.ACTIVITY_TO_WAKE";
 
     private static final String EXTRA_ADDRESS_KEY = "address";
     private static final String EXTRA_MESSAGE_KEY = "message";
@@ -252,5 +253,18 @@ public class SMSHandler {
             return true;
         }
         else return false;
+    }
+
+    /**
+     * Method to save String name for the Activity that should wake up on urgent messages.
+     * @param activity the Activity that should wake up.
+     * @return true if the value was set, false otherwise.
+     */
+    public boolean setActivityToWake(Activity activity){
+        String activityClassName = activity.getClass().getCanonicalName();
+        PreferenceManager preferenceManager = PreferenceManager.getManagerForFile(PREFERENCES_FILE_NAME);
+        if(preferenceManager != null)
+            return preferenceManager.putString(PREFERENCE_WAKE_ACTIVITY_KEY, activityClassName);
+        return false;
     }
 }
