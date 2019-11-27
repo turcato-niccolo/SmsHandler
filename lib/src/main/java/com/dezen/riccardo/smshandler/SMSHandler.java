@@ -1,20 +1,19 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.provider.Telephony;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.room.Room;
 
-import com.dezen.riccardo.smshandler.database.SmsDatabase;
-import com.dezen.riccardo.smshandler.database.SmsEntity;
+import com.dezen.riccardo.smshandler.database.SMSDatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,16 +30,17 @@ public class SMSHandler {
     public static final String APP_KEY = "<#>";
     public static final String WAKE_KEY = "<urgent>";
 
-    public static final String WAKE_BROADCAST = "SMS_HANDLER_FORCE_WAKE";
     static final String RECEIVED_BROADCAST = "SMS_HANDLER_NEW_SMS";
     static final String SENT_BROADCAST = "SMS_HANDLER_SMS_SENT";
     static final String DELIVERED_BROADCAST = "SMS_HANDLER_SMS_DELIVERED";
 
-    public static final String UNREAD_SMS_DATABASE_NAME = "UNREAD_SMS_DATABASE";
+    public static final String UNREAD_SMS_DATABASE_NAME = "sms-database";
+    static final String PREFERENCES_FILE_NAME = "smshandler.PREFERENCES_FILE_NAME";
+    static final String PREFERENCE_WAKE_ACTIVITY_KEY = "smshandler.ACTIVITY_TO_WAKE";
 
     private static final String EXTRA_ADDRESS_KEY = "address";
     private static final String EXTRA_MESSAGE_KEY = "message";
-    private static final int PI_REQUEST_CODE = 0;
+    private static final int PI_DEFAULT_REQUEST_CODE = 0;
 
     private static final String[] ERRORS = {
             "A ReceivedMessageListener is already attached to this instance.",
@@ -71,11 +71,13 @@ public class SMSHandler {
     }
 
     /**
-     * Method to be called only when the context that instantiated the object ceases to be valid.
+     * Method to be called only when the context that instantiated the object ceases to be valid,
+     * this instance becomes invalid as well and will throw an exception when used.
      * The user is responsible for creating a new instance of this class with a new valid context.
      */
     public void onContextDestroyed(){
         currentContext.unregisterReceiver(smsEventReceiver);
+        currentContext = null;
     }
 
     /**
@@ -93,10 +95,8 @@ public class SMSHandler {
                 if(intent.getAction().equals(RECEIVED_BROADCAST)) {
                     if (receivedListener != null){
                         for(SmsMessage message : Telephony.Sms.Intents.getMessagesFromIntent(intent)){
-                            if(message.getMessageBody().contains(APP_KEY)){
-                                SMSMessage m = new SMSMessage(message);
-                                receivedListener.onMessageReceived(m);
-                            }
+                            if(SmsUtils.isMessagePertinent(message))
+                                receivedListener.onMessageReceived(new SMSMessage(message));
                         }
                     }
                 }
@@ -133,6 +133,7 @@ public class SMSHandler {
      * Method that sends a text message through SmsManager
      * @param destination the valid destination address for the message, in phone number format
      * @param message the valid body of the message to be sent
+     * @param urgent whether this message should contain the code to fire a broadcast
      */
     public void sendSMS(String destination, @NonNull String message, boolean urgent){
         if(!SmsUtils.isMessageValid(message,urgent)) return;
@@ -164,9 +165,17 @@ public class SMSHandler {
     private PendingIntent getPertinentPendingIntent(Intent intent){
         return PendingIntent.getBroadcast(
                 currentContext,
-                PI_REQUEST_CODE,intent,
+                generateRequestCode(),intent,
                 PendingIntent.FLAG_CANCEL_CURRENT
         );
+    }
+
+    /**
+     * Method to generate a unique request code based on current system time
+     * @return an int value ranging from 0 to Integer.MAX_VALUE
+     */
+    private int generateRequestCode(){
+        return (int)(System.currentTimeMillis()%Integer.MAX_VALUE);
     }
 
     /**
@@ -236,25 +245,34 @@ public class SMSHandler {
     static boolean shouldHandleIncomingSms(){ return !activeReceivedListeners.isEmpty();}
 
     /**
-     * Method to clear and forward the unread messages from the database to the smsEventListener. Due to database access restrictions
-     * this method cannot be called from the main thread. If no smsEventListener is present, this method simply clears
-     * the database returning the cleared values.
-     * @param context the calling context, used to instantiate the database.
-     * @return an array containing the SmsEntity object containing the unread sms data.
-     * @throws IllegalStateException if it's run from the main Thread.
-     * TODO move to dedicated class
+     * Method to load the unread sms messages and forward them to the listener asynchronously.
+     * @return true if the listener is assigned and an attempt has been made, false otherwise.
      */
-    public SmsEntity[] fetchUnreadMessages(Context context){
-        SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, UNREAD_SMS_DATABASE_NAME)
-                .enableMultiInstanceInvalidation()
-                .build();
-        SmsEntity[] messages = db.access().loadAllSms();
-        for(SmsEntity sms : messages){
-            db.access().deleteSms(sms);
-            SMSMessage m = new SMSMessage(new SMSPeer(sms.address),sms.body);
-            if(receivedListener != null) receivedListener.onMessageReceived(m);
-            Log.e("Unread Message", sms.address+" "+sms.body);
+    public boolean loadUnread(){
+        if(receivedListener != null){
+            SMSDatabaseManager manager = SMSDatabaseManager.getInstance(currentContext);
+            manager.forwardAllSMS(receivedListener);
+            return true;
         }
-        return messages;
+        else return false;
+    }
+
+    /**
+     * Method to save String name for the Activity that should wake up on urgent messages.
+     * @param activityClass the Activity that should wake up.
+     * @throws IllegalArgumentException if the passed class does not extend Activity.
+     * @return true if the value was set, false otherwise.
+     */
+    public boolean setActivityToWake(Class activityClass){
+        if(!Activity.class.isAssignableFrom(activityClass))
+            throw new IllegalArgumentException("This method requires a class extending Activity");;
+        String activityClassName = activityClass.getCanonicalName();
+        SharedPreferences sharedPreferences = currentContext.getSharedPreferences(
+                PREFERENCES_FILE_NAME,
+                Context.MODE_PRIVATE
+        );
+        SharedPreferences.Editor editor = sharedPreferences.edit()
+                .putString(PREFERENCE_WAKE_ACTIVITY_KEY, activityClassName);
+        return editor.commit();
     }
 }
