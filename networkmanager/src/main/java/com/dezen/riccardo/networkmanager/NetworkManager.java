@@ -52,7 +52,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
             "ADD_RESOURCE",
             "REMOVE_RESOURCE"
     };
-    //TODO add questioning whether invited user is already part of the network.
+
     //TODO add support for multiple networks.
 
     private boolean isPartOfNetwork;
@@ -74,7 +74,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     /**
      * This version of the constructor should be used to insert the peer that builds the object
      * (if it is a peer for the sms Network)
-     * @param firstPeer
+     * @param firstPeer the peer tha builds the network
      */
     public NetworkManager(Context registerContext, SMSPeer firstPeer) {
         this(registerContext);
@@ -88,6 +88,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
      */
     @Override
     public void invite(SMSPeer newPeer) {
+        if(!isConnectedToPeer(newPeer))
         handler.sendMessage(new SMSMessage(newPeer, actionMessages[ACTIONS.INVITE.value()]));
     }
 
@@ -103,8 +104,23 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     }
 
     /**
+     * @author Turcato
+     * Since the information we have about the network are just stored in the dictionary,
+     * we search the peer's presence in it
+     *
+     * @param peer the peer whose presence in the network has to be evaluated
+     * @return true if the given peer is part of the network, false if the peer is null or isn't part of the network
+     */
+    public boolean isConnectedToPeer(SMSPeer peer) {
+        if(peer != null) {
+            return dictionary.contains(peer);
+        }
+        else return false;
+    }
+
+    /**
      * Method for when a user has accepted the invitation
-     * @param invited
+     * @param invited invited peer
      */
     private void onInviteAccepted(SMSPeer invited) {
         Log.d(MANAGER_TAG, invited.getAddress() +" has accepted");
@@ -184,8 +200,8 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
 
     @Override
     public void onMessageReceived(SMSMessage message) {
-        String receivedMessageString = message.getData().toString();
-
+        String receivedMessageString = message.getData();
+      
         if(receivedMessageString.contains(actionMessages[ACTIONS.INVITE.value()])){
             //Message contains invitation
             SMSPeer inviter = message.getPeer();
