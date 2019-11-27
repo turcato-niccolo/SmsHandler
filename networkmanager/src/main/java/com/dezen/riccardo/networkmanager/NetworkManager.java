@@ -5,9 +5,12 @@ import android.util.Log;
 
 import com.dezen.riccardo.smshandler.CommunicationHandler;
 import com.dezen.riccardo.smshandler.ReceivedMessageListener;
+import com.dezen.riccardo.smshandler.SMSHandler;
 import com.dezen.riccardo.smshandler.SMSManager;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
+
+import java.nio.charset.Charset;
 
 /**
  * @author Niccolò Turcato. Invitation sending and receiving. Switch actions on Message received.
@@ -16,9 +19,10 @@ import com.dezen.riccardo.smshandler.SMSPeer;
 public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringResource, NetworkDictionary> implements ReceivedMessageListener<SMSMessage> {
     /**
      * Actions the network can send and receive.
-     * Temporary syntax for messages is as follows:
-     * <#>[ACTION] [PARAMETER] [EXTRA]
+     * Current syntax for messages is as follows:
+     * <SMMLibrary-TAG>[ACTION]<separation>[PARAMETER]<separation>[EXTRA]
      */
+
     private enum ACTIONS {
         //<#>INVITE [IGNORED] [IGNORED]
         INVITE(0),
@@ -53,6 +57,39 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
             "REMOVE_RESOURCE"
     };
 
+    private static class Actions
+    {
+        static String INVITE(){
+            return "INVITE";
+        }
+        static String ACCEPT(){
+            return "ACCEPT";
+        }
+        static String ADD_USER(){
+            return "ADD_USER";
+        }
+        static String REMOVE_USER(){
+            return "REMOVE_USER";
+        }
+        static String GREET_USER(){
+            return "GREET_USER";
+        }
+        static String MSG(){
+            return "MSG";
+        }
+        static String ADD_RESOURCE(){
+            return "ADD_RESOURCE";
+        }
+        static String REMOVE_RESOURCE(){
+            return "REMOVE_RESOURCE";
+        }
+    }
+
+    private static final String separation =  "\r"; //TODO search for a better character
+    private static final int commandPosition = 0, peerAddressPosition = 1,
+            messageBodyPosition = 1,
+            resourceKeyPosition = 1, resourceValuePosition = 2;
+
     //TODO add support for multiple networks.
 
     private boolean isPartOfNetwork;
@@ -64,10 +101,10 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     private final String MANAGER_TAG = "MANAGER_TAG";
 
     public NetworkManager(Context registerContext) {
+         dictionary = new NetworkDictionary(registerContext);
          handler = SMSManager.getInstance(registerContext);
          handler.setReceiveListener(this);
          context = registerContext;
-         dictionary = new NetworkDictionary(context);
          isPartOfNetwork = false;
     }
 
@@ -89,7 +126,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     @Override
     public void invite(SMSPeer newPeer) {
         if(!isConnectedToPeer(newPeer))
-        handler.sendMessage(new SMSMessage(newPeer, actionMessages[ACTIONS.INVITE.value()]));
+        handler.sendMessage(new SMSMessage(newPeer, Actions.INVITE()));
     }
 
     /**
@@ -98,7 +135,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
      */
     @Override
     public void acceptInvite(SMSPeer inviter) {
-        handler.sendMessage(new SMSMessage(inviter, actionMessages[ACTIONS.ACCEPT.value()]));
+        handler.sendMessage(new SMSMessage(inviter, Actions.ACCEPT()));
         dictionary.addPeer(inviter);
         isPartOfNetwork = true;
     }
@@ -125,7 +162,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     private void onInviteAccepted(SMSPeer invited) {
         Log.d(MANAGER_TAG, invited.getAddress() +" has accepted");
         dictionary.addPeer(invited);
-        broadcast(ACTIONS.GREET_USER,invited.getAddress(),"");
+        broadcast(Actions.GREET_USER(),invited.getAddress(),"");
         //This Peer wasn't part of a network but now it is since someone accepted its invitation.
         if(!isPartOfNetwork) isPartOfNetwork = true;
     }
@@ -136,7 +173,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
      */
     public void createResource(StringResource newResource) {
         dictionary.addResource(newResource);
-        broadcast(ACTIONS.ADD_RESOURCE,newResource.getName(),newResource.getValue());
+        broadcast(Actions.ADD_RESOURCE(),newResource.getName(),newResource.getValue());
     }
 
     /**
@@ -182,11 +219,13 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
      * Method to send some kind of broadcast to the whole network
      * @param action the action to broadcast
      */
-    public void broadcast(ACTIONS action, String param, String extra) {
+    public void broadcast(String action, String param, String extra) {
         for(SMSPeer peer : getAvailablePeers()){
             if(!peer.equals(myPeer))
                 handler.sendMessage(
-                    new SMSMessage(peer, actionMessages[action.value()]+" "+param+" "+extra)
+                    new SMSMessage(peer, action
+                            + separation + param
+                            + separation + extra)
                 );
         }
     }
@@ -195,57 +234,64 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
      * Method to test a generic broadcast.
      */
     public void smile(){
-        broadcast(ACTIONS.MSG,"SMILE","");
+        broadcast(Actions.MSG(),"SMILE","");
     }
 
     @Override
     public void onMessageReceived(SMSMessage message) {
+        //SWITCH???
         String receivedMessageString = message.getData();
-      
-        if(receivedMessageString.contains(actionMessages[ACTIONS.INVITE.value()])){
+
+        //Removing Library key String
+        receivedMessageString = receivedMessageString.replace(SMSHandler.APP_KEY, "");
+
+
+        if(receivedMessageString.contains(Actions.INVITE())){
             //Message contains invitation
             SMSPeer inviter = message.getPeer();
             acceptInvite(inviter);
         }
 
-        if(receivedMessageString.contains(actionMessages[ACTIONS.ACCEPT.value()])){
+        if(receivedMessageString.contains(Actions.ACCEPT())){
             //Message contains invitation acceptance
             SMSPeer acceptingPeer = message.getPeer();
             onInviteAccepted(acceptingPeer);
         }
 
-        if(receivedMessageString.contains(actionMessages[ACTIONS.ADD_USER.value()])){
+        if(receivedMessageString.contains(Actions.ADD_USER())){
             //Add the received parameter user
-            dictionary.addPeer(new SMSPeer(receivedMessageString.split(" ")[1]));
+            dictionary.addPeer(new SMSPeer(receivedMessageString.split(separation)[peerAddressPosition]));
         }
 
-        if(receivedMessageString.contains(actionMessages[ACTIONS.GREET_USER.value()])){
+        if(receivedMessageString.contains(Actions.GREET_USER())){
             //Notifies the received parameter user that it should add this user
-            SMSPeer newPeer = new SMSPeer(receivedMessageString.split(" ")[1]);
+            SMSPeer newPeer = new SMSPeer(receivedMessageString.split(separation)[peerAddressPosition]);
             dictionary.addPeer(newPeer);
-            handler.sendMessage(new SMSMessage(newPeer,
-                    actionMessages[ACTIONS.ADD_USER.value()]+" "+myPeer));
+            handler.sendMessage(new SMSMessage(newPeer, Actions.ADD_USER() + separation + myPeer));
         }
 
-        if(receivedMessageString.contains(actionMessages[ACTIONS.MSG.value()])){
+        if(receivedMessageString.contains(Actions.REMOVE_USER())){
+            //Peer removal requested
+            String peerAddress = receivedMessageString.split(separation)[peerAddressPosition];
+            dictionary.removePeer(new SMSPeer(peerAddress));
+        }
+
+        if(receivedMessageString.contains(Actions.MSG())){
             if(listener != null) listener.onMessageReceived(message);
         }
 
-        if(receivedMessageString.contains(actionMessages[ACTIONS.ADD_RESOURCE.value()])){
-            String[] words = receivedMessageString.split(" ");
-            String name = words[1];
-            StringBuilder value = new StringBuilder();
-            for(int i = 2; i < words.length; i++) value.append(words[i]);
-            dictionary.addResource(new StringResource(name,value.toString()));
+        if(receivedMessageString.contains(Actions.ADD_RESOURCE())){
+            String[] words = receivedMessageString.split(separation);
+            String resourceKey = words[resourceKeyPosition];
+            StringBuilder resourceValue = new StringBuilder();
+            for(int i = resourceValuePosition; i < words.length; i++) resourceValue.append(words[i]);
+            dictionary.addResource(new StringResource(resourceKey,resourceValue.toString()));
         }
 
-        if(receivedMessageString.contains(actionMessages[ACTIONS.REMOVE_RESOURCE.value()])){
-            String name = receivedMessageString.split(" ")[1];
-            dictionary.removeResource(new StringResource(name,""));
+        if(receivedMessageString.contains(Actions.REMOVE_RESOURCE())){
+            String resourceKey = receivedMessageString.split(separation)[peerAddressPosition];
+            dictionary.removeResource(new StringResource(resourceKey,""));
         }
-    }
 
-    public void onClose(){
-        dictionary.exportToDatabase();
     }
 }
