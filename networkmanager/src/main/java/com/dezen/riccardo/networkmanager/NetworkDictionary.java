@@ -5,17 +5,14 @@ import android.os.AsyncTask;
 
 import androidx.room.Room;
 
-import com.dezen.riccardo.networkmanager.database_dictionary.PeerDatabase;
+import com.dezen.riccardo.networkmanager.database_dictionary.DictionaryDatabase;
 import com.dezen.riccardo.networkmanager.database_dictionary.PeerEntity;
-import com.dezen.riccardo.networkmanager.database_dictionary.ResourceDatabase;
 import com.dezen.riccardo.networkmanager.database_dictionary.ResourceEntity;
-import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.dezen.riccardo.smshandler.SMSHandler.UNREAD_SMS_DATABASE_NAME;
 import static java.lang.Long.valueOf;
 
 /**
@@ -25,6 +22,9 @@ import static java.lang.Long.valueOf;
  * @author Riccardo De Zen, Giorgia Bortoletti
  */
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
+
+    public static final String NETWORK_DICTIONARY_DATABASE_NAME = "NETWORK_DICTIONARY_DATABASE";
+
     private Map<String, String>  peers;
     private Map<String, String> resources;
     private NetworkDictionaryDatabase database;
@@ -228,19 +228,14 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     private class NetworkDictionaryDatabase{
 
-
-        private ResourceDatabase resourceDatabase;
-        private PeerDatabase peerDatabase;
+        private DictionaryDatabase dictionaryDatabase;
 
         /**
          * Constructor of NetworkDictionaryDatabase
          * @param context application context
          */
         private NetworkDictionaryDatabase(Context context) {
-            this.resourceDatabase = Room.databaseBuilder(context, ResourceDatabase.class, UNREAD_SMS_DATABASE_NAME)
-                    .enableMultiInstanceInvalidation()
-                    .build();
-            this.peerDatabase = Room.databaseBuilder(context, PeerDatabase.class, UNREAD_SMS_DATABASE_NAME)
+            this.dictionaryDatabase = Room.databaseBuilder(context, DictionaryDatabase.class, NETWORK_DICTIONARY_DATABASE_NAME)
                     .enableMultiInstanceInvalidation()
                     .build();
         }
@@ -251,7 +246,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return true if peer has been added, false otherwise.
          */
         private boolean addPeer(SMSPeer newPeer){
-            peerDatabase.access().add(new PeerEntity(newPeer.getAddress()));
+            dictionaryDatabase.access().addPeer(new PeerEntity(newPeer.getAddress()));
             return containsPeer(newPeer);
         }
 
@@ -261,7 +256,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return true if peer doesn't exist, false otherwise.
          */
         private boolean removePeer(SMSPeer peerToRemove) {
-            peerDatabase.access().remove(new PeerEntity(peerToRemove.getAddress()));
+            dictionaryDatabase.access().removePeer(new PeerEntity(peerToRemove.getAddress()));
             return !containsPeer(peerToRemove);
         }
 
@@ -271,7 +266,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return true if peer has been updated, false otherwise.
          */
         private boolean updatePeer(SMSPeer updatedPeer) {
-            peerDatabase.access().update(new PeerEntity(updatedPeer.getAddress()));
+            dictionaryDatabase.access().updatePeer(new PeerEntity(updatedPeer.getAddress()));
             return containsPeer(updatedPeer);
         }
 
@@ -281,7 +276,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return true if the peer was found
          */
         private boolean containsPeer(SMSPeer searchPeer) {
-            return peerDatabase.access().contains(searchPeer.getAddress());
+            return dictionaryDatabase.access().containsPeer(searchPeer.getAddress());
         }
 
         /**
@@ -289,9 +284,9 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return a list containing all Peers
          */
         private SMSPeer[] getPeers() {
-            int numbersPeer = peerDatabase.access().getAll().length;
+            int numbersPeer = dictionaryDatabase.access().getAllPeers().length;
             SMSPeer[] peerArray = new SMSPeer[numbersPeer];
-            PeerEntity[] peerEntities = peerDatabase.access().getAll();
+            PeerEntity[] peerEntities = dictionaryDatabase.access().getAllPeers();
             for(int i=0; i<numbersPeer; i++)
                 peerArray[i] = new SMSPeer(peerEntities[i].address);
             return peerArray;
@@ -303,7 +298,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return true if resource has been added, false otherwise.
          */
         private boolean addResource(StringResource newResource) {
-            resourceDatabase.access().add(new ResourceEntity(newResource.getName(), newResource.getValue()));
+            dictionaryDatabase.access().addResource(new ResourceEntity(newResource.getName(), newResource.getValue()));
             return containsResource(newResource);
         }
 
@@ -314,7 +309,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return true if resource doesn't exist, false otherwise.
          */
         private boolean removeResource(StringResource resourceToRemove) {
-            resourceDatabase.access().remove(new ResourceEntity(resourceToRemove.getName(), resourceToRemove.getValue()));
+            dictionaryDatabase.access().removeResource(new ResourceEntity(resourceToRemove.getName(), resourceToRemove.getValue()));
             return !containsResource(resourceToRemove);
         }
 
@@ -324,7 +319,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return return !true if resource has been updated, false otherwise.
          */
         private boolean updateResource(StringResource updatedResource) {
-            resourceDatabase.access().update(new ResourceEntity(updatedResource.getName(), updatedResource.getName()));
+            dictionaryDatabase.access().updateResource(new ResourceEntity(updatedResource.getName(), updatedResource.getName()));
             return !containsResource(updatedResource);
         }
 
@@ -333,9 +328,9 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return a list containing all Resources
          */
         private StringResource[] getResources() {
-            int numbersResource = resourceDatabase.access().getAll().length;
+            int numbersResource = dictionaryDatabase.access().getAllResources().length;
             StringResource[] resourceArray = new StringResource[numbersResource];
-            ResourceEntity[] resourceEntities = resourceDatabase.access().getAll();
+            ResourceEntity[] resourceEntities = dictionaryDatabase.access().getAllResources();
             for(int i=0; i<numbersResource; i++)
                 resourceArray[i] = new StringResource(resourceEntities[i].keyName, resourceEntities[i].value);
             return resourceArray;
@@ -347,7 +342,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return true if the Resource was found
          */
         private boolean containsResource(StringResource searchResource) {
-            return peerDatabase.access().contains(searchResource.getName());
+            return dictionaryDatabase.access().containsResource(searchResource.getName());
         }
 
 
