@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
@@ -21,7 +22,7 @@ public class NetworkDictionaryTest {
 
     //Reusable fields for Peer management tests
 
-    private String address = "+12025550100";
+    private String address = "+390425111000";
     private SMSPeer peer = new SMSPeer(address);
 
     //Reusable fields for Resource management tests
@@ -40,11 +41,10 @@ public class NetworkDictionaryTest {
 
     @Test
     public void addPeerAddsValidPeer() {
-        String newAddress = "example2";
-        SMSPeer newPeer = new SMSPeer(newAddress);
-        int oldLength = networkVocabulary.getPeers().length;
-        networkVocabulary.addPeer(newPeer);
-        assertEquals(oldLength+1,networkVocabulary.getPeers().length);
+        SMSPeer newPeer = new SMSPeer("+390425000000");
+        int previousLenght = networkVocabulary.getPeers().length;
+        assertTrue(networkVocabulary.addPeer(newPeer));
+        assertEquals(++previousLenght,networkVocabulary.getPeers().length);
     }
 
     @Test
@@ -69,10 +69,11 @@ public class NetworkDictionaryTest {
 
     @Test
     public void removePeerRemovesExistingPeer(){
-        String newAddress = "+12025550101";
-        SMSPeer newPeer = new SMSPeer(newAddress);
-        networkVocabulary.addPeer(newPeer);
+        SMSPeer newPeer = new SMSPeer("+390425000001");
+        int previousLenght = networkVocabulary.getPeers().length;
+        assertTrue(networkVocabulary.addPeer(newPeer));
         assertTrue(networkVocabulary.removePeer(newPeer));
+        assertEquals(previousLenght, networkVocabulary.getPeers().length);
     }
 
     @Test
@@ -80,10 +81,11 @@ public class NetworkDictionaryTest {
         String existingAddress = "I exist";
         SMSPeer existingPeer = new SMSPeer(existingAddress);
         networkVocabulary.addPeer(existingPeer);
+        int previousLenght = networkVocabulary.getPeers().length;
         String nonExistingAddress = "I don't";
         SMSPeer nonExistingPeer = new SMSPeer(nonExistingAddress);
         assertFalse(networkVocabulary.removePeer(nonExistingPeer));
-        assertEquals(1,networkVocabulary.getPeers().length);
+        assertEquals(previousLenght,networkVocabulary.getPeers().length);
     }
 
     @Test
@@ -94,19 +96,19 @@ public class NetworkDictionaryTest {
 
     @Test
     public void updatePeerUpdatesExistingPeer() {
-        String address = "+12025550100";
-        SMSPeer peer = new SMSPeer(address);
-        networkVocabulary.addPeer(peer);
-        assertTrue(networkVocabulary.updatePeer(peer));
-        assertEquals(peer,networkVocabulary.getPeers()[0]);
+        String address = "+390425000003";
+        SMSPeer examplePeer = new SMSPeer(address);
+        networkVocabulary.addPeer(examplePeer);
+        assertTrue(networkVocabulary.updatePeer(examplePeer));
+        //assertEquals(peer,networkVocabulary.getPeers()[0]);
     }
 
     @Test
     public void updatePeerIgnoresNonExistingPeer() {
-        String existingAddress = "+12025550102";
+        String existingAddress = "+390425000004"; //This one is added
         SMSPeer existingPeer = new SMSPeer(existingAddress);
         networkVocabulary.addPeer(existingPeer);
-        String nonExistingAddress = "+12025550103";
+        String nonExistingAddress = "+390425000005"; //This one is not added
         SMSPeer nonExistingPeer = new SMSPeer(nonExistingAddress);
         assertFalse(networkVocabulary.updatePeer(nonExistingPeer));
         assertTrue(networkVocabulary.updatePeer(existingPeer));
@@ -114,11 +116,9 @@ public class NetworkDictionaryTest {
 
     @Test
     public void getPeersReturnsCopy() {
-        String address = "I should remain";
+        String address = "+390425000006";
         SMSPeer peer = new SMSPeer(address);
         networkVocabulary.addPeer(peer);
-        SMSPeer[] peers = networkVocabulary.getPeers();
-        peers = new SMSPeer[0];
         Assert.assertNotEquals(0,networkVocabulary.getPeers().length);
     }
 
@@ -251,6 +251,38 @@ public class NetworkDictionaryTest {
         StringResource invalidResource = new StringResource("", "");
         assertFalse(invalidResource.isValid());
         assertFalse(networkVocabulary.contains(invalidResource));
+    }
+
+    @Test
+    public void getResourceByNamePositive(){
+        StringResource validResource = new StringResource("aValidKey", "resValue");
+        networkVocabulary.addResource(validResource);
+        StringResource foundResource = networkVocabulary.getResourceByName(validResource.getName());
+        assertEquals(foundResource, validResource);
+    }
+
+    @Test
+    public void getResourceByNameNegative(){
+        StringResource validResource = new StringResource("anotherValidKey", "resValue");
+        networkVocabulary.addResource(validResource);
+        StringResource foundResource = networkVocabulary.getResourceByName("totallyRandom");
+        assertEquals(foundResource, NetworkDictionary.INVALID_RESOURCE);
+    }
+
+    @Test
+    public void getPeerByAddressPositive(){
+        SMSPeer validPeer = new SMSPeer("+390425000010");
+        networkVocabulary.addPeer(validPeer);
+        SMSPeer foundPeer = networkVocabulary.getPeerByAddress(validPeer.getAddress());
+        assertEquals(validPeer, foundPeer);
+    }
+
+    @Test
+    public void getPeerByAddressNegative(){
+        SMSPeer validPeer = new SMSPeer("+390425000020");
+        networkVocabulary.addPeer(validPeer);
+        SMSPeer foundPeer = networkVocabulary.getPeerByAddress("+390425666666");
+        assertEquals(foundPeer, NetworkDictionary.INVALID_PEER);
     }
 
     @Test
