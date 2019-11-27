@@ -155,6 +155,12 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
     public void onMessageReceived(Message message) {
         if(message.getData().toString().contains("SMILE")) imageView.setImageDrawable(getDrawable(R.drawable.vector_smile_green));
     }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        manager.onClose();
+    }
 }
 
 
