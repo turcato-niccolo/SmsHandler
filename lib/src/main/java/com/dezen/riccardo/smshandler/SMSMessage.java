@@ -10,6 +10,9 @@ import androidx.annotation.NonNull;
  * @author Riccardo De Zen based on decisions of whole class.
  */
 public class SMSMessage extends Message<String, SMSPeer>{
+
+    public static final int MAX_MESSAGE_LENGTH = 160;
+
     private String data;
     private SMSPeer peer;
 
@@ -50,7 +53,21 @@ public class SMSMessage extends Message<String, SMSPeer>{
      * @return true if this message is not empty and has a valid peer
      */
     public boolean isValid(){
-        return peer.isValid() && !data.isEmpty();
+        return peer.isValid() && isMessageValid(data) == MessageValidity.MESSAGE_VALID;
+    }
+
+    /**
+     * @param message the message whose validity should be checked
+     * @return An enum value to indicate what is wrong with the message or that nothing is wrong
+     */
+    public static MessageValidity isMessageValid(String message){
+        if(message.length() > MAX_MESSAGE_LENGTH)
+            return MessageValidity.MESSAGE_TOO_LONG;
+
+        if(message.isEmpty())
+            return MessageValidity.MESSAGE_EMPTY;
+
+        return MessageValidity.MESSAGE_VALID;
     }
 
     /**
@@ -59,5 +76,14 @@ public class SMSMessage extends Message<String, SMSPeer>{
     @NonNull
     public String toString(){
         return "Peer: "+peer.toString()+"\nData: "+data;
+    }
+
+    /**
+     * Enum with values aimed to describe message validity
+     */
+    public enum MessageValidity{
+        MESSAGE_TOO_LONG,
+        MESSAGE_EMPTY,
+        MESSAGE_VALID
     }
 }
