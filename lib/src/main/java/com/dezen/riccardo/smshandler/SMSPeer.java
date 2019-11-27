@@ -13,10 +13,10 @@ import com.dezen.riccardo.smshandler.exceptions.InvalidAddressException;
 public class SMSPeer extends Peer<String> {
 
     private static final String CON_ERROR =
-            "The given address is invalid, refer to SMSPeer.checkAddressValidity(String address)";
+            "The given address is invalid, refer to SMSPeer.isAddressValid(String address)";
     //Max length includes + sign.
     public static final int MAX_ADDRESS_LENGTH = 16;
-    public static final int MIN_ADDRESS_LENGTH = 3;
+    public static final int MIN_ADDRESS_LENGTH = 4;
 
     private String address;
 
@@ -38,6 +38,7 @@ public class SMSPeer extends Peer<String> {
     }
 
     /**
+     * This method should always return true. It can return false if the address was modified illegally.
      * @return true if address fulfills international phone address standards
      */
     @Override
@@ -51,7 +52,7 @@ public class SMSPeer extends Peer<String> {
      */
     public static PhoneNumberValidity isAddressValid(String address){
 
-        if(!address.matches("\\+?\\d+"))
+        if(address == null || !address.matches("\\+?\\d+"))
             return PhoneNumberValidity.ADDRESS_NOT_PHONE_NUMBER;
 
         if(address.charAt(0) != '+')
