@@ -66,7 +66,7 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
     }
 
     /**
-     * Method to send an SMSMessage classified as urgent (containing the code to fire a global broadcast)
+     * Method to send an SMSMessage classified as urgent (containing the corresponding code)
      * @param message the valid SMSMessage to send
      * @return true if the message is valid and it has been sent, false otherwise
      */
