@@ -162,7 +162,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     private void onInviteAccepted(SMSPeer invited) {
         Log.d(MANAGER_TAG, invited.getAddress() +" has accepted");
         dictionary.addPeer(invited);
-        broadcast(ACTIONS.GREET_USER,invited.getAddress(),"");
+        broadcast(Actions.GREET_USER(),invited.getAddress(),"");
         //This Peer wasn't part of a network but now it is since someone accepted its invitation.
         if(!isPartOfNetwork) isPartOfNetwork = true;
     }
@@ -173,7 +173,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
      */
     public void createResource(StringResource newResource) {
         dictionary.addResource(newResource);
-        broadcast(ACTIONS.ADD_RESOURCE,newResource.getName(),newResource.getValue());
+        broadcast(Actions.ADD_RESOURCE(),newResource.getName(),newResource.getValue());
     }
 
     /**
@@ -219,11 +219,11 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
      * Method to send some kind of broadcast to the whole network
      * @param action the action to broadcast
      */
-    public void broadcast(ACTIONS action, String param, String extra) {
+    public void broadcast(String action, String param, String extra) {
         for(SMSPeer peer : getAvailablePeers()){
             if(!peer.equals(myPeer))
                 handler.sendMessage(
-                    new SMSMessage(peer, Actions.MSG()
+                    new SMSMessage(peer, action
                             + separation + param
                             + separation + extra)
                 );
@@ -234,7 +234,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
      * Method to test a generic broadcast.
      */
     public void smile(){
-        broadcast(ACTIONS.MSG,"SMILE","");
+        broadcast(Actions.MSG(),"SMILE","");
     }
 
     @Override
