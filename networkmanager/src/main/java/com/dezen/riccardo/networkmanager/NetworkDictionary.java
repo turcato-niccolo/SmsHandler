@@ -2,6 +2,7 @@ package com.dezen.riccardo.networkmanager;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.telephony.PhoneNumberUtils;
 
 import androidx.room.Room;
 
@@ -30,6 +31,9 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     private NetworkDictionaryDatabase database;
     private ImportFromDatabasesTask importFromDatabasesTask;
     private ExportToDatabaseTask exportToDatabaseTask;
+
+    public static StringResource INVALID_RESOURCE = new StringResource("I'm invalid","empty");
+    public static SMSPeer INVALID_PEER = null; //TODO: find a better solution
 
     /**
      * Constructor of NetworkDictionary
@@ -220,6 +224,39 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         return resourcesArray;
     }
 
+    /**
+     *
+     * @param resourceName the wanted resource's key
+     * @return if found the wanted resource, if not returns the defined INVALID_RESOURCE
+     */
+    public StringResource getResourceByName(String resourceName)
+    {
+        StringResource wantedResource = new StringResource(resourceName, "");
+        StringResource[] resourcesArray = getResources();
+        for (StringResource res: resourcesArray) {
+            if (res.equals(wantedResource))
+                return res;
+        }
+        return INVALID_RESOURCE;
+    }
+
+    /**
+     *
+     * @param peerAddress the wanted peer's address
+     * @return the wanted SMSPeer if present, if not returns the INVALID_PEER
+     */
+    public SMSPeer getPeerByAddress(String peerAddress)
+    {
+        SMSPeer wantedPeer = new SMSPeer(peerAddress);
+        if(wantedPeer.isValid()) {
+            SMSPeer[] peersArray = getPeers();
+            for (SMSPeer searchingPeer:peersArray) {
+                if(searchingPeer.equals(wantedPeer))
+                    return searchingPeer;
+            }
+        }
+        return INVALID_PEER;
+    }
 
     /**
      * Class to interact with Peer Database e Resource Database
