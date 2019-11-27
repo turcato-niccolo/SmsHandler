@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
             openNotificationListenSettings(null);
         }
         smsManager.loadUnread();
-
+        smsManager.setActivityToWake(this);
         requestSmsPermission();
     }
 

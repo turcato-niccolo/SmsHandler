@@ -1,10 +1,12 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.provider.Telephony;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
@@ -28,12 +30,13 @@ public class SMSHandler {
     public static final String APP_KEY = "<#>";
     public static final String WAKE_KEY = "<urgent>";
 
-    public static final String WAKE_BROADCAST = "SMS_HANDLER_FORCE_WAKE";
     static final String RECEIVED_BROADCAST = "SMS_HANDLER_NEW_SMS";
     static final String SENT_BROADCAST = "SMS_HANDLER_SMS_SENT";
     static final String DELIVERED_BROADCAST = "SMS_HANDLER_SMS_DELIVERED";
 
-    public static final String UNREAD_SMS_DATABASE_NAME = "UNREAD_SMS_DATABASE";
+    public static final String UNREAD_SMS_DATABASE_NAME = "sms-database";
+    static final String PREFERENCES_FILE_NAME = "smshandler.PREFERENCES_FILE_NAME";
+    static final String PREFERENCE_WAKE_ACTIVITY_KEY = "smshandler.ACTIVITY_TO_WAKE";
 
     private static final String EXTRA_ADDRESS_KEY = "address";
     private static final String EXTRA_MESSAGE_KEY = "message";
@@ -252,5 +255,24 @@ public class SMSHandler {
             return true;
         }
         else return false;
+    }
+
+    /**
+     * Method to save String name for the Activity that should wake up on urgent messages.
+     * @param activityClass the Activity that should wake up.
+     * @throws IllegalArgumentException if the passed class does not extend Activity.
+     * @return true if the value was set, false otherwise.
+     */
+    public boolean setActivityToWake(Class activityClass){
+        if(!Activity.class.isAssignableFrom(activityClass))
+            throw new IllegalArgumentException("This method requires a class extending Activity");;
+        String activityClassName = activityClass.getCanonicalName();
+        SharedPreferences sharedPreferences = currentContext.getSharedPreferences(
+                PREFERENCES_FILE_NAME,
+                Context.MODE_PRIVATE
+        );
+        SharedPreferences.Editor editor = sharedPreferences.edit()
+                .putString(PREFERENCE_WAKE_ACTIVITY_KEY, activityClassName);
+        return editor.commit();
     }
 }

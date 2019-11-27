@@ -1,5 +1,6 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.content.Context;
 
 /**
@@ -130,5 +131,25 @@ public class SMSManager extends CommunicationHandler<SMSMessage>{
      */
     public boolean loadUnread(){
         return smsHandler.loadUnread();
+    }
+
+    /**
+     * Method to save String name for the Activity that should wake up on urgent messages.
+     * @param activityClass the Activity Class that should wake up.
+     * @throws IllegalArgumentException if the parameter class does not extend Activity
+     * @return true if the value was set, false otherwise.
+     */
+    public boolean setActivityToWake(Class activityClass) throws IllegalArgumentException{
+        if(Activity.class.isAssignableFrom(activityClass))
+            return smsHandler.setActivityToWake(activityClass);
+        else throw new IllegalArgumentException("This method requires a class extending Activity");
+    }
+
+    /**
+     * Overload of setActivityToWake to allow passing an already existing object instead of its class.
+     * The method surely avoids throwing an Exception.
+     */
+    public boolean setActivityToWake(Activity activity){
+        return setActivityToWake(activity.getClass());
     }
 }
