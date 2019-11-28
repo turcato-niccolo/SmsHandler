@@ -159,7 +159,6 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
     @Override
     protected void onStop(){
         super.onStop();
-        manager.onClose();
     }
 }
 
