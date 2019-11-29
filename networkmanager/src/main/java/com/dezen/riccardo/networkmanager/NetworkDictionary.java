@@ -36,13 +36,21 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     public static SMSPeer INVALID_PEER = null; //TODO: find a better solution
 
     /**
-     * Constructor of NetworkDictionary
+     * Default constructor for Derived Classes, doesn't initialize the backup database
+     *
+     */
+    public NetworkDictionary(){
+        peers = new HashMap<>();
+        resources = new HashMap<>();
+    }
+
+    /**
+     * Constructor of NetworkDictionary, initializes the backup database
      * @param context application context
      */
     public NetworkDictionary(Context context){
+        this();
         database = new NetworkDictionaryDatabase(context);
-        peers = new HashMap<>();
-        resources = new HashMap<>();
         importFromDatabase();
     }
 
@@ -50,8 +58,10 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      * Imports resources and peers from database to variables Map
      */
     private void importFromDatabase(){
-        importFromDatabasesTask = new ImportFromDatabasesTask();
-        importFromDatabasesTask.execute(database);
+        if (database != null) {
+            importFromDatabasesTask = new ImportFromDatabasesTask();
+            importFromDatabasesTask.execute(database);
+        }
     }
 
     /**
@@ -60,16 +70,19 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     private void cancelImportFromDatabase(boolean mayInterruptIfRunning)
     {
-        importFromDatabasesTask.cancel(mayInterruptIfRunning);
+        if (database != null)
+            importFromDatabasesTask.cancel(mayInterruptIfRunning);
     }
 
     /**
      * @author Niccolo' Turcato
-     * @return Returns true if this task was cancelled before it completed normally.
+     * @return Returns true if this task was cancelled before it completed normally. False if task has not been canceled or if there is no database defined
      */
     private boolean importFromDatabaseIsCanceled()
     {
-        return importFromDatabasesTask.isCancelled();
+        if (database != null)
+            return importFromDatabasesTask.isCancelled();
+        return false;
     }
 
 
@@ -77,8 +90,10 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      * Exports resources and peer from maps to database
      */
     private void exportToDatabase(){
-        exportToDatabaseTask = new ExportToDatabaseTask();
-        exportToDatabaseTask.execute(database);
+        if (database != null) {
+            exportToDatabaseTask = new ExportToDatabaseTask();
+            exportToDatabaseTask.execute(database);
+        }
     }
 
     /**
@@ -87,16 +102,19 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
      */
     private void cancelexportToDatabase(boolean mayInterruptIfRunning)
     {
-        exportToDatabaseTask.cancel(mayInterruptIfRunning);
+        if (database != null)
+            exportToDatabaseTask.cancel(mayInterruptIfRunning);
     }
 
     /**
      * @author Niccolo' Turcato
-     * @return Returns true if this task was cancelled before it completed normally.
+     * @return Returns true if this task was cancelled before it completed normally. False if task has not been canceled or if there is no database defined
      */
     private boolean exportToDatabaseIsCanceled()
     {
-        return exportToDatabaseTask.isCancelled();
+        if (database != null)
+            return exportToDatabaseTask.isCancelled();
+        return false;
     }
 
     /**
