@@ -39,20 +39,39 @@ public class SMSReceiver extends BroadcastReceiver {
                  * immediate response is available. A broadcast event is therefore fired to
                  * notify said listener through the receiver it is attached to.
                  */
-                Intent localIntent = new Intent();
-                localIntent.replaceExtras(intent);
-                localIntent.setAction(SMSHandler.RECEIVED_BROADCAST);
-                localIntent.setPackage(context.getApplicationContext().getPackageName());
-                context.sendBroadcast(localIntent);
+                propagate(context, intent);
+                return;
             }
-            else if(shouldWake){
-                startAppropriateAction(context, intent);
+            if(shouldWake){
+                if(!startAppropriateAction(context, intent))
+                    store(context, messages);
                 shouldWake = false;
             }
             else{
-                SMSDatabaseManager.getInstance(context).addSMS(messages);
+                store(context, messages);
             }
         }
+    }
+
+    /**
+     * Propagates a Broadcast only for Receivers running in this app.
+     * LocalBroadcastManager is deprecated so this solution is being used instead.
+     * @param context the context on which this method is running
+     * @param extraIntent an Intent containing the extras for the broadcast to be propagated
+     */
+    private void propagate(Context context, Intent extraIntent){
+        Intent localIntent = new Intent();
+        localIntent.replaceExtras(extraIntent);
+        localIntent.setAction(SMSHandler.RECEIVED_BROADCAST);
+        localIntent.setPackage(context.getApplicationContext().getPackageName());
+        context.sendBroadcast(localIntent);
+    }
+
+    /**
+     *
+     */
+    private void store(Context context, SmsMessage[] messages){
+        SMSDatabaseManager.getInstance(context).addSMS(messages);
     }
 
     /**
@@ -79,15 +98,19 @@ public class SMSReceiver extends BroadcastReceiver {
      * @param context the context on which this method is running
      * @param extraIntent an Intent containing the extras for the action to be started
      */
-    private void startAppropriateAction(Context context, Intent extraIntent){
+    private boolean startAppropriateAction(Context context, Intent extraIntent){
         Class classToStart = getWakeAction(context);
-        if(classToStart == null) return;
-        if(ACTIVITY_SUPERCLASS.isAssignableFrom(classToStart))
+        if(classToStart == null) return false;
+        if(ACTIVITY_SUPERCLASS.isAssignableFrom(classToStart)){
             startActivity(classToStart, context, extraIntent);
+            return false;
+        }
+        return false;
     }
 
     /**
      * Method to start an activity from its canonical class name.
+     * @param activityToStart the Class object referencing the class for the Activity to be started.
      * @param context the context starting the Activity.
      * @param extraIntent Intent containing any extras to be passed along.
      */
