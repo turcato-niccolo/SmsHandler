@@ -19,8 +19,10 @@ import java.util.List;
  * NotificationCatcherService in order to avoid attaching the Receiver to the Service and keep it
  * lighter.
  * The class checks whether pertinent messages have been received. Then proceeds to check whether a
- * suitable listener is available for immediate response. If not then proceeds to either fire a
- * broadcast meant to wake some other process or writes the messages to a database for later use.
+ * suitable listener is available for immediate response. If not, and the message is classified as
+ * urgent through the appropriate code, an action is retrieved from SharedPreferences and started.
+ * If the messages are not urgent or no action has been specified messages are written into a
+ * database for later use.
  * @author Riccardo De Zen
  */
 public class SMSReceiver extends BroadcastReceiver {
@@ -93,8 +95,8 @@ public class SMSReceiver extends BroadcastReceiver {
     /**
      * Method to start some action considered responsible of managing urgent messages.
      * Right now only activities can be saved and started. Although starting an Activity from a
-     * BroadcastReceiver is bad practice according to the Android docs, it is the only way to
-     * forcibly start an app.
+     * BroadcastReceiver is bad practice according to the Android docs, it is the simplest way to
+     * forcibly start foreground work. WorkManager and Services could be added in the future.
      * @param context the context on which this method is running
      * @param extraIntent an Intent containing the extras for the action to be started
      */
