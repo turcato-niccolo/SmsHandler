@@ -13,39 +13,65 @@ import com.dezen.riccardo.smshandler.SMSPeer;
 
 /**
  * Singleton class used to perform the two needed operations on the database containing unread sms.
+ * This is not properly a singleton pattern because an on-disk instance and an in-memory instance can
+ * coexist.
  * The reason for singleton design pattern is found here https://developer.android.com/training/data-storage/room
  * @author Riccardo De Zen
  */
 public class SMSDatabaseManager {
 
+    private static final String CON_ERROR = "This class uses the singleton design pattern. Use getInstance() to get a reference to the single instance of this class";
     private static final String UNREAD_SMS_DB_NAME = "unread-sms-db";
 
     private static SMSDatabaseManager instance;
+    //Having an in-memory instance is unnecessary. It is useful for testing and will not break anything.
+    private static SMSDatabaseManager inMemoryInstance;
     private SMSDatabase database;
 
     /**
      * Constructor, handles instantiation of the database.
      */
-    private SMSDatabaseManager(Context context){
+    private SMSDatabaseManager(Context context, boolean inMemory){
         //prevent use of reflection to change constructor to public at runtime
-        if (instance != null)
-            throw new RuntimeException("This class uses the singleton design pattern. Use getInstance() to get a reference to the single instance of this class");
-        database = Room.databaseBuilder(context, SMSDatabase.class, UNREAD_SMS_DB_NAME)
-                .enableMultiInstanceInvalidation()
-                .build();
+        if(inMemory){
+            if(instance != null)
+                throw new RuntimeException(CON_ERROR);
+            database = Room.databaseBuilder(context, SMSDatabase.class, UNREAD_SMS_DB_NAME)
+                    .enableMultiInstanceInvalidation()
+                    .build();
+        }
+        else{
+            if(inMemoryInstance != null)
+                throw new RuntimeException(CON_ERROR);
+            database = Room.inMemoryDatabaseBuilder(context, SMSDatabase.class)
+                    .enableMultiInstanceInvalidation()
+                    .build();
+        }
     }
 
     /**
-     * Method to get the only valid instance of this class. A new instance is created only if it was
+     * Method to get the only valid on-disk instance of this class. A new instance is created only if it was
      * null previously. The used context is always the parent application context of the parameter.
      * @param context The calling context.
      * @return the SMSDatabaseManager instance.
      */
     public static SMSDatabaseManager getInstance(Context context){
         if(instance == null){
-            instance = new SMSDatabaseManager(context);
+            instance = new SMSDatabaseManager(context, false);
         }
         return instance;
+    }
+
+    /**
+     * Method to get the only valid on-memory instance of this class.
+     * @param context the calling context.
+     * @return the SMSDatabaseManager instance.
+     */
+    public static SMSDatabaseManager getInMemoryInstance(Context context){
+        if(inMemoryInstance == null){
+            inMemoryInstance = new SMSDatabaseManager(context, true);
+        }
+        return inMemoryInstance;
     }
 
     /**
