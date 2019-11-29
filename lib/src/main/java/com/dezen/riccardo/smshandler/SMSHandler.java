@@ -36,7 +36,7 @@ public class SMSHandler {
 
     public static final String UNREAD_SMS_DATABASE_NAME = "sms-database";
     static final String PREFERENCES_FILE_NAME = "smshandler.PREFERENCES_FILE_NAME";
-    static final String PREFERENCE_WAKE_ACTIVITY_KEY = "smshandler.ACTIVITY_TO_WAKE";
+    static final String PREFERENCE_WAKE_ACTION_KEY = "smshandler.WAKE_ACTION";
 
     private static final String EXTRA_ADDRESS_KEY = "address";
     private static final String EXTRA_MESSAGE_KEY = "message";
@@ -272,7 +272,7 @@ public class SMSHandler {
                 Context.MODE_PRIVATE
         );
         SharedPreferences.Editor editor = sharedPreferences.edit()
-                .putString(PREFERENCE_WAKE_ACTIVITY_KEY, activityClassName);
+                .putString(PREFERENCE_WAKE_ACTION_KEY, activityClassName);
         return editor.commit();
     }
 }

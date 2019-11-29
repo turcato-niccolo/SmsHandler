@@ -1,5 +1,6 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +24,10 @@ import java.util.List;
  * @author Riccardo De Zen
  */
 public class SMSReceiver extends BroadcastReceiver {
+
+    private static final Class<Activity> ACTIVITY_SUPERCLASS = Activity.class;
     private boolean shouldWake = false;
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
@@ -42,7 +46,8 @@ public class SMSReceiver extends BroadcastReceiver {
                 context.sendBroadcast(localIntent);
             }
             else if(shouldWake){
-                wakeActivity(context, intent);
+                startAppropriateAction(context, intent);
+                shouldWake = false;
             }
             else{
                 SMSDatabaseManager.getInstance(context).addSMS(messages);
@@ -67,17 +72,29 @@ public class SMSReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Method to start an activity from its canonical name, if such an activity has been specified
-     * in the apposite file.
-     * @param context the context starting the Activity.
-     * @param intentWithExtras the Intent containing any extras to be passed along.
+     * Method to start some action considered responsible of managing urgent messages.
+     * Right now only activities can be saved and started. Although starting an Activity from a
+     * BroadcastReceiver is bad practice according to the Android docs, it is the only way to
+     * forcibly start an app.
+     * @param context the context on which this method is running
+     * @param extraIntent an Intent containing the extras for the action to be started
      */
-    private void wakeActivity(Context context, Intent intentWithExtras){
+    private void startAppropriateAction(Context context, Intent extraIntent){
+        Class classToStart = getWakeAction(context);
+        if(classToStart == null) return;
+        if(ACTIVITY_SUPERCLASS.isAssignableFrom(classToStart))
+            startActivity(classToStart, context, extraIntent);
+    }
+
+    /**
+     * Method to start an activity from its canonical class name.
+     * @param context the context starting the Activity.
+     * @param extraIntent Intent containing any extras to be passed along.
+     */
+    private void startActivity(Class activityToStart, Context context, Intent extraIntent){
         try{
-            Class activityClass = getActivityToWake(context);
-            if(activityClass == null) return;
-            Intent wakeIntent = new Intent(context, activityClass);
-            wakeIntent.replaceExtras(intentWithExtras);
+            Intent wakeIntent = new Intent(context, activityToStart);
+            wakeIntent.replaceExtras(extraIntent);
             wakeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(wakeIntent);
         }catch(Exception e){
@@ -90,18 +107,18 @@ public class SMSReceiver extends BroadcastReceiver {
      * @return The class of the Activity that should be woken up, null if none is present or the
      * saved value is invalid.
      */
-    private Class getActivityToWake(Context context){
+    private Class getWakeAction(Context context){
         final String DEFAULT = "";
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 SMSHandler.PREFERENCES_FILE_NAME,
                 Context.MODE_PRIVATE
         );
-        String activityClassName = sharedPreferences.getString(
-                SMSHandler.PREFERENCE_WAKE_ACTIVITY_KEY,
+        String wakeClass = sharedPreferences.getString(
+                SMSHandler.PREFERENCE_WAKE_ACTION_KEY,
                 DEFAULT
         );
         try{
-            return Class.forName(activityClassName);
+            return Class.forName(wakeClass);
         }
         catch(ClassNotFoundException e){
             e.printStackTrace();
