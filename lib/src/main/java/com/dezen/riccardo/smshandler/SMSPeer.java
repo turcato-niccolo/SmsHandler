@@ -22,6 +22,7 @@ public class SMSPeer extends Peer<String> {
 
     /**
      * @param address the address for the peer
+     * @throws InvalidAddressException if the given address is invalid
      */
     public SMSPeer(String address){
         if(isAddressValid(address) != PhoneNumberValidity.ADDRESS_VALID)

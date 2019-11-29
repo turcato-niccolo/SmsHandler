@@ -24,9 +24,10 @@ public class SMSMessage extends Message<String, SMSPeer>{
     /**
      * @param peer the Peer associated with this Message
      * @param data the data to be contained in the message
+     * @throws InvalidMessageException if the data for the message is not valid
      */
     public SMSMessage(SMSPeer peer, String data){
-        if(isMessageValid(data) != MessageValidity.MESSAGE_VALID)
+        if(peer.isValid() && isMessageValid(data) != MessageValidity.MESSAGE_VALID)
             throw new InvalidMessageException(CON_ERROR);
         this.peer = peer;
         this.data = data;
