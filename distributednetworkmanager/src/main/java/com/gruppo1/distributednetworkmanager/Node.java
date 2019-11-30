@@ -23,7 +23,7 @@ class Node extends Peer<BitSet> {
      * Considers all the digits (except the '+') generates the key with the public Hash method
      * @param numBits number of bits which constitute the Key, must be multiple of 64 and >0
      * @param buildingPeer the physical Peer on which this node is based
-     * @throws IllegalArgumentException if
+     * @throws IllegalArgumentException if peer isn't valid or the numBit isn't multiple of 64
      */
     public Node(int numBits, SMSPeer buildingPeer){
         if(buildingPeer.isValid()) {
@@ -60,7 +60,7 @@ class Node extends Peer<BitSet> {
      *
      * @return the bitSet containing the hash of the peer's address, bitSet's length is a multiple of 64
      */
-    static public BitSet hash(SMSPeer peer, int numBits){
+    public static BitSet hash(SMSPeer peer, int numBits){
         String phoneNum = peer.getAddress();
         if(peer.isValid()) {
             if (numBits > 0 && numBits % minLength == 0) {
@@ -92,6 +92,9 @@ class Node extends Peer<BitSet> {
 
     /**
      * Method to compare two bitSets, useful to compare Distances
+     * compare(b1.xor(b2), b1.xor(b3)) ==> D(b1, b2) ? D(b1, b3)
+     * That is: is b1 closer to b2 or b3?
+     *
      * @param lhs first bitSet
      * @param rhs second bitSet
      * @return 1 if rhs > lhs, -1 rhs < lhs, 0 rhs = lhs
