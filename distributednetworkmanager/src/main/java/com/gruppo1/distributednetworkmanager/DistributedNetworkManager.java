@@ -5,6 +5,7 @@ import android.content.Context;
 import com.dezen.riccardo.networkmanager.*;
 import com.dezen.riccardo.smshandler.*;
 
+
 /**
  * @author Niccolo' Turcato
  * Basic implementation of a distibuted Network based on Kademlia
@@ -13,6 +14,26 @@ import com.dezen.riccardo.smshandler.*;
  */
 
 public class DistributedNetworkManager extends NetworkInterface<SMSMessage, SMSPeer, StringResource, NetworkDictionary> implements ReceivedMessageListener<SMSMessage>{
+
+    /**
+     * Actions the network can send and receive.
+     * Current syntax for messages is as follows:
+     * <SMSLibrary-TAG>[ACTION]<separation>[PARAMETER]<separation>[EXTRA]
+     */
+    private static class DistributedActions {
+        static String PING(){
+            return "PING";
+        }
+        static String STORE(){
+            return "STORE";
+        }
+        static String FIND_NODE(){
+            return "FIND_NODE";
+        }
+        static String FIND_VALUE(){
+            return "FIND_VALUE";
+        }
+    }
 
     private NetworkDictionaryWithOwnership dictionary;
     private boolean isPartOfNetwork;
@@ -87,6 +108,18 @@ public class DistributedNetworkManager extends NetworkInterface<SMSMessage, SMSP
      * @param listener the class listening for Resource events.
      */
     public void setListener(OnNetworkEventListener<SMSMessage, StringResource> listener){
+
+    }
+
+    public void ping(SMSPeer peerToPing){
+        //Async Task maybe
+    }
+
+    public void storeResource(StringResource resourceToSostore, SMSPeer destination){
+
+    }
+
+    public void findNode() {
 
     }
 

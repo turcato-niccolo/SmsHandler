@@ -20,7 +20,7 @@ public class NetworkManager extends NetworkInterface<SMSMessage, SMSPeer,StringR
     /**
      * Actions the network can send and receive.
      * Current syntax for messages is as follows:
-     * <SMMLibrary-TAG>[ACTION]<separation>[PARAMETER]<separation>[EXTRA]
+     * <SMSLibrary-TAG>[ACTION]<separation>[PARAMETER]<separation>[EXTRA]
      */
 
     private enum ACTIONS {
