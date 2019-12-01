@@ -4,7 +4,7 @@ package com.gruppo1.distributednetworkmanager;
  * @author Niccolo' Turcato
  * Structure of K-Bucket object based on the peer-to-peer network protocol Kademlia
  *
- * @param <T> Type of object contained in the bucket
+ *
  */
 public abstract class Bucket<T> {
     private int dimension;
@@ -15,6 +15,8 @@ public abstract class Bucket<T> {
     public Bucket(int dim) {
         dimension = dim;
     }
+
+    public Bucket(){}
 
     /**
      * @param obj object of which verify presence in bucket
@@ -41,4 +43,9 @@ public abstract class Bucket<T> {
      * @return an array containing (a copy) the elements in the bucket, sorted by insertion time
      */
     public abstract T[] getElements();
+
+    /**
+     * @return the oldest peer in the network, the "bottom" one
+     */
+    public abstract T getOldest();
 }

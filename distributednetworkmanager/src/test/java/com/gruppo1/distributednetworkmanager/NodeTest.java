@@ -77,4 +77,19 @@ public class NodeTest {
         assertEquals(Node.compare(B,A), Node.compare(confrontNode.distanceFrom(newPeerNode), confrontNode.distanceFrom(testNode)));
         assertEquals(Node.compare(A,A), Node.compare(confrontNode.distanceFrom(testNode), confrontNode.distanceFrom(testNode)));
     }
+
+    @Test
+    public void Node_equalsTest() {
+        SMSPeer calogero = new SMSPeer("+390425668606");
+        PeerNode a = new PeerNode(128, calogero);
+        PeerNode b = new PeerNode(128, calogero);
+        PeerNode c = new PeerNode(64, calogero);
+
+        assertTrue(a.equals(b));
+        assertTrue(b.equals(a));
+        assertTrue(a.equals(a));
+        assertFalse(a.equals(c));
+        assertFalse(c.equals(b));
+
+    }
 }

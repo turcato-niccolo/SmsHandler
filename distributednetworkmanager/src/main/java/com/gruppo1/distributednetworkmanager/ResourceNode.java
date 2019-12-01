@@ -104,4 +104,27 @@ public class ResourceNode implements Resource<String, String> {
         return networkNode.distanceFrom(new Node(other.keyLength(), other.getAddress()));
     }
 
+    /**
+     * @return a new PeerNode equal to this
+     */
+    @Override
+    public ResourceNode clone() {
+        if(physicalResource != null && physicalResource.isValid())
+            return new ResourceNode(keyLength(), physicalResource);
+        else
+            return new ResourceNode(keyLength(), networkNode.getKey());
+    }
+
+    /**
+     *
+     * @param other peer to confront
+     * @return true if this peer and the other are equals, false otherwise
+     */
+    @Override
+    public boolean equals(Object other){
+        if(other instanceof ResourceNode)
+            return this.getAddress().equals(((ResourceNode)other).getAddress());
+        return false;
+    }
+
 }

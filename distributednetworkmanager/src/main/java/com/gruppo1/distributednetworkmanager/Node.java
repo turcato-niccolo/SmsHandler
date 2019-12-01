@@ -122,4 +122,24 @@ public class Node {
         return distance;
     }
 
+    /**
+     * @return a new PeerNode equal to this
+     */
+    @Override
+    public Node clone() {
+        return new Node(keyLength, key);
+    }
+
+    /**
+     *
+     * @param other peer to confront
+     * @return true if this peer and the other are equals, false otherwise
+     */
+    @Override
+    public boolean equals(Object other){
+        if(other instanceof Node)
+            return this.getKey().equals(((Node)other).getKey());
+        return false;
+    }
+
 }

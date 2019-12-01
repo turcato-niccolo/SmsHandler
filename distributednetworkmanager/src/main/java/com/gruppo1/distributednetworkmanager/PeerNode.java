@@ -88,4 +88,27 @@ class PeerNode extends Peer<BitSet> {
         return networkNode.distanceFrom(new Node(other.keyLength(), other.getAddress()));
     }
 
+    /**
+     * @return a new PeerNode equal to this
+     */
+    @Override
+    public PeerNode clone() {
+        if(physicalPeer != null && physicalPeer.isValid())
+            return new PeerNode(keyLength(), physicalPeer);
+        else
+            return new PeerNode(keyLength(), networkNode.getKey());
+    }
+
+    /**
+     *
+     * @param other peer to confront
+     * @return true if this peer and the other are equals, false otherwise
+     */
+    @Override
+    public boolean equals(Object other){
+        if(other instanceof PeerNode)
+            return this.getAddress().equals(((PeerNode)other).getAddress());
+        else return false;
+    }
+
 }
