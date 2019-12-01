@@ -55,7 +55,7 @@ public abstract class BaseDao<T>{
         SimpleSQLiteQuery query = new SimpleSQLiteQuery(
             COUNT_QUERY + getTableName()
         );
-        return doCount(query);
+        return performCount(query);
     }
 
     /**
@@ -64,7 +64,7 @@ public abstract class BaseDao<T>{
      * @return an int value returned by the query. In this case the number of rows in the table.
      */
     @RawQuery
-    protected abstract int doCount(SupportSQLiteQuery query);
+    protected abstract int performCount(SupportSQLiteQuery query);
 
     /**
      * @return all the rows in the table
@@ -73,7 +73,7 @@ public abstract class BaseDao<T>{
         SimpleSQLiteQuery query = new SimpleSQLiteQuery(
                 GET_ALL_QUERY + getTableName()
         );
-        return doGetAll(query);
+        return performGetAll(query);
     }
 
     /**
@@ -82,7 +82,7 @@ public abstract class BaseDao<T>{
      * @return a List returned by the query. In this case all the rows in the table.
      */
     @RawQuery
-    protected abstract List<T> doGetAll(SupportSQLiteQuery query);
+    protected abstract List<T> performGetAll(SupportSQLiteQuery query);
 
     /**
      * Method to be overridden in order to find the name of the table.

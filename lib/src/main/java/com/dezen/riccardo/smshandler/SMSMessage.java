@@ -20,6 +20,8 @@ public class SMSMessage extends Message<String, SMSPeer>{
 
     //Name of the Entity table inside the Database.
     public static final String SMS_TABLE_NAME = "smsmessage";
+    public static final String SMS_ADDRESS_COLUMN_NAME = "address";
+    public static final String SMS_BODY_COLUMN_NAME = "message";
 
     private static final String CON_ERROR =
             "The given message is invalid, refer to SMSMessage.isMessageValid(String address)";
@@ -29,9 +31,9 @@ public class SMSMessage extends Message<String, SMSPeer>{
     //The id is currently only relevant inside the database and does not need to be seen or set outside
     @PrimaryKey(autoGenerate = true)
     private int id;
-    @ColumnInfo(name = "address")
+    @ColumnInfo(name = SMS_ADDRESS_COLUMN_NAME)
     private SMSPeer peer;
-    @ColumnInfo(name = "message")
+    @ColumnInfo(name = SMS_BODY_COLUMN_NAME)
     private String data;
 
     /**
