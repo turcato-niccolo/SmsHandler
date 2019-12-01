@@ -82,7 +82,7 @@ public class SMSDatabaseManager {
     /**
      * @return the number of stored SMS Messages
      */
-    public int size(){
+    public int count(){
         return database.access().count();
     }
 
