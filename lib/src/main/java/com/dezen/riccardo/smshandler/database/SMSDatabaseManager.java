@@ -9,7 +9,8 @@ import androidx.room.Room;
 
 import com.dezen.riccardo.smshandler.ReceivedMessageListener;
 import com.dezen.riccardo.smshandler.SMSMessage;
-import com.dezen.riccardo.smshandler.SMSPeer;
+
+import java.util.List;
 
 /**
  * Singleton class used to perform the two needed operations on the database containing unread sms.
@@ -82,7 +83,7 @@ public class SMSDatabaseManager {
      * @return the number of stored SMS Messages
      */
     public int size(){
-        return database.access().getCount();
+        return database.access().count();
     }
 
     /**
@@ -91,14 +92,7 @@ public class SMSDatabaseManager {
      */
     public void addSMS(SMSMessage... newMessages){
         SMSDao dbAccess = database.access();
-        for (SMSMessage message : newMessages) {
-            SMSEntity entity = new SMSEntity(
-                    dbAccess.getCount(),
-                    message.getPeer().getAddress(),
-                    message.getData()
-            );
-            dbAccess.insert(entity);
-        }
+        dbAccess.insert(newMessages);
     }
 
     /**
@@ -149,14 +143,7 @@ public class SMSDatabaseManager {
         protected Boolean doInBackground(SMSMessage... smsMessages) {
             try {
                 SMSDao dbAccess = database.access();
-                for (SMSMessage message : smsMessages) {
-                    SMSEntity entity = new SMSEntity(
-                            dbAccess.getCount(),
-                            message.getPeer().getAddress(),
-                            message.getData()
-                    );
-                    dbAccess.insert(entity);
-                }
+                dbAccess.insert(smsMessages);
                 return Boolean.TRUE;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -188,14 +175,10 @@ public class SMSDatabaseManager {
         protected Boolean doInBackground(String... args) {
             SMSDao dbAccess = database.access();
             try {
-                SMSEntity[] unreadMessages = dbAccess.loadAllSms();
-                for (SMSEntity entity : unreadMessages) {
-                    SMSMessage message = new SMSMessage(
-                            new SMSPeer(entity.address),
-                            entity.body
-                    );
+                List<SMSMessage> unreadMessages = dbAccess.getAll();
+                for (SMSMessage message : unreadMessages) {
                     if (message.isValid()) listener.onMessageReceived(message);
-                    dbAccess.deleteSms(entity);
+                    dbAccess.delete(message);
                 }
                 return Boolean.TRUE;
             } catch (Exception e) {

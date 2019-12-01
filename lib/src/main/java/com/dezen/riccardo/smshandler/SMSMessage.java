@@ -3,6 +3,10 @@ package com.dezen.riccardo.smshandler;
 import android.telephony.SmsMessage;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.PrimaryKey;
 
 import com.dezen.riccardo.smshandler.exceptions.InvalidMessageException;
 
@@ -11,21 +15,31 @@ import com.dezen.riccardo.smshandler.exceptions.InvalidMessageException;
  * Class implementing Message to represent an SMS-type message.
  * @author Riccardo De Zen based on decisions of whole class.
  */
+@Entity(tableName = SMSMessage.SMS_TABLE_NAME)
 public class SMSMessage extends Message<String, SMSPeer>{
+
+    //Name of the Entity table inside the Database.
+    public static final String SMS_TABLE_NAME = "smsmessage";
 
     private static final String CON_ERROR =
             "The given message is invalid, refer to SMSMessage.isMessageValid(String address)";
 
     public static final int MAX_MESSAGE_LENGTH = 160;
 
-    private String data;
+    //The id is currently only relevant inside the database and does not need to be seen or set outside
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+    @ColumnInfo(name = "address")
     private SMSPeer peer;
+    @ColumnInfo(name = "message")
+    private String data;
 
     /**
      * @param peer the Peer associated with this Message
      * @param data the data to be contained in the message
      * @throws InvalidMessageException if the data for the message is not valid
      */
+    @Ignore
     public SMSMessage(SMSPeer peer, String data){
         if(peer.isValid() && isMessageValid(data) != MessageValidity.MESSAGE_VALID)
             throw new InvalidMessageException(CON_ERROR);
@@ -35,12 +49,38 @@ public class SMSMessage extends Message<String, SMSPeer>{
 
     /**
      * Constructor from a valid SmsMessage
+     * @param message the message to be converted
      */
+    @Ignore
     public SMSMessage(SmsMessage message){
         this(
                 new SMSPeer(message.getOriginatingAddress()),
                 message.getMessageBody()
         );
+    }
+
+    /**
+     * Constructor to be used together with the database
+     */
+    public SMSMessage(int id, SMSPeer peer, String data){
+        this(peer, data);
+        this.id = id;
+    }
+
+    /**
+     * Getter for the id
+     * @return the id for this Message
+     */
+    public int getId(){
+        return id;
+    }
+
+    /**
+     * Setter for the id
+     * @param newId the new Id for this Message
+     */
+    public void setId(int newId){
+        id = newId;
     }
 
     /**

@@ -1,26 +1,20 @@
 package com.dezen.riccardo.smshandler.database;
 
 import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
-import androidx.room.OnConflictStrategy;
-import androidx.room.Query;
-import androidx.room.Update;
+
+import com.dezen.riccardo.smshandler.SMSMessage;
 
 /**
  * @author Riccardo De Zen
- * Interface defining methods to access the unread sms database.
+ * Interface extending the BaseDao class for SMSMessage
  */
 @Dao
-interface SMSDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(SMSEntity... entities);
-    @Update
-    void updateSms(SMSEntity... entities);
-    @Delete
-    void deleteSms(SMSEntity... entities);
-    @Query("SELECT * FROM SMSEntity")
-    SMSEntity[] loadAllSms();
-    @Query("SELECT COUNT(id) FROM SMSEntity")
-    int getCount();
+abstract class SMSDao extends BaseDao<SMSMessage>{
+    /**
+     * @return the name of the table containing the SMSMessage entities.
+     */
+    @Override
+    public String getTableName(){
+        return SMSMessage.SMS_TABLE_NAME;
+    }
 }
