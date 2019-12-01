@@ -1,42 +1,47 @@
 package com.gruppo1.distributednetworkmanager;
 
-
 import androidx.annotation.NonNull;
 
-import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.BitSet;
 
 /**
  * @author Niccolo' Turcato
- * Class that represents the Node of DistributedNetwork
+ * Class rapresenting a generic Node of the distributed Network
  */
-class Node extends Peer<BitSet> {
+public class Node {
 
     private BitSet key;
-    private SMSPeer physicalPeer;
+    private int keyLength;
     static final private int minLength = 64;
 
     /**
-     * Constructor: creates an instance of Node, based on the SMSPeer address
-     * Considers all the digits (except the '+') generates the key with the public Hash method
-     * @param numBits number of bits which constitute the Key, must be multiple of 64 and >0
-     * @param buildingPeer the physical Peer on which this node is based
-     * @throws IllegalArgumentException if peer isn't valid or the numBit isn't multiple of 64
+     * Constructor that initializes the key with the given value
+     * @param buildingKey given value for the node's Key
+     * @param numBits number of bits that compose the key (must be > length of buildingKey)
+     *
+     * @throws IllegalArgumentException if the numBit isn't multiple of 64 or numBits <= buildingKey.length()
      */
-    public Node(int numBits, SMSPeer buildingPeer){
-        if(buildingPeer.isValid()) {
-            if (numBits > 0 && numBits % minLength == 0) {
-                key = hash(buildingPeer, numBits);
-                physicalPeer = buildingPeer;
-            }
-            else throw new IllegalArgumentException("numBits isn't > 0 or a multiple of 64");
+    public Node(int numBits, @NonNull BitSet buildingKey){
+        if (numBits % minLength == 0 && numBits > buildingKey.length()) {
+            keyLength = numBits;
+            key = (BitSet)buildingKey.clone();
         }
-        else throw new IllegalArgumentException("buildingPeer isn't a valid peer, see SMSPeer.isValid()");
+        else throw new IllegalArgumentException("numBits isn't > 0 or a multiple of 64 or numBits <= buildingKey.length()");
     }
 
-    public BitSet getAddress() {
+    /**
+     * @return number of bits that compose the BitSet key
+     */
+    public int keyLength(){
+        return keyLength;
+    }
+
+    /**
+     * @return the bitset containing the node's key
+     */
+    public BitSet getKey(){
         return (BitSet) key.clone();
     }
 
@@ -53,27 +58,23 @@ class Node extends Peer<BitSet> {
     }
 
     /**
-     * @param peer the peer of which generate hashcode
+     * @param toHash the String (a key) of which generate hashcode
      * @param numBits number of bits that the hash code will be constituted of, must be multiple of 64 and >0
      *
      * @throws IllegalArgumentException if peer isn't valid or the numBit isn't multiple of 64
      *
      * @return the bitSet containing the hash of the peer's address, bitSet's length is a multiple of 64
      */
-    public static BitSet hash(SMSPeer peer, int numBits){
-        String phoneNum = peer.getAddress();
-        if(peer.isValid()) {
-            if (numBits > 0 && numBits % minLength == 0) {
-                int numLong = numBits/minLength;
-                long[] numbers = new long[numLong];
-                for (int i = 0; i < numLong; i++){
-                    numbers[i] = Double.doubleToLongBits(hash(peer.getAddress()) * (1-0.01*i))  ;
-                }
-                return BitSet.valueOf(numbers);
+    public static BitSet hash(@NonNull String toHash, int numBits){
+        if (numBits > 0 && numBits % minLength == 0) {
+            int numLong = numBits/minLength;
+            long[] numbers = new long[numLong];
+            for (int i = 0; i < numLong; i++){
+                numbers[numLong-(i+1)] = Double.doubleToLongBits(hash(toHash) / (i+1))  ;
             }
-            else throw new IllegalArgumentException("numBits isn't > 0 or a multiple of 64");
+            return BitSet.valueOf(numbers);
         }
-        else throw new IllegalArgumentException("buildingPeer isn't a valid peer, see SMSPeer.isValid()");
+        else throw new IllegalArgumentException("numBits isn't > 0 or a multiple of 64");
     }
 
     /**
@@ -81,7 +82,7 @@ class Node extends Peer<BitSet> {
      * @param key string of which generate hash code on 64 bits
      * @return a 64 bits hash of the given String
      */
-    private static long hash(String key) {
+    private static long hash(@NonNull String key) {
         long num = 0;
         int n = key.length();
         for (int i = 0; i < n; i++){
@@ -92,14 +93,15 @@ class Node extends Peer<BitSet> {
 
     /**
      * Method to compare two bitSets, useful to compare Distances
-     * compare(b1.xor(b2), b1.xor(b3)) ==> D(b1, b2) ? D(b1, b3)
+     * compare(b1.xor(b2), b1.xor(b3)) ==> compare(D(b1, b2), D(b1, b3))
+     * ==> D(b1, b2) ? D(b1, b3)
      * That is: is b1 closer to b2 or b3?
      *
      * @param lhs first bitSet
      * @param rhs second bitSet
      * @return 1 if rhs > lhs, -1 rhs < lhs, 0 rhs = lhs
      */
-    public int compare(@NonNull BitSet lhs,@NonNull BitSet rhs) {
+    public static int compare(@NonNull BitSet lhs,@NonNull BitSet rhs) {
         if (lhs.equals(rhs)) return 0;
         BitSet distance = (BitSet)lhs.clone();
         distance.xor(rhs);
@@ -108,4 +110,16 @@ class Node extends Peer<BitSet> {
             return 0;
         return rhs.get(firstDifferent) ? 1 : -1;
     }
+
+    /**
+     *
+     * @param other the Node for which calculate distance from this Node
+     * @return The distance of the Keys, calculated as XOR of BitSets
+     */
+    public BitSet distanceFrom(@NonNull Node other){
+        BitSet distance = this.getKey();
+        distance.xor(other.getKey());
+        return distance;
+    }
+
 }

@@ -38,7 +38,6 @@ public abstract class Bucket<T> {
     public abstract boolean Remove(T obj);
 
     /**
-     *
      * @return an array containing (a copy) the elements in the bucket, sorted by insertion time
      */
     public abstract T[] getElements();
