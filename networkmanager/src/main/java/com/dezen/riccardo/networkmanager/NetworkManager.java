@@ -25,7 +25,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
          * @param action the int value to be checked
          * @return true if the int matches an action, false if not
          */
-        public static boolean isValid(int action){
+        static boolean isValid(int action){
             return action >= MIN_ACTION && action <= MAX_ACTION;
         }
 
@@ -34,7 +34,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
          *               false here
          * @return true if the given action uses the "ARGUMENT" part of the message
          */
-        public static boolean usesArg(int action){
+        static boolean usesArg(int action){
             return action >= 2 && isValid(action);
         }
 
@@ -43,33 +43,36 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
          *               false here
          * @return true if the given action uses the "EXTRA" part of message
          */
-        public static boolean usesExtra(int action){
+        static boolean usesExtra(int action){
             return action == 7;
         }
 
-        public static final int MIN_ACTION = 0;
-        public static final int MAX_ACTION = 7;
+        static final int MIN_ACTION = 0;
+        static final int MAX_ACTION = 7;
 
         //<#>INVITE [IGNORED] [IGNORED]
-        public static final int INVITE = 0;
+        static final int INVITE = 0;
         //<#>ACCEPT [IGNORED] [IGNORED]
-        public static final int ANSWER_INVITE = 1;
+        static final int ANSWER_INVITE = 1;
         //<#>ADD_USER [PEER] [IGNORED]
-        public static final int ADD_USER = 2;
+        static final int ADD_USER = 2;
         //<#>REMOVE_USER [PEER] [IGNORED]
-        public static final int REMOVE_USER = 3;
+        static final int REMOVE_USER = 3;
         //<#>GREET_USER [PEER] [IGNORED]
-        public static final int GREET_USER = 4;
+        static final int GREET_USER = 4;
         //<#>MSG [MESSAGE] [IGNORED]
-        public static final int MSG = 5;
+        static final int MSG = 5;
         //<#>REMOVE_RESOURCE [KEY] [IGNORED]
-        public static final int REMOVE_RESOURCE = 6;
+        static final int REMOVE_RESOURCE = 6;
         //<#>ADD_RESOURCE [KEY] [VALUE]
-        public static final int ADD_RESOURCE = 7;
+        static final int ADD_RESOURCE = 7;
     }
 
-    private static final String SEPARATOR =  "\r"; //TODO search for a better character
+    private static final String SEPARATOR =  "\r";
     private static final String DEFAULT_IGNORED = "";
+    private static final String MSG_SYNTAX_ACTION_ERR = "Parameter action out of range. Expected {0-7}, got: ";
+    private static final String MSG_SYNTAX_ARG_ERR = "Parameter \"arg\" can't be empty for this action";
+    private static final String MANAGER_LOG_TAG = "NETWORK_MANAGER";
     private static final int ACTION_POSITION = 0, ARG_POSITION = 1, EXTRA_POSITION = 2;
 
     //TODO add support for multiple networks.
@@ -80,7 +83,6 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     private NetworkDictionary dictionary;
     private CommunicationHandler<SMSMessage> handler;
     private Context context;
-    private final String MANAGER_TAG = "MANAGER_TAG";
 
     public NetworkManager(Context registerContext) {
          dictionary = new NetworkDictionary(registerContext);
@@ -106,13 +108,13 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * @param action the action to be sent
      * @param arg the argument for the action such as the key for a Resource
      * @param extra any extras related to the argument such as the value for a Resource
-     * @throws InvalidMsgSyntaxException if the given parameter do not meet the criteria
+     * @throws InvalidMsgSyntaxException if the given parameters do not meet the criteria
      */
     private String composeMessageBody(int action, String arg, String extra) throws InvalidMsgSyntaxException {
         if(!Actions.isValid(action))
-            throw new InvalidMsgSyntaxException("Parameter action out of range. Expected {0-7}, got: "+action);
+            throw new InvalidMsgSyntaxException(MSG_SYNTAX_ACTION_ERR + action);
         if(Actions.usesArg(action) && (arg == null || arg.isEmpty()))
-            throw new InvalidMsgSyntaxException("Parameter \"arg\" can't be empty for this action");
+            throw new InvalidMsgSyntaxException(MSG_SYNTAX_ARG_ERR);
         //String concatenation on null String turns it into "null". Should not be a problem.
         return action+SEPARATOR+arg+SEPARATOR+extra;
     }
@@ -246,8 +248,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
         String usefulMessage = message.getData().substring(SMSHandler.APP_KEY.length());
         String[] splitMessage = usefulMessage.split(SEPARATOR);
         int action = Integer.parseInt(splitMessage[ACTION_POSITION]);
-        String arg = "";
-        String extra = "";
+        String arg = "", extra = "";
         if(splitMessage.length > 2){
             arg = splitMessage[ARG_POSITION];
             extra = splitMessage[EXTRA_POSITION];
