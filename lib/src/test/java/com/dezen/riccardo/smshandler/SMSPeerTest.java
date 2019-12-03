@@ -1,8 +1,13 @@
 package com.dezen.riccardo.smshandler;
 
+import android.os.Build;
+
 import com.dezen.riccardo.smshandler.exceptions.InvalidAddressException;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -12,7 +17,9 @@ import static org.junit.Assert.assertNotNull;
  * @author Giorgia Bortoletti
  * @author Riccardo De Zen
  */
-public class SmsPeerTest {
+@Config(sdk = Build.VERSION_CODES.P)
+@RunWith(RobolectricTestRunner.class)
+public class SMSPeerTest {
 
     private SMSPeer peer;
     private static final String EX_VALID_ADDRESS = "+39892424";

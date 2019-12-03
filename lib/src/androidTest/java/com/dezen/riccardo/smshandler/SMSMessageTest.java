@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
  * @author Giorgia Bortoletti
  * @author Riccardo De Zen
  */
-public class SmsMessageTest {
+public class SMSMessageTest {
 
     //a default valid peer
     private SMSPeer peer;
