@@ -8,14 +8,14 @@ import androidx.room.PrimaryKey;
  * @author Riccardo De Zen
  * Class defining the unread SmsMessage entity.
  */
-//TODO evaluate advantages of fusion of this class with SMSMessage
 @Entity
-public class SmsEntity{
-    public SmsEntity(String address, String body) {
+class SMSEntity {
+    SMSEntity(int id, String address, String body) {
+        this.id = id;
         this.address = address;
         this.body = body;
     }
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     public int id;
     @ColumnInfo(name = "address")
     public String address;
