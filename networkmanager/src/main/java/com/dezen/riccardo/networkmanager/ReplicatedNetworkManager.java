@@ -11,10 +11,13 @@ import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 /**
+ * Class implementing a replicated network using SMSMessage, SMSPeer and a Dictionary as a data
+ * holding support.
  * @author Niccolò Turcato.
  * @author Riccardo De Zen.
  */
-public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,StringResource, NetworkDictionary>, ReceivedMessageListener<SMSMessage> {
+public class ReplicatedNetworkManager implements
+        ReplicatedNetworkInterface<SMSMessage, SMSPeer>, ReceivedMessageListener<SMSMessage> {
     /**
      * Actions the network can send and receive.
      * Current syntax for messages is as follows:
@@ -53,7 +56,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
         //<#>INVITE [IGNORED] [IGNORED]
         static final int INVITE = 0;
         //<#>ACCEPT [IGNORED] [IGNORED]
-        static final int ANSWER_INVITE = 1;
+        static final int ACCEPT_INVITE = 1;
         //<#>ADD_USER [PEER] [IGNORED]
         static final int ADD_USER = 2;
         //<#>REMOVE_USER [PEER] [IGNORED]
@@ -84,7 +87,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     private CommunicationHandler<SMSMessage> handler;
     private Context context;
 
-    public NetworkManager(Context registerContext) {
+    public ReplicatedNetworkManager(Context registerContext) {
          dictionary = new NetworkDictionary(registerContext);
          handler = SMSManager.getInstance(registerContext);
          handler.setReceiveListener(this);
@@ -95,9 +98,9 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     /**
      * This version of the constructor should be used to insert the peer that builds the object
      * (if it is a peer for the sms Network)
-     * @param firstPeer the peer tha builds the network
+     * @param firstPeer the peer that starts the network
      */
-    public NetworkManager(Context registerContext, SMSPeer firstPeer) {
+    public ReplicatedNetworkManager(Context registerContext, SMSPeer firstPeer) {
         this(registerContext);
         dictionary.addPeer(firstPeer);
         myPeer = firstPeer;
@@ -152,7 +155,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      */
     @Override
     public void invite(SMSPeer newPeer) {
-        if(!isConnectedToPeer(newPeer))
+        if(!isPeerConnected(newPeer))
         send(Actions.INVITE, DEFAULT_IGNORED, DEFAULT_IGNORED, newPeer);
     }
 
@@ -163,10 +166,21 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     @Override
     public void acceptInvite(SMSPeer inviter) {
         if(!isPartOfNetwork){
-            send(Actions.ANSWER_INVITE, DEFAULT_IGNORED, DEFAULT_IGNORED, inviter);
+            send(Actions.ACCEPT_INVITE, DEFAULT_IGNORED, DEFAULT_IGNORED, inviter);
             dictionary.addPeer(inviter);
             isPartOfNetwork = true;
         }
+    }
+
+    /**
+     * Method to check whether a Resource is available.
+     *
+     * @param key the key of Resource to find.
+     * @return true if the Resource is available, false otherwise.
+     */
+    @Override
+    public boolean isResourceAvailable(String key) {
+        return false;
     }
 
     /**
@@ -177,7 +191,8 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * @param peer the peer whose presence in the network has to be evaluated
      * @return true if the given peer is part of the network, false if the peer is null or isn't part of the network
      */
-    public boolean isConnectedToPeer(SMSPeer peer) {
+    @Override
+    public boolean isPeerConnected(SMSPeer peer) {
         if(peer != null) {
             return dictionary.contains(peer);
         }
@@ -208,8 +223,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * Method to request a Resource from the network.
      * @param key the Resource to request.
      */
-    @Override
-    public StringResource getResource(String key) {
+    public Resource getResource(String key) {
         for(StringResource res : dictionary.getResources()){
             if(res.getName().equals(key)) return res;
         }
@@ -220,7 +234,6 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * Method to get an array of the Peers.
      * @return array containing all Available Peers.
      */
-    @Override
     public SMSPeer[] getAvailablePeers() {
         return dictionary.getPeers();
     }
@@ -230,7 +243,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * @return array containing all Available Resources.
      */
     @Override
-    public StringResource[] getAvailableResources() {
+    public Resource[] getAvailableResources() {
         return dictionary.getResources();
     }
 
@@ -238,7 +251,6 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * Setter for a listener that should listen for Resources being obtained.
      * @param listener the class listening for Resource events.
      */
-    @Override
     public void setListener(OnNetworkEventListener<SMSMessage, StringResource> listener) {
         this.listener = listener;
     }
@@ -273,7 +285,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
                 acceptInvite(sendingPeer);
                 break;
 
-            case Actions.ANSWER_INVITE:
+            case Actions.ACCEPT_INVITE:
                 onInviteAccepted(sendingPeer);
                 break;
 
