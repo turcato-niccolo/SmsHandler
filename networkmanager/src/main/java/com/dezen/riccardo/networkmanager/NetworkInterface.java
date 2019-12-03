@@ -11,41 +11,42 @@ import com.dezen.riccardo.smshandler.Peer;
  * @param <R>
  * @param <D>
  */
-public abstract class NetworkInterface<M extends Message, P extends Peer, R extends Resource, D extends Dictionary<P,R>>{
+public interface NetworkInterface<M extends Message, P extends Peer, R extends Resource, D extends Dictionary<P,R>>{
 
     /**
      * Method to send an invitation to a new User (Peer)
      * @param newPeer the Peer to invite
      */
-    public abstract void invite(P newPeer);
+    void invite(P newPeer);
 
     /**
      * Method to accept an invitation received
      * @param inviter the user that sent the invitation
      */
-    public abstract void acceptInvite(P inviter);
+    void acceptInvite(P inviter);
 
     /**
-     * Method to request a Resource from the network.
+     * Method to get a Resource from the network, if available.
      * @param key the key of Resource to request.
+     * @return The Resource with the matching key if available.
      */
-    public abstract R getResource(String key);
+    R getResource(String key);
 
     /**
      * Method to get an array of the Peers.
      * @return array containing all Available Peers.
      */
-    public abstract P[] getAvailablePeers();
+    P[] getAvailablePeers();
 
     /**
      * Method to get an array of the Resources.
      * @return array containing all Available Resources.
      */
-    public abstract R[] getAvailableResources();
+    R[] getAvailableResources();
 
     /**
-     * Setter for a listener that should listen for Resources being obtained.
-     * @param listener the class listening for Resource events.
+     * Setter for a listener that should listen to various network events.
+     * @param listener the class listening for events.
      */
-    public abstract void setListener(OnNetworkEventListener<M, R> listener);
+    void setListener(OnNetworkEventListener<M, R> listener);
 }
