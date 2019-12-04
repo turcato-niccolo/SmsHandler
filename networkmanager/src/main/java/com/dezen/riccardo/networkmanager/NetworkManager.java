@@ -138,7 +138,11 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     private void sendResources(SMSPeer targetPeer){
         StringResource[] existingResources = dictionary.getResources();
         for(StringResource resource : existingResources){
-            send(Actions.ADD_RESOURCE, resource.getName(), resource.getValue(), targetPeer);
+            ActionStructure<String> addResourceAction = new NetworkAction(NetworkAction.Type.ADD_RESOURCE,
+                    resource.getName(),
+                    resource.getValue());
+            addResourceAction.setDestinationPeer(targetPeer);
+            perform(addResourceAction);
         }
     }
 
