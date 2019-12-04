@@ -35,7 +35,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
          * @return true if the given action uses the "ARGUMENT" part of the message
          */
         static boolean usesArg(int action){
-            return action >= 2 && isValid(action);
+            return isValid(action) && action >= ADD_USER;
         }
 
         /**
@@ -44,11 +44,13 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
          * @return true if the given action uses the "EXTRA" part of message
          */
         static boolean usesExtra(int action){
-            return action == 7;
+            return action == ADD_RESOURCE;
         }
 
         static final int MIN_ACTION = 0;
         static final int MAX_ACTION = 7;
+
+        //[ACTION] [ARGUMENT] [EXTRA]
 
         //<#>INVITE [IGNORED] [IGNORED]
         static final int INVITE = 0;
@@ -174,11 +176,11 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * Since the information we have about the network are just stored in the dictionary,
      * we search the peer's presence in it
      *
-     * @param peer the peer whose presence in the network has to be evaluated
+     * @param peer the peer whose presence in the network has to be evaluated (must be valid, see SMSPeer.isValid())
      * @return true if the given peer is part of the network, false if the peer is null or isn't part of the network
      */
     public boolean isConnectedToPeer(SMSPeer peer) {
-        if(peer != null) {
+        if(peer != null && peer.isValid()) {
             return dictionary.contains(peer);
         }
         else return false;
