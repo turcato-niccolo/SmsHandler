@@ -27,7 +27,7 @@ public class SMSManagerTest {
 
     @Test
     public void sendMessage_bodyEmpty() {
-        SMSPeer peer = new SMSPeer("3334455666");
+        SMSPeer peer = new SMSPeer("+12025550100");
         String data = "";
         SMSMessage smsMessage = new SMSMessage(peer, data);
         assertEquals(false, this.smsManager.sendMessage(smsMessage));
@@ -62,7 +62,7 @@ public class SMSManagerTest {
 
     @Test
     public void sendMessage_valid() {
-        SMSPeer peer = new SMSPeer("3334455666");
+        SMSPeer peer = new SMSPeer("+12025550100");
         String data = "body";
         SMSMessage smsMessage = new SMSMessage(peer, data);
         //TODO? not sendMessage because it does not have SEND_SMS permission

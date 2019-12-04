@@ -17,7 +17,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-//TODO? some tests failed
 @RunWith(AndroidJUnit4.class)
 public class NetworkDictionaryTest {
 

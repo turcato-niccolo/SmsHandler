@@ -1,5 +1,6 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -18,12 +19,17 @@ import java.util.List;
  * NotificationCatcherService in order to avoid attaching the Receiver to the Service and keep it
  * lighter.
  * The class checks whether pertinent messages have been received. Then proceeds to check whether a
- * suitable listener is available for immediate response. If not then proceeds to either fire a
- * broadcast meant to wake some other process or writes the messages to a database for later use.
+ * suitable listener is available for immediate response. If not, and the message is classified as
+ * urgent through the appropriate code, an action is retrieved from SharedPreferences and started.
+ * If the messages are not urgent or no action has been specified messages are written into a
+ * database for later use.
  * @author Riccardo De Zen
  */
 public class SMSReceiver extends BroadcastReceiver {
+
+    private static final Class<Activity> ACTIVITY_SUPERCLASS = Activity.class;
     private boolean shouldWake = false;
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
@@ -35,19 +41,39 @@ public class SMSReceiver extends BroadcastReceiver {
                  * immediate response is available. A broadcast event is therefore fired to
                  * notify said listener through the receiver it is attached to.
                  */
-                Intent localIntent = new Intent();
-                localIntent.replaceExtras(intent);
-                localIntent.setAction(SMSHandler.RECEIVED_BROADCAST);
-                localIntent.setPackage(context.getApplicationContext().getPackageName());
-                context.sendBroadcast(localIntent);
+                propagate(context, intent);
+                return;
             }
-            else if(shouldWake){
-                wakeActivity(context, intent);
+            if(shouldWake){
+                if(!startAppropriateAction(context, intent))
+                    store(context, messages);
+                shouldWake = false;
             }
             else{
-                SMSDatabaseManager.getInstance(context).addSMS(messages);
+                store(context, messages);
             }
         }
+    }
+
+    /**
+     * Propagates a Broadcast only for Receivers running in this app.
+     * LocalBroadcastManager is deprecated so this solution is being used instead.
+     * @param context the context on which this method is running
+     * @param extraIntent an Intent containing the extras for the broadcast to be propagated
+     */
+    private void propagate(Context context, Intent extraIntent){
+        Intent localIntent = new Intent();
+        localIntent.replaceExtras(extraIntent);
+        localIntent.setAction(SMSHandler.RECEIVED_BROADCAST);
+        localIntent.setPackage(context.getApplicationContext().getPackageName());
+        context.sendBroadcast(localIntent);
+    }
+
+    /**
+     *
+     */
+    private void store(Context context, SmsMessage[] messages){
+        SMSDatabaseManager.getInstance(context).addSMS(messages);
     }
 
     /**
@@ -67,17 +93,33 @@ public class SMSReceiver extends BroadcastReceiver {
     }
 
     /**
-     * Method to start an activity from its canonical name, if such an activity has been specified
-     * in the apposite file.
-     * @param context the context starting the Activity.
-     * @param intentWithExtras the Intent containing any extras to be passed along.
+     * Method to start some action considered responsible of managing urgent messages.
+     * Right now only activities can be saved and started. Although starting an Activity from a
+     * BroadcastReceiver is bad practice according to the Android docs, it is the simplest way to
+     * forcibly start foreground work. WorkManager and Services could be added in the future.
+     * @param context the context on which this method is running
+     * @param extraIntent an Intent containing the extras for the action to be started
      */
-    private void wakeActivity(Context context, Intent intentWithExtras){
+    private boolean startAppropriateAction(Context context, Intent extraIntent){
+        Class classToStart = getWakeAction(context);
+        if(classToStart == null) return false;
+        if(ACTIVITY_SUPERCLASS.isAssignableFrom(classToStart)){
+            startActivity(classToStart, context, extraIntent);
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Method to start an activity from its canonical class name.
+     * @param activityToStart the Class object referencing the class for the Activity to be started.
+     * @param context the context starting the Activity.
+     * @param extraIntent Intent containing any extras to be passed along.
+     */
+    private void startActivity(Class activityToStart, Context context, Intent extraIntent){
         try{
-            Class activityClass = getActivityToWake(context);
-            if(activityClass == null) return;
-            Intent wakeIntent = new Intent(context, activityClass);
-            wakeIntent.replaceExtras(intentWithExtras);
+            Intent wakeIntent = new Intent(context, activityToStart);
+            wakeIntent.replaceExtras(extraIntent);
             wakeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(wakeIntent);
         }catch(Exception e){
@@ -90,18 +132,18 @@ public class SMSReceiver extends BroadcastReceiver {
      * @return The class of the Activity that should be woken up, null if none is present or the
      * saved value is invalid.
      */
-    private Class getActivityToWake(Context context){
+    private Class getWakeAction(Context context){
         final String DEFAULT = "";
         SharedPreferences sharedPreferences = context.getSharedPreferences(
                 SMSHandler.PREFERENCES_FILE_NAME,
                 Context.MODE_PRIVATE
         );
-        String activityClassName = sharedPreferences.getString(
-                SMSHandler.PREFERENCE_WAKE_ACTIVITY_KEY,
+        String wakeClass = sharedPreferences.getString(
+                SMSHandler.PREFERENCE_WAKE_ACTION_KEY,
                 DEFAULT
         );
         try{
-            return Class.forName(activityClassName);
+            return Class.forName(wakeClass);
         }
         catch(ClassNotFoundException e){
             e.printStackTrace();
