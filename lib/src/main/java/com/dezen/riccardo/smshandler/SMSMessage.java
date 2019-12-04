@@ -97,4 +97,14 @@ public class SMSMessage extends Message<String, SMSPeer>{
         MESSAGE_EMPTY,
         MESSAGE_VALID
     }
+
+    @Override
+    public boolean equals(Object obj){
+        if(obj instanceof SMSMessage)
+            if(((SMSMessage)obj).isValid())
+                return ((SMSMessage)obj).getPeer().equals(this.peer) &&
+                    ((SMSMessage)obj).getData().equals(this.data);
+
+            return false;
+    }
 }
