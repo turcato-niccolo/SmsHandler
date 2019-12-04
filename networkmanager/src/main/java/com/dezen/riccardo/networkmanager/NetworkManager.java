@@ -14,7 +14,7 @@ import com.dezen.riccardo.smshandler.SMSPeer;
  * @author Niccolò Turcato.
  * @author Riccardo De Zen.
  */
-public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,StringResource, NetworkDictionary>, ReceivedMessageListener<SMSMessage> {
+public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer, StringResource, NetworkDictionary>, ReceivedMessageListener<SMSMessage> {
     /**
      * Actions the network can send and receive.
      * Current syntax for messages is as follows:
@@ -193,6 +193,20 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
         broadcast(Actions.GREET_USER, invited.getAddress(), DEFAULT_IGNORED);
         //This Peer wasn't part of a network but now it is since someone accepted its invitation.
         if(!isPartOfNetwork) isPartOfNetwork = true;
+        //Resources have to be sent
+        sendResources(invited);
+    }
+
+    /**
+     * Method to send resources to a Peer. A Peer who invites another is responsible for sending it
+     * all the resources.
+     * @param targetPeer the Peer which will receive the resources.
+     */
+    private void sendResources(SMSPeer targetPeer){
+        StringResource[] existingResources = dictionary.getResources();
+        for(StringResource resource : existingResources){
+            send(Actions.ADD_RESOURCE, resource.getName(), resource.getValue(), targetPeer);
+        }
     }
 
     /**
