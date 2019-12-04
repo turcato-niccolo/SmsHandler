@@ -122,6 +122,10 @@ public class ResourceNode implements Resource<String, String> {
      */
     @Override
     public boolean equals(Object other){
+        if(other == null)
+            return false;
+        if(this == other)
+            return true;
         if(other instanceof ResourceNode)
             return this.getAddress().equals(((ResourceNode)other).getAddress());
         return false;

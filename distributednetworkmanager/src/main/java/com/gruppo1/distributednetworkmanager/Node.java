@@ -137,6 +137,10 @@ public class Node {
      */
     @Override
     public boolean equals(Object other){
+        if(other == null)
+            return false;
+        if(this == other)
+            return true;
         if(other instanceof Node)
             return this.getKey().equals(((Node)other).getKey());
         return false;

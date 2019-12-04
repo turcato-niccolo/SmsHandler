@@ -106,6 +106,10 @@ class PeerNode extends Peer<BitSet> {
      */
     @Override
     public boolean equals(Object other){
+        if(other == null)
+            return false;
+        if(this == other)
+            return true;
         if(other instanceof PeerNode)
             return this.getAddress().equals(((PeerNode)other).getAddress());
         else return false;
