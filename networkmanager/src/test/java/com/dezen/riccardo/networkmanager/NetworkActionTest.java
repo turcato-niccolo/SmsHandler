@@ -93,7 +93,11 @@ public class NetworkActionTest {
         testAction.setDestinationPeer(testPeer);
         SMSMessage generated = testAction.generateMessage();
         String[] params = generated.getData().split("\r");
-        testAction = new NetworkAction(generated);
+        NetworkAction receivedAction = new NetworkAction(generated);
+        assertEquals(testAction.getAction(), receivedAction.getAction());
+        assertEquals(testAction.getParam(), receivedAction.getParam());
+        assertEquals(testAction.getExtra(), receivedAction.getExtra());
+        assertEquals(testAction.getPeer(), receivedAction.getPeer());
     }
 
     @Test

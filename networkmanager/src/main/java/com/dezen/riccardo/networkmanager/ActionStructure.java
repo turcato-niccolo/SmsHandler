@@ -25,4 +25,6 @@ abstract class ActionStructure<T extends Comparable<T>> {
 
     abstract public void setDestinationPeer(@NonNull Peer<T> peer);
 
+    abstract public Peer<T> getPeer();
+
 }

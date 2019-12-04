@@ -6,7 +6,6 @@ import com.dezen.riccardo.networkmanager.exceptions.InvalidActionFormatException
 import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
-import com.dezen.riccardo.smshandler.SmsUtils;
 
 /**
  * @author Niccolo' Turcato
@@ -36,7 +35,7 @@ class NetworkAction extends ActionStructure<String>{
     private String argument;
     private String extra;
 
-    private SMSPeer destinationPeer;
+    private SMSPeer currentPeer;
 
     private final String ACTION_CODE_NOT_FOUND_ERROR_MSG = "Expected ActionType as int number, found not parsable String instead";
     private final String FORMATTED_ACTION_NOT_FOUND_ERROR_MSG = "This message does not contain a formatted NetworkAction";
@@ -125,7 +124,7 @@ class NetworkAction extends ActionStructure<String>{
 
     /**
      * Builds the action starting from an SMSMessage's body,
-     * default destinationPeer is set to the buildingMessage.getPeer(), if it exists
+     * default currentPeer is set to the buildingMessage.getPeer(), if it exists
      *
      * @param buildingMessage an SMSMessage used to build the action, body must contain ONLY text formatted from this class
      *
@@ -135,7 +134,7 @@ class NetworkAction extends ActionStructure<String>{
         String messageBody = buildingMessage.getData();
         String[] params = messageBody.split(SEPARATOR);
         if(buildingMessage.getPeer() != null && buildingMessage.getPeer().isValid())
-            destinationPeer = buildingMessage.getPeer();
+            currentPeer = buildingMessage.getPeer();
         if(params.length == NUMBER_OF_PARAM){
             int actionType;
             try {
@@ -155,7 +154,7 @@ class NetworkAction extends ActionStructure<String>{
 
     public void setDestinationPeer(@NonNull Peer<String> peer){
         if(peer instanceof SMSPeer && peer.isValid()){
-            destinationPeer = (SMSPeer) peer;
+            currentPeer = (SMSPeer) peer;
         }
     }
 
@@ -164,7 +163,7 @@ class NetworkAction extends ActionStructure<String>{
      * @return true if this NetworkAction has been built with parameters that meet defined Syntax, false otherwise
      */
     public boolean isValid(){
-        return destinationPeer != null && (
+        return currentPeer != null && (
                 ((actionCommand == Type.INVITE || actionCommand == Type.ANSWER_INVITE)
                         && argument.equals(DEFAULT_IGNORED) && extra.equals(DEFAULT_IGNORED))
 
@@ -191,7 +190,7 @@ class NetworkAction extends ActionStructure<String>{
         if(isValid()) {
             //Formatted Body
             String body = actionCommand + SEPARATOR + argument + SEPARATOR + extra;
-            return new SMSMessage(destinationPeer, body);
+            return new SMSMessage(currentPeer, body);
         }
         else throw new InvalidActionFormatException(INVALID_ACTION_SYNTAX_MSG);
     }
@@ -207,6 +206,13 @@ class NetworkAction extends ActionStructure<String>{
 
     public int getAction(){
         return actionCommand;
+    }
+
+    /**
+     * @return the Peer that forwarded the action (if the action has been received), the peer that will receive the action (if the action is to send/perform), null if it was not set
+     */
+    public Peer<String> getPeer(){
+        return currentPeer;
     }
 }
 

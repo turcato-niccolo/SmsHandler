@@ -20,62 +20,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * Current syntax for messages is as follows:
      * <SMMLibrary-TAG>[ACTION]<SEPARATOR>[ARGUMENT]<SEPARATOR>[EXTRA]
      */
-    private static class Actions {
-        /**
-         * @param action the int value to be checked
-         * @return true if the int matches an action, false if not
-         */
-        static boolean isValid(int action){
-            return action >= MIN_ACTION && action <= MAX_ACTION;
-        }
 
-        /**
-         * @param action the int value to be checked. Actions returning false for isValid also return
-         *               false here
-         * @return true if the given action uses the "ARGUMENT" part of the message
-         */
-        static boolean usesArg(int action){
-            return isValid(action) && action >= ADD_USER;
-        }
-
-        /**
-         * @param action the int value to be checked. Actions returning false for isValid also return
-         *               false here
-         * @return true if the given action uses the "EXTRA" part of message
-         */
-        static boolean usesExtra(int action){
-            return action == ADD_RESOURCE;
-        }
-
-        static final int MIN_ACTION = 0;
-        static final int MAX_ACTION = 7;
-
-        //[ACTION] [ARGUMENT] [EXTRA]
-
-        //<#>INVITE [IGNORED] [IGNORED]
-        static final int INVITE = 0;
-        //<#>ACCEPT [IGNORED] [IGNORED]
-        static final int ANSWER_INVITE = 1;
-        //<#>ADD_USER [PEER] [IGNORED]
-        static final int ADD_USER = 2;
-        //<#>REMOVE_USER [PEER] [IGNORED]
-        static final int REMOVE_USER = 3;
-        //<#>GREET_USER [PEER] [IGNORED]
-        static final int GREET_USER = 4;
-        //<#>MSG [MESSAGE] [IGNORED]
-        static final int MSG = 5;
-        //<#>REMOVE_RESOURCE [KEY] [IGNORED]
-        static final int REMOVE_RESOURCE = 6;
-        //<#>ADD_RESOURCE [KEY] [VALUE]
-        static final int ADD_RESOURCE = 7;
-    }
-
-    private static final String SEPARATOR =  "\r";
-    private static final String DEFAULT_IGNORED = "";
-    private static final String MSG_SYNTAX_ACTION_ERR = "Parameter action out of range. Expected {0-7}, got: ";
-    private static final String MSG_SYNTAX_ARG_ERR = "Parameter \"arg\" can't be empty for this action";
-    private static final String MANAGER_LOG_TAG = "NETWORK_MANAGER";
-    private static final int ACTION_POSITION = 0, ARG_POSITION = 1, EXTRA_POSITION = 2;
 
     //TODO add support for multiple networks.
 
@@ -106,45 +51,25 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     }
 
     /**
-     * Method to build the body of a message that travels through the network
-     * @param action the action to be sent
-     * @param arg the argument for the action such as the key for a Resource
-     * @param extra any extras related to the argument such as the value for a Resource
-     * @throws InvalidMsgSyntaxException if the given parameters do not meet the criteria
-     */
-    private String composeMessageBody(int action, String arg, String extra) throws InvalidMsgSyntaxException {
-        if(!Actions.isValid(action))
-            throw new InvalidMsgSyntaxException(MSG_SYNTAX_ACTION_ERR + action);
-        if(Actions.usesArg(action) && (arg == null || arg.isEmpty()))
-            throw new InvalidMsgSyntaxException(MSG_SYNTAX_ARG_ERR);
-        //String concatenation on null String turns it into "null". Should not be a problem.
-        return action+SEPARATOR+arg+SEPARATOR+extra;
-    }
-
-    /**
      * Send a specific action to a single Peer
-     * @param action the action to be sent
-     * @param arg the argument for the action
-     * @param extra any extras related to the argument
-     * @param peer the peer to which the action is sent
+     * @param action action to perform
      */
-    private void send(int action, String arg, String extra, SMSPeer peer){
-        if(peer.equals(myPeer)) return;
-        String body = composeMessageBody(action,arg,extra);
-        SMSMessage message = new SMSMessage(peer,body);
+    private void perform(ActionStructure action){
+        if(action.getPeer().equals(myPeer)) return;
+        SMSMessage message = action.generateMessage();
         handler.sendMessage(message);
     }
 
     /**
      * Method to send some kind of broadcast to the whole network
      * @param action the action to broadcast
-     * @param arg the argument for the action
-     * @param extra any extras related to the argument
      */
-    private void broadcast(int action, String arg, String extra) {
+    private void broadcast(ActionStructure<String> action){
         for(SMSPeer peer : getAvailablePeers()) {
-            if (!peer.equals(myPeer))
-                send(action, arg, extra, peer);
+            if (!peer.equals(myPeer)) {
+                action.setDestinationPeer(peer);
+                perform(action);
+            }
         }
     }
 
@@ -155,7 +80,11 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     @Override
     public void invite(SMSPeer newPeer) {
         if(!isConnectedToPeer(newPeer))
-        send(Actions.INVITE, DEFAULT_IGNORED, DEFAULT_IGNORED, newPeer);
+        {
+            ActionStructure<String> inviteAction = new NetworkAction(NetworkAction.Type.INVITE, NetworkAction.DEFAULT_IGNORED, NetworkAction.DEFAULT_IGNORED);
+            inviteAction.setDestinationPeer(newPeer);
+            perform(inviteAction);
+        }
     }
 
     /**
@@ -165,14 +94,15 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     @Override
     public void acceptInvite(SMSPeer inviter) {
         if(!isPartOfNetwork){
-            send(Actions.ANSWER_INVITE, DEFAULT_IGNORED, DEFAULT_IGNORED, inviter);
+            ActionStructure<String> acceptInviteAction = new NetworkAction(NetworkAction.Type.ANSWER_INVITE, NetworkAction.DEFAULT_IGNORED, NetworkAction.DEFAULT_IGNORED);
+            acceptInviteAction.setDestinationPeer(inviter);
+            perform(acceptInviteAction);
             dictionary.addPeer(inviter);
             isPartOfNetwork = true;
         }
     }
 
     /**
-     * @author Turcato
      * Since the information we have about the network are just stored in the dictionary,
      * we search the peer's presence in it
      *
@@ -192,7 +122,8 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      */
     private void onInviteAccepted(SMSPeer invited) {
         dictionary.addPeer(invited);
-        broadcast(Actions.GREET_USER, invited.getAddress(), DEFAULT_IGNORED);
+        ActionStructure<String> greetAction = new NetworkAction(NetworkAction.Type.GREET_USER, invited.getAddress(), NetworkAction.DEFAULT_IGNORED);
+        broadcast(greetAction);
         //This Peer wasn't part of a network but now it is since someone accepted its invitation.
         if(!isPartOfNetwork) isPartOfNetwork = true;
     }
@@ -203,7 +134,10 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      */
     public void createResource(StringResource newResource) {
         dictionary.addResource(newResource);
-        broadcast(Actions.ADD_RESOURCE,newResource.getName(),newResource.getValue());
+        ActionStructure<String> addResource = new NetworkAction(NetworkAction.Type.ADD_RESOURCE,
+                newResource.getName(),
+                newResource.getValue());
+        broadcast(addResource);
     }
 
     /**
@@ -247,62 +181,54 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
 
     @Override
     public void onMessageReceived(SMSMessage message) {
-        String usefulMessage = message.getData().substring(SMSHandler.APP_KEY.length());
-        String[] splitMessage = usefulMessage.split(SEPARATOR);
-        int action = Integer.parseInt(splitMessage[ACTION_POSITION]);
-        String arg = "", extra = "";
-        if(splitMessage.length > 2){
-            arg = splitMessage[ARG_POSITION];
-            extra = splitMessage[EXTRA_POSITION];
-        }
-        if(splitMessage.length > 1){
-            arg = splitMessage[ARG_POSITION];
-        }
-        if(Actions.isValid(action)){
-            performAction(action, arg, extra, message.getPeer());
-        }
+        String usefulMessage = message.getData().replace(SMSHandler.APP_KEY, "");
+        SMSMessage receivedMessage = new SMSMessage(message.getPeer(), usefulMessage);
+
+        ActionStructure<String> receivedAction = new NetworkAction(receivedMessage);
+
+        performAction(receivedAction);
     }
 
     /**
      * Method to perform an action received through the Network
      * @param action the action to broadcast
-     * @param arg the argument for the action
-     * @param extra any extras related to the argument
      */
-    private void performAction(int action, String arg, String extra, SMSPeer sendingPeer){
-        switch(action){
-            case Actions.INVITE:
-                acceptInvite(sendingPeer);
+    private void performAction(ActionStructure<String> action){
+        switch(action.getAction()){
+            case NetworkAction.Type.INVITE:
+                acceptInvite((SMSPeer) action.getPeer());
                 break;
 
-            case Actions.ANSWER_INVITE:
-                onInviteAccepted(sendingPeer);
+            case NetworkAction.Type.ANSWER_INVITE:
+                onInviteAccepted((SMSPeer) action.getPeer());
                 break;
 
-            case Actions.ADD_USER:
-                dictionary.addPeer(new SMSPeer(arg));
+            case NetworkAction.Type.ADD_USER:
+                dictionary.addPeer(new SMSPeer(action.getParam()));
                 break;
 
-            case Actions.GREET_USER:
-                SMSPeer newPeer = new SMSPeer(arg);
+            case NetworkAction.Type.GREET_USER:
+                SMSPeer newPeer = new SMSPeer(action.getParam());
                 dictionary.addPeer(newPeer);
-                send(Actions.ADD_USER, myPeer.getAddress(), DEFAULT_IGNORED, newPeer);
+                action = new NetworkAction(NetworkAction.Type.ADD_USER, myPeer.getAddress(), NetworkAction.DEFAULT_IGNORED);
+                action.setDestinationPeer(newPeer);
+                perform(action);
                 break;
 
-            case Actions.REMOVE_USER:
-                dictionary.removePeer(new SMSPeer(arg));
+            case NetworkAction.Type.REMOVE_USER:
+                dictionary.removePeer(new SMSPeer(action.getParam()));
                 break;
 
-            case Actions.MSG:
-                if(listener != null) listener.onMessageReceived(new SMSMessage(sendingPeer, arg));
+            case NetworkAction.Type.MSG:
+                if(listener != null) listener.onMessageReceived(new SMSMessage((SMSPeer) action.getPeer(), action.getParam()));
                 break;
 
-            case Actions.ADD_RESOURCE:
-                dictionary.addResource(new StringResource(arg, extra));
+            case NetworkAction.Type.ADD_RESOURCE:
+                dictionary.addResource(new StringResource(action.getParam(), action.getExtra()));
                 break;
 
-            case Actions.REMOVE_RESOURCE:
-                dictionary.removeResource(new StringResource(arg,""));
+            case NetworkAction.Type.REMOVE_RESOURCE:
+                dictionary.removeResource(new StringResource(action.getParam(),""));
                 break;
         }
     }
