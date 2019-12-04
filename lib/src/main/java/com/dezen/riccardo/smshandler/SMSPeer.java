@@ -73,7 +73,7 @@ public class SMSPeer extends Peer<String> {
             return PhoneNumberValidity.ADDRESS_TOO_SHORT;
 
         //Failure of some other criteria in isGlobalPhoneNumber, the country code is probably invalid.
-        if(!PhoneNumberUtils.isGlobalPhoneNumber(address))
+        if(!isGlobalPhoneNumber(address))
             return PhoneNumberValidity.ADDRESS_GENERIC_INVALID;
 
         return PhoneNumberValidity.ADDRESS_VALID;
