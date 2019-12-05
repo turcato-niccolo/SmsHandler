@@ -36,20 +36,6 @@ public abstract class BaseDao<P, R>{
     public abstract void addResource(R... resourceEntities);
 
     /**
-     * Update a resource
-     * @param resourceEntities to update
-     */
-    @Update
-    public abstract void updateResource(R... resourceEntities);
-
-    /**
-     * Delete a resource
-     * @param resourceEntities to remove
-     */
-    @Delete
-    public abstract void removeResource(R... resourceEntities);
-
-    /**
      * Add a new peer
      * @param peerEntities to add
      */
@@ -57,11 +43,25 @@ public abstract class BaseDao<P, R>{
     public abstract void addPeer(P... peerEntities);
 
     /**
+     * Update a resource
+     * @param resourceEntities to update
+     */
+    @Update
+    public abstract void updateResource(R... resourceEntities);
+
+    /**
      * Update a peer
      * @param peerEntities to update
      */
     @Update
     public abstract void updatePeer(P... peerEntities);
+
+    /**
+     * Delete a resource
+     * @param resourceEntities to remove
+     */
+    @Delete
+    public abstract void removeResource(R... resourceEntities);
 
     /**
      * Delete a peer
@@ -96,7 +96,7 @@ public abstract class BaseDao<P, R>{
      */
     public boolean containsPeer(String address){
         SimpleSQLiteQuery query = new SimpleSQLiteQuery(
-                COUNT_QUERY + getPeerTableName() +" WHERE address=:"+address
+                COUNT_QUERY + getPeerTableName() +" WHERE address='"+address+"'"
         );
         return performCount(query)!=0;
     }
@@ -107,11 +107,22 @@ public abstract class BaseDao<P, R>{
      */
     public boolean containsResource(String key){
         SimpleSQLiteQuery query = new SimpleSQLiteQuery(
-                COUNT_QUERY + getResourceTableName() +" WHERE keyName=:"+key
+                COUNT_QUERY + getResourceTableName() +" WHERE keyName='"+key+"'"
         );
         return performCount(query)!=0;
     }
 
+
+    /**
+     * @param address of peer
+     * @return peer with that address
+     */
+    public P getPeer(String address){
+        SimpleSQLiteQuery query = new SimpleSQLiteQuery(
+                GET_ALL_QUERY + getResourceTableName() +" WHERE address='"+address+"'"
+        );
+        return performGetPeer(query);
+    }
 
     /**
      * @param key of resource
@@ -119,7 +130,7 @@ public abstract class BaseDao<P, R>{
      */
     public R getResource(String key){
         SimpleSQLiteQuery query = new SimpleSQLiteQuery(
-                COUNT_QUERY + getResourceTableName() +" WHERE keyName=:"+key
+                GET_ALL_QUERY + getResourceTableName() +" WHERE keyName='"+key+"'"
         );
         return performGetResource(query);
     }
@@ -135,10 +146,18 @@ public abstract class BaseDao<P, R>{
     /**
      * Method to perform the query correctly through Room
      * @param query the query to be performed
-     * @return an int value returned by the query. In this case the resource found.
+     * @return R resource
      */
     @RawQuery
     protected abstract R performGetResource(SupportSQLiteQuery query);
+
+    /**
+     * Method to perform the query correctly through Room
+     * @param query the query to be performed
+     * @return P peer
+     */
+    @RawQuery
+    protected abstract P performGetPeer(SupportSQLiteQuery query);
 
     /**
      * @return all the peers rows in the table
