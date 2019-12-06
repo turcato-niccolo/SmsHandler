@@ -1,19 +1,14 @@
 package com.dezen.riccardo.smshandler;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.os.AsyncTask;
+import android.content.SharedPreferences;
 import android.provider.Telephony;
 import android.telephony.SmsMessage;
 
-import androidx.room.Room;
-
-import com.dezen.riccardo.smshandler.database.SmsDatabase;
-import com.dezen.riccardo.smshandler.database.SmsEntity;
+import com.dezen.riccardo.smshandler.database.SMSDatabaseManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,67 +19,61 @@ import java.util.List;
  * NotificationCatcherService in order to avoid attaching the Receiver to the Service and keep it
  * lighter.
  * The class checks whether pertinent messages have been received. Then proceeds to check whether a
- * suitable listener is available for immediate response. If not then proceeds to either fire a
- * broadcast meant to wake some other process or writes the messages to a database for later use.
+ * suitable listener is available for immediate response. If not, and the message is classified as
+ * urgent through the appropriate code, an action is retrieved from SharedPreferences and started.
+ * If the messages are not urgent or no action has been specified messages are written into a
+ * database for later use.
  * @author Riccardo De Zen
  */
 public class SMSReceiver extends BroadcastReceiver {
+
+    private static final Class<Activity> ACTIVITY_SUPERCLASS = Activity.class;
     private boolean shouldWake = false;
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction() != null && intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)){
-            List<SmsMessage> messages = filter(Telephony.Sms.Intents.getMessagesFromIntent(intent));
-            if(messages.size() < 1) return;
+            SmsMessage[] messages = filter(Telephony.Sms.Intents.getMessagesFromIntent(intent));
+            if(messages.length < 1) return;
             if(SMSHandler.shouldHandleIncomingSms()){
                 /*
                  * SMSHandler.shouldHandleIncomingSms() returns true if a suitable listener for
                  * immediate response is available. A broadcast event is therefore fired to
                  * notify said listener through the receiver it is attached to.
                  */
-                Intent local_intent = new Intent();
-                local_intent.replaceExtras(intent);
-                local_intent.setAction(SMSHandler.RECEIVED_BROADCAST);
-                local_intent.setPackage(context.getApplicationContext().getPackageName());
-                context.sendBroadcast(local_intent);
+                propagate(context, intent);
+                return;
             }
-            else if(shouldWake){
-                Intent wake_intent = new Intent();
-                wake_intent.replaceExtras(intent);
-                wake_intent.setAction(SMSHandler.WAKE_BROADCAST);
-                sendImplicitBroadcast(context, wake_intent);
+            if(shouldWake){
+                if(!startAppropriateAction(context, intent))
+                    store(context, messages);
+                shouldWake = false;
             }
             else{
-                //write new sms to local database asynchronously
-                SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMSHandler.UNREAD_SMS_DATABASE_NAME)
-                        .enableMultiInstanceInvalidation()
-                        .build();
-                new WriteToDbTask(messages,db).execute();
+                store(context, messages);
             }
         }
     }
 
     /**
-     * Class defining a task that writes the smsMessages to the local database.
+     * Propagates a Broadcast only for Receivers running in this app.
+     * LocalBroadcastManager is deprecated so this solution is being used instead.
+     * @param context the context on which this method is running
+     * @param extraIntent an Intent containing the extras for the broadcast to be propagated
      */
-    private static class WriteToDbTask extends AsyncTask<String,Integer,Void>{
-        private List<SmsMessage> smsMessages;
-        private SmsDatabase db;
+    private void propagate(Context context, Intent extraIntent){
+        Intent localIntent = new Intent();
+        localIntent.replaceExtras(extraIntent);
+        localIntent.setAction(SMSHandler.RECEIVED_BROADCAST);
+        localIntent.setPackage(context.getApplicationContext().getPackageName());
+        context.sendBroadcast(localIntent);
+    }
 
-        WriteToDbTask(List<SmsMessage> smsMessages, SmsDatabase db) {
-            this.smsMessages = smsMessages;
-            this.db = db;
-        }
-
-        @Override
-        protected Void doInBackground(String... strings) {
-            for(SmsMessage sms : smsMessages){
-                SmsEntity s = new SmsEntity(db.access().getCount(),
-                        sms.getOriginatingAddress(),
-                        sms.getDisplayMessageBody());
-                db.access().insert(s);
-            }
-            return null;
-        }
+    /**
+     *
+     */
+    private void store(Context context, SmsMessage[] messages){
+        SMSDatabaseManager.getInstance(context).addSMS(messages);
     }
 
     /**
@@ -93,37 +82,72 @@ public class SMSReceiver extends BroadcastReceiver {
      * @param messages array of SmsMessage.
      * @return list of messages containing SMSHandler.APP_KEY
      */
-    private List<SmsMessage> filter(SmsMessage[] messages){
+    private SmsMessage[] filter(SmsMessage[] messages){
         List<SmsMessage> list = new ArrayList<>();
         if(messages != null)
             for(SmsMessage sms : messages){
                 if(sms.getMessageBody().contains(SMSHandler.APP_KEY)) list.add(sms);
                 if(sms.getMessageBody().contains(SMSHandler.WAKE_KEY)) shouldWake = true;
             }
-        return list;
+        return list.toArray(new SmsMessage[0]);
     }
 
     /**
-     * Method to turn an implicit Broadcast into explicit ones. This method is needed in order to
-     * send broadcasts to manifest declared receivers on API 26 and above, since the ability to send
-     * implicit broadcasts to manifest receivers in the same app has been removed.
-     * //TODO test this method on APIs below 26.
+     * Method to start some action considered responsible of managing urgent messages.
+     * Right now only activities can be saved and started. Although starting an Activity from a
+     * BroadcastReceiver is bad practice according to the Android docs, it is the simplest way to
+     * forcibly start foreground work. WorkManager and Services could be added in the future.
+     * @param context the context on which this method is running
+     * @param extraIntent an Intent containing the extras for the action to be started
      */
-    public void sendImplicitBroadcast(Context context, Intent intent){
-        int flags = 0;
-        PackageManager packageManager = context.getPackageManager();
-        //get all broadcastReceivers for this context.
-        List<ResolveInfo> matchingReceivers = packageManager.queryBroadcastReceivers(intent,flags);
-        for (ResolveInfo resolveInfo : matchingReceivers) {
-            //create and broadcast intent for every matching receiver
-            //this is a specific broadcast because it targets the receivers specifically
-            Intent explicit=new Intent(intent);
-            ComponentName componentName = new ComponentName(
-                    resolveInfo.activityInfo.applicationInfo.packageName,
-                    resolveInfo.activityInfo.name
-            );
-            explicit.setComponent(componentName);
-            context.sendBroadcast(explicit);
+    private boolean startAppropriateAction(Context context, Intent extraIntent){
+        Class classToStart = getWakeAction(context);
+        if(classToStart == null) return false;
+        if(ACTIVITY_SUPERCLASS.isAssignableFrom(classToStart)){
+            startActivity(classToStart, context, extraIntent);
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * Method to start an activity from its canonical class name.
+     * @param activityToStart the Class object referencing the class for the Activity to be started.
+     * @param context the context starting the Activity.
+     * @param extraIntent Intent containing any extras to be passed along.
+     */
+    private void startActivity(Class activityToStart, Context context, Intent extraIntent){
+        try{
+            Intent wakeIntent = new Intent(context, activityToStart);
+            wakeIntent.replaceExtras(extraIntent);
+            wakeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(wakeIntent);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Reads from preferences the name of the activity that should be started and returns its class;
+     * @return The class of the Activity that should be woken up, null if none is present or the
+     * saved value is invalid.
+     */
+    private Class getWakeAction(Context context){
+        final String DEFAULT = "";
+        SharedPreferences sharedPreferences = context.getSharedPreferences(
+                SMSHandler.PREFERENCES_FILE_NAME,
+                Context.MODE_PRIVATE
+        );
+        String wakeClass = sharedPreferences.getString(
+                SMSHandler.PREFERENCE_WAKE_ACTION_KEY,
+                DEFAULT
+        );
+        try{
+            return Class.forName(wakeClass);
+        }
+        catch(ClassNotFoundException e){
+            e.printStackTrace();
+            return null;
         }
     }
 }
