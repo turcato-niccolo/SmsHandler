@@ -5,11 +5,16 @@ import android.content.Context;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.dezen.riccardo.smshandler.exceptions.InvalidAddressException;
+import com.dezen.riccardo.smshandler.exceptions.InvalidMessageException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 
 /**
  * @author Giorgia Bortoletti
@@ -18,6 +23,7 @@ import static junit.framework.TestCase.assertEquals;
 public class SMSManagerTest {
 
     private SMSManager smsManager;
+    private static final String EX_VALID_ADDRESS = "+39892424";
 
     @Before
     public void createSmsManager(){
@@ -27,26 +33,44 @@ public class SMSManagerTest {
 
     @Test
     public void sendMessage_bodyEmpty() {
-        SMSPeer peer = new SMSPeer("3334455666");
-        String data = "";
-        SMSMessage smsMessage = new SMSMessage(peer, data);
-        assertEquals(false, this.smsManager.sendMessage(smsMessage));
+        boolean sending = true;
+        try {
+            SMSPeer peer = new SMSPeer(EX_VALID_ADDRESS);
+            String data = "";
+            SMSMessage smsMessage = new SMSMessage(peer, data);
+            this.smsManager.sendMessage(smsMessage);
+        }catch(InvalidMessageException e){
+            sending = false;
+        }
+        assertFalse(sending);
     }
 
     @Test
     public void sendMessage_peerEmpty() {
-        SMSPeer peer = new SMSPeer("");
-        String data = "body";
-        SMSMessage smsMessage = new SMSMessage(peer, data);
-        assertEquals(false, this.smsManager.sendMessage(smsMessage));
+        boolean sending = true;
+        try{
+            SMSPeer peer = new SMSPeer("");
+            String data = "body";
+            SMSMessage smsMessage = new SMSMessage(peer, data);
+            this.smsManager.sendMessage(smsMessage);
+        }catch(InvalidAddressException e){
+            sending = false;
+        }
+        assertFalse(sending);
     }
 
     @Test
     public void sendMessage_peerBlank() {
-        SMSPeer peer = new SMSPeer("  ");
-        String data = "body";
-        SMSMessage smsMessage = new SMSMessage(peer, data);
-        assertEquals(false, this.smsManager.sendMessage(smsMessage));
+        boolean sending = true;
+        try{
+            SMSPeer peer = new SMSPeer("  ");
+            String data = "body";
+            SMSMessage smsMessage = new SMSMessage(peer, data);
+            this.smsManager.sendMessage(smsMessage);
+        }catch(InvalidAddressException e){
+            sending = false;
+        }
+        assertFalse(sending);
     }
 
     /**
@@ -54,18 +78,24 @@ public class SMSManagerTest {
      */
     @Test
     public void sendMessage_peerNotValid() {
-        SMSPeer peer = new SMSPeer("{{@@");
-        String data = "body";
-        SMSMessage smsMessage = new SMSMessage(peer, data);
-        assertEquals(false, this.smsManager.sendMessage(smsMessage));
+        boolean sending = true;
+        try{
+            SMSPeer peer = new SMSPeer("{{@@");
+            String data = "body";
+            SMSMessage smsMessage = new SMSMessage(peer, data);
+            this.smsManager.sendMessage(smsMessage);
+        }catch(InvalidAddressException e){
+            sending = false;
+        }
+        assertFalse(sending);
     }
 
     @Test
     public void sendMessage_valid() {
-        SMSPeer peer = new SMSPeer("3334455666");
+        SMSPeer peer = new SMSPeer(EX_VALID_ADDRESS);
         String data = "body";
         SMSMessage smsMessage = new SMSMessage(peer, data);
         //TODO? not sendMessage because it does not have SEND_SMS permission
-        assertEquals(true, this.smsManager.sendMessage(smsMessage));
+        assertTrue(this.smsManager.sendMessage(smsMessage));
     }
 }
