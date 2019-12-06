@@ -9,6 +9,7 @@ import androidx.room.Room;
 
 import com.dezen.riccardo.smshandler.ReceivedMessageListener;
 import com.dezen.riccardo.smshandler.SMSMessage;
+import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.List;
 
@@ -21,6 +22,8 @@ import java.util.List;
  * @author Riccardo De Zen
  */
 public class SMSDatabaseManager {
+
+    private static int lastIdMessage;
 
     private static final String CON_ERROR = "This class uses the singleton design pattern. Use getInstance() to get a reference to the single instance of this class";
     private static final String UNREAD_SMS_DB_NAME = "unread-sms-db";
@@ -50,6 +53,7 @@ public class SMSDatabaseManager {
                     .allowMainThreadQueries()
                     .build();
         }
+        lastIdMessage = maxId();
     }
 
     /**
@@ -87,6 +91,13 @@ public class SMSDatabaseManager {
     }
 
     /**
+     * @return the maximum id of SMS Message
+     */
+    private int maxId(){
+        return database.access().maxId();
+    }
+
+    /**
      * Method to add one or more SMS to the database, runs on the main Thread
      * @param newMessages the message/messages to be added
      */
@@ -103,7 +114,8 @@ public class SMSDatabaseManager {
         if (newMessages == null || newMessages.length <= 0) return;
         SMSMessage[] messages = new SMSMessage[newMessages.length];
         for (int i = 0; i < newMessages.length; i++) {
-            messages[i] = new SMSMessage(newMessages[i]);
+            messages[i] = new SMSMessage(lastIdMessage++, new SMSPeer(newMessages[i].getOriginatingAddress()),
+                    newMessages[i].getMessageBody());
         }
         addSMS(messages);
     }

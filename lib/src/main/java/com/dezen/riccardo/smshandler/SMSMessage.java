@@ -20,6 +20,7 @@ public class SMSMessage extends Message<String, SMSPeer>{
 
     //Name of the Entity table inside the Database.
     public static final String SMS_TABLE_NAME = "smsmessage";
+    public static final String SMS_ID_COLUMN_NAME = "id";
     public static final String SMS_ADDRESS_COLUMN_NAME = "address";
     public static final String SMS_BODY_COLUMN_NAME = "message";
 
@@ -29,7 +30,8 @@ public class SMSMessage extends Message<String, SMSPeer>{
     public static final int MAX_MESSAGE_LENGTH = 160;
 
     //The id is currently only relevant inside the database and does not need to be seen or set outside
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
+    @ColumnInfo (name = SMS_ID_COLUMN_NAME)
     private int id;
     @ColumnInfo(name = SMS_ADDRESS_COLUMN_NAME)
     private SMSPeer peer;
@@ -78,11 +80,11 @@ public class SMSMessage extends Message<String, SMSPeer>{
     }
 
     /**
-     * Setter for the id
-     * @param newId the new Id for this Message
+     * Setter for the data
+     * @param newData the new Data for this Message
      */
-    public void setId(int newId){
-        id = newId;
+    public void setData(String newData){
+        data = newData;
     }
 
     /**
@@ -91,6 +93,14 @@ public class SMSMessage extends Message<String, SMSPeer>{
     @Override
     public String getData() {
         return data;
+    }
+
+    /**
+     * Setter for the id
+     * @param newId the new Id for this Message
+     */
+    public void setId(int newId){
+        id = newId;
     }
 
     /**
@@ -128,7 +138,7 @@ public class SMSMessage extends Message<String, SMSPeer>{
      */
     @NonNull
     public String toString(){
-        return "Peer: "+peer.toString()+"\nData: "+data;
+        return "Id: "+id+"\nPeer: "+peer.toString()+"\nData: "+data;
     }
 
     /**

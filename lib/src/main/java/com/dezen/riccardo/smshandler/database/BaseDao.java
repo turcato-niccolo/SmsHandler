@@ -9,6 +9,9 @@ import androidx.room.Update;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
 
+import com.dezen.riccardo.smshandler.SMSHandler;
+import com.dezen.riccardo.smshandler.SMSMessage;
+
 import java.util.List;
 
 /**
@@ -23,7 +26,8 @@ public abstract class BaseDao<T>{
 
     //Table name has to follow
     protected static final String COUNT_QUERY = "SELECT COUNT(*) FROM ";
-
+    //Table name has to follow
+    protected static final String MAX_QUERY = "SELECT MAX("+SMSMessage.SMS_ID_COLUMN_NAME+") FROM ";
     //Table name has to follow
     protected static final String GET_ALL_QUERY = "SELECT * FROM ";
 
@@ -65,6 +69,24 @@ public abstract class BaseDao<T>{
      */
     @RawQuery
     protected abstract int performCount(SupportSQLiteQuery query);
+
+    /**
+     * @return the number of rows in the table
+     */
+    public int maxId(){
+        SimpleSQLiteQuery query = new SimpleSQLiteQuery(
+                MAX_QUERY + getTableName()
+        );
+        return performMax(query);
+    }
+
+    /**
+     * Method to perform the query correctly through Room
+     * @param query the query to be performed
+     * @return an int value returned by the query. In this case the number of rows in the table.
+     */
+    @RawQuery
+    protected abstract int performMax(SupportSQLiteQuery query);
 
     /**
      * @return all the rows in the table
