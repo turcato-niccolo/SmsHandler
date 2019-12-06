@@ -1,14 +1,16 @@
 package com.dezen.riccardo.smshandler;
 
-import android.telephony.PhoneNumberUtils;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.dezen.riccardo.smshandler.exceptions.InvalidAddressException;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author Riccardo De Zen. Based on decisions of whole class.
+ * @author Niccolo' Turcato, contribution
  */
 public class SMSPeer extends Peer<String> {
 
@@ -19,6 +21,9 @@ public class SMSPeer extends Peer<String> {
     public static final int MIN_ADDRESS_LENGTH = 4;
 
     private String address;
+
+    private static final Pattern GLOBAL_PHONE_NUMBER_PATTERN =
+            Pattern.compile("[+]?[0-9.-]+");
 
     /**
      * @param address the address for the peer
@@ -64,11 +69,17 @@ public class SMSPeer extends Peer<String> {
 
         if(address.length() < MIN_ADDRESS_LENGTH)
             return PhoneNumberValidity.ADDRESS_TOO_SHORT;
+
         //Failure of some other criteria in isGlobalPhoneNumber, the country code is probably invalid.
-        if(!PhoneNumberUtils.isGlobalPhoneNumber(address))
+        if(!isGlobalPhoneNumber(address))
             return PhoneNumberValidity.ADDRESS_GENERIC_INVALID;
 
         return PhoneNumberValidity.ADDRESS_VALID;
+    }
+
+    public static boolean isGlobalPhoneNumber(@NonNull String phoneNumber) {
+        Matcher match = GLOBAL_PHONE_NUMBER_PATTERN.matcher(phoneNumber);
+        return match.matches();
     }
 
     /**

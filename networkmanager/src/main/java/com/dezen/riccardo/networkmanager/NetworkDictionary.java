@@ -2,7 +2,6 @@ package com.dezen.riccardo.networkmanager;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.telephony.PhoneNumberUtils;
 
 import androidx.room.Room;
 
@@ -11,6 +10,7 @@ import com.dezen.riccardo.networkmanager.database_dictionary.PeerEntity;
 import com.dezen.riccardo.networkmanager.database_dictionary.ResourceEntity;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,8 +26,10 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
 
     public static final String NETWORK_DICTIONARY_DATABASE_NAME = "NETWORK_DICTIONARY_DATABASE";
 
-    private Map<String, String>  peers;
+    private Map<String, String> peers;
     private Map<String, String> resources;
+    private ArrayList<SMSPeer> deletedPeers;
+    private ArrayList<StringResource> deletedResources;
     private NetworkDictionaryDatabase database;
     private ImportFromDatabasesTask importFromDatabasesTask;
     private ExportToDatabaseTask exportToDatabaseTask;
@@ -44,6 +46,8 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         peers = new HashMap<>();
         resources = new HashMap<>();
         importFromDatabase();
+        deletedResources = new ArrayList<>();
+        deletedPeers = new ArrayList<>();
     }
 
     /**
@@ -120,6 +124,9 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     public boolean removePeer(SMSPeer peerToRemove) {
         if(peerToRemove == null || !contains(peerToRemove)) return false;
         peers.remove(peerToRemove.getAddress());
+        if(!contains(peerToRemove))
+            deletedPeers.add(peerToRemove);
+        //Tracking removed peers to then update backup db
         return !contains(peerToRemove);
     }
 
@@ -193,6 +200,9 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     public boolean removeResource(StringResource resourceToRemove) {
         if(resourceToRemove == null || !contains(resourceToRemove)) return false;
         resources.remove(resourceToRemove.getName());
+        if(!contains(resourceToRemove))
+            deletedResources.add(resourceToRemove);
+        //Tracking removed resources to then update backup db
         return !contains(resourceToRemove);
     }
 
@@ -440,6 +450,15 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         protected Long doInBackground(NetworkDictionaryDatabase ... database)
         {
             for (NetworkDictionaryDatabase db: database) {
+
+                for (SMSPeer peer : deletedPeers)
+                    if(db.containsPeer(peer))
+                        db.removePeer(peer);
+
+                for (StringResource resource: deletedResources)
+                    if(db.containsResource(resource))
+                        db.removeResource(resource);
+
                 for(Map.Entry<String, String> peerEntry : peers.entrySet())
                 {
                     SMSPeer smsPeer = new SMSPeer(peerEntry.getKey());

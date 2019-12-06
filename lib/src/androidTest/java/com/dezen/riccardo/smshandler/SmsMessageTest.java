@@ -19,11 +19,12 @@ public class SmsMessageTest {
     private SMSPeer peer;
     private SMSMessage message;
     private static final String EX_VALID_ADDRESS = "+39892424";
+    private static final String VALID_ADDRESS = "+390425668000";
     private static final String EX_VALID_MSG = "Wassup Mankind";
 
     @Before
     public void createValidPeer(){
-        peer = new SMSPeer(EX_VALID_ADDRESS);
+        peer = new SMSPeer(VALID_ADDRESS);
     }
 
     @Test

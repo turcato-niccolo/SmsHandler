@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
@@ -78,11 +77,11 @@ public class NetworkDictionaryTest {
 
     @Test
     public void removePeerIgnoresNonExistingPeer(){
-        String existingAddress = "I exist";
+        String existingAddress = "+390425000011";
         SMSPeer existingPeer = new SMSPeer(existingAddress);
         networkVocabulary.addPeer(existingPeer);
         int previousLenght = networkVocabulary.getPeers().length;
-        String nonExistingAddress = "I don't";
+        String nonExistingAddress = "+390425000111";
         SMSPeer nonExistingPeer = new SMSPeer(nonExistingAddress);
         assertFalse(networkVocabulary.removePeer(nonExistingPeer));
         assertEquals(previousLenght,networkVocabulary.getPeers().length);
@@ -198,7 +197,6 @@ public class NetworkDictionaryTest {
     public void getResourcesReturnsCopy() {
         networkVocabulary.addResource(resource);
         StringResource[] resources = networkVocabulary.getResources();
-        resources = new StringResource[0];
         Assert.assertNotEquals(0,networkVocabulary.getResources().length);
     }
 
@@ -211,7 +209,7 @@ public class NetworkDictionaryTest {
     @Test
     public void containsPeerNegative() {
         networkVocabulary.addPeer(peer);
-        String nonExistingAddress = "I'm not a thing";
+        String nonExistingAddress = "+390426000023";
         SMSPeer nonExistingPeer = new SMSPeer(nonExistingAddress);
         assertFalse(networkVocabulary.contains(nonExistingPeer));
     }
