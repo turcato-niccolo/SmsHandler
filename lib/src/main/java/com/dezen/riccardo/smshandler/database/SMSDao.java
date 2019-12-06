@@ -12,15 +12,15 @@ import androidx.room.Update;
  * Interface defining methods to access the unread sms database.
  */
 @Dao
-public interface SmsDao{
+interface SMSDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public void insert(SmsEntity... entities);
+    void insert(SMSEntity... entities);
     @Update
-    public void updateSms(SmsEntity... entities);
+    void updateSms(SMSEntity... entities);
     @Delete
-    public void deleteSms(SmsEntity... entities);
-    @Query("SELECT * FROM smsentity")
-    public SmsEntity[] loadAllSms();
-    @Query("SELECT COUNT(id) FROM smsentity")
-    public int getCount();
+    void deleteSms(SMSEntity... entities);
+    @Query("SELECT * FROM SMSEntity")
+    SMSEntity[] loadAllSms();
+    @Query("SELECT COUNT(id) FROM SMSEntity")
+    int getCount();
 }

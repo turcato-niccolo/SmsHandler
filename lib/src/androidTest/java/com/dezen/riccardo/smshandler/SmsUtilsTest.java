@@ -1,5 +1,7 @@
 package com.dezen.riccardo.smshandler;
 
+import android.telephony.SmsMessage;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -53,4 +55,19 @@ public class SmsUtilsTest {
         String message = "Hello" + SMSHandler.APP_KEY;
         assertFalse(SmsUtils.isMessagePertinent(message));
     }
+
+    @Test
+    public void SmsUtils_removeKeysFromMessageBodyTextPositiveTest(){
+        String message = "Hello";
+        String libraryMessage = SmsUtils.composeMessage(message, true);
+        assertEquals(message, SmsUtils.removeKeysFromMessageBody(libraryMessage));
+    }
+
+    @Test
+    public void SmsUtils_removeKeysFromMessageBodySMSMessagePositiveTest(){
+        SMSMessage message = new SMSMessage(new SMSPeer(formattedNumber), "Message String");
+        SMSMessage libraryMessage = new SMSMessage(new SMSPeer(formattedNumber), SmsUtils.composeMessage(message.getData(), true));
+        assertEquals(message, SmsUtils.removeKeysFromMessageBody(libraryMessage));
+    }
+
 }

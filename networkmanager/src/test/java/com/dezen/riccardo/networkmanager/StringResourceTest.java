@@ -25,16 +25,6 @@ public class StringResourceTest {
     }
 
     @Test
-    public void setName() {
-        String originalName = "OriginalName";
-        String originalValue = "OriginalValue";
-        StringResource stringResource = new StringResource(originalName, originalValue);
-        String newName = "newName";
-        stringResource.setName(newName);
-        assertEquals(newName, stringResource.getName());
-    }
-
-    @Test
     public void setValue() {
         String originalName = "OriginalName";
         String originalValue = "OriginalValue";
