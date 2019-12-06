@@ -13,6 +13,7 @@ import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.Long.valueOf;
@@ -26,6 +27,11 @@ import static java.lang.Long.valueOf;
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
 
     public static final String NETWORK_DICTIONARY_DATABASE_NAME = "NETWORK_DICTIONARY_DATABASE";
+    public static final String NETWORK_DICTIONARY_PEER_TABLE_NAME = "peerentity";
+    public static final String NETWORK_DICTIONARY_RESOURCE_TABLE_NAME = "resourceentity";
+    public static final String PEER_TABLE_ADDRESS_COLUMN_NAME = "address";
+    public static final String RESOURCE_TABLE_KEY_COLUMN_NAME = "key";
+    public static final String RESOURCE_TABLE_VALUE_COLUMN_NAME = "value";
 
     private Map<String, String> peers;
     private Map<String, String> resources;
@@ -331,13 +337,12 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * Returns an array containing all Peers. Peers are not copied singularly.
          * @return a list containing all Peers
          */
-        private SMSPeer[] getPeers() {
-            int numbersPeer = dictionaryDatabase.access().getAllPeers().length;
-            SMSPeer[] peerArray = new SMSPeer[numbersPeer];
-            PeerEntity[] peerEntities = dictionaryDatabase.access().getAllPeers();
-            for(int i=0; i<numbersPeer; i++)
-                peerArray[i] = new SMSPeer(peerEntities[i].address);
-            return peerArray;
+        private List<SMSPeer> getPeers() {
+            List<SMSPeer> peerList = new ArrayList<SMSPeer>();
+            List<PeerEntity> peerEntities = dictionaryDatabase.access().getAllPeers();
+            for(PeerEntity peer : peerEntities)
+                peerList.add(new SMSPeer(peer.address));
+            return peerList;
         }
 
         /**
@@ -375,13 +380,12 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * Returns an array containing all Resources. Resources are not copied singularly.
          * @return a list containing all Resources
          */
-        private StringResource[] getResources() {
-            int numbersResource = dictionaryDatabase.access().getAllResources().length;
-            StringResource[] resourceArray = new StringResource[numbersResource];
-            ResourceEntity[] resourceEntities = dictionaryDatabase.access().getAllResources();
-            for(int i=0; i<numbersResource; i++)
-                resourceArray[i] = new StringResource(resourceEntities[i].keyName, resourceEntities[i].value);
-            return resourceArray;
+        private List<StringResource> getResources() {
+            List<StringResource> resourceList = new ArrayList<StringResource>();
+            List<ResourceEntity> resourceEntities = dictionaryDatabase.access().getAllResources();
+            for(ResourceEntity resource : resourceEntities)
+                resourceList.add(new StringResource(resource.key, resource.value));
+            return resourceList;
         }
 
         /**
@@ -410,8 +414,8 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         protected Long doInBackground(NetworkDictionaryDatabase ... database)
         {
             for (NetworkDictionaryDatabase db: database) {
-                SMSPeer[] smsPeers = db.getPeers();
-                StringResource[] stringResources = db.getResources();
+                List<SMSPeer> smsPeers = db.getPeers();
+                List<StringResource> stringResources = db.getResources();
 
                 //Could this be done better?
                 // Maybe return the arrays so that maps are handled in main thread?

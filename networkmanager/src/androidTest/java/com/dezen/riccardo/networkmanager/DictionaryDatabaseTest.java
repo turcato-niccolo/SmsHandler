@@ -64,7 +64,6 @@ public class DictionaryDatabaseTest {
         String address = "0";
         PeerEntity peer = new PeerEntity(address);
         dictionaryDatabase.access().addPeer(peer);
-        dictionaryDatabase.access().addPeer(peer);
         assertTrue(dictionaryDatabase.access().containsPeer(address));
     }
 
