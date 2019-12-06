@@ -96,7 +96,7 @@ public class SMSHandler {
                     if (receivedListener != null){
                         for(SmsMessage message : Telephony.Sms.Intents.getMessagesFromIntent(intent)){
                             if(SmsUtils.isMessagePertinent(message))
-                                receivedListener.onMessageReceived(new SMSMessage(message));
+                                receivedListener.onMessageReceived(SmsUtils.removeKeysFromMessageBody(new SMSMessage(message)));
                         }
                     }
                 }
