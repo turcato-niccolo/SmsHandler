@@ -29,6 +29,9 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     public static final String NETWORK_DICTIONARY_DATABASE_NAME = "NETWORK_DICTIONARY_DATABASE";
     public static final String NETWORK_DICTIONARY_PEER_TABLE_NAME = "peerentity";
     public static final String NETWORK_DICTIONARY_RESOURCE_TABLE_NAME = "resourceentity";
+    public static final String PEER_TABLE_ADDRESS_COLUMN_NAME = "address";
+    public static final String RESOURCE_TABLE_KEY_COLUMN_NAME = "key";
+    public static final String RESOURCE_TABLE_VALUE_COLUMN_NAME = "value";
 
     private Map<String, String> peers;
     private Map<String, String> resources;
@@ -381,7 +384,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
             List<StringResource> resourceList = new ArrayList<StringResource>();
             List<ResourceEntity> resourceEntities = dictionaryDatabase.access().getAllResources();
             for(ResourceEntity resource : resourceEntities)
-                resourceList.add(new StringResource(resource.keyName, resource.value));
+                resourceList.add(new StringResource(resource.key, resource.value));
             return resourceList;
         }
 

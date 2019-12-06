@@ -9,6 +9,8 @@ import androidx.room.Update;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
 
+import com.dezen.riccardo.networkmanager.NetworkDictionary;
+
 import java.util.List;
 
 /**
@@ -96,7 +98,7 @@ public abstract class BaseDao<P, R>{
      */
     public boolean containsPeer(String address){
         SimpleSQLiteQuery query = new SimpleSQLiteQuery(
-                COUNT_QUERY + getPeerTableName() +" WHERE address='"+address+"'"
+                COUNT_QUERY + getPeerTableName() +" WHERE "+NetworkDictionary.PEER_TABLE_ADDRESS_COLUMN_NAME+"='"+address+"'"
         );
         return performCount(query)!=0;
     }
@@ -107,33 +109,11 @@ public abstract class BaseDao<P, R>{
      */
     public boolean containsResource(String key){
         SimpleSQLiteQuery query = new SimpleSQLiteQuery(
-                COUNT_QUERY + getResourceTableName() +" WHERE keyName='"+key+"'"
+                COUNT_QUERY + getResourceTableName() +" WHERE "+ NetworkDictionary.RESOURCE_TABLE_KEY_COLUMN_NAME+" ='"+key+"'"
         );
         return performCount(query)!=0;
     }
 
-
-    /**
-     * @param address of peer
-     * @return peer with that address
-     */
-    public P getPeer(String address){
-        SimpleSQLiteQuery query = new SimpleSQLiteQuery(
-                GET_ALL_QUERY + getResourceTableName() +" WHERE address='"+address+"'"
-        );
-        return performGetPeer(query);
-    }
-
-    /**
-     * @param key of resource
-     * @return resource with that key
-     */
-    public R getResource(String key){
-        SimpleSQLiteQuery query = new SimpleSQLiteQuery(
-                GET_ALL_QUERY + getResourceTableName() +" WHERE keyName='"+key+"'"
-        );
-        return performGetResource(query);
-    }
 
     /**
      * Method to perform the query correctly through Room

@@ -6,8 +6,10 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
+import androidx.sqlite.db.SimpleSQLiteQuery;
 
 import com.dezen.riccardo.networkmanager.NetworkDictionary;
+import com.dezen.riccardo.smshandler.SMSPeer;
 
 /**
  * @author Giorgia Bortoletti
@@ -29,6 +31,28 @@ public abstract class DictionaryDao extends BaseDao<PeerEntity, ResourceEntity>{
     @Override
     public String getResourceTableName(){
         return NetworkDictionary.NETWORK_DICTIONARY_RESOURCE_TABLE_NAME;
+    }
+
+    /**
+     * @param address of peer
+     * @return peer with that address
+     */
+    public PeerEntity getPeer(String address){
+        SimpleSQLiteQuery query = new SimpleSQLiteQuery(
+                GET_ALL_QUERY + getResourceTableName() +" WHERE "+NetworkDictionary.PEER_TABLE_ADDRESS_COLUMN_NAME+"='"+address+"'"
+        );
+        return performGetPeer(query);
+    }
+
+    /**
+     * @param key of resource
+     * @return resource with that key
+     */
+    public ResourceEntity getResource(String key){
+        SimpleSQLiteQuery query = new SimpleSQLiteQuery(
+                GET_ALL_QUERY + getResourceTableName() +" WHERE "+ NetworkDictionary.RESOURCE_TABLE_KEY_COLUMN_NAME+" ='"+key+"'"
+        );
+        return performGetResource(query);
     }
 }
 
