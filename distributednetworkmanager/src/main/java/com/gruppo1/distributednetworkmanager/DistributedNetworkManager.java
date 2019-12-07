@@ -10,10 +10,9 @@ import com.dezen.riccardo.smshandler.*;
  * @author Niccolo' Turcato
  * Basic implementation of a distibuted Network based on Kademlia
  * Using the already built NetworkDictionary which has a list of
- *
  */
 
-public class DistributedNetworkManager extends NetworkInterface<SMSMessage, SMSPeer, StringResource, NetworkDictionary> implements ReceivedMessageListener<SMSMessage>{
+public class DistributedNetworkManager implements NetworkInterface<SMSMessage, SMSPeer, StringResource, NetworkDictionary>, ReceivedMessageListener<SMSMessage> {
 
     /**
      * Actions the network can send and receive.
@@ -21,16 +20,19 @@ public class DistributedNetworkManager extends NetworkInterface<SMSMessage, SMSP
      * <SMSLibrary-TAG>[ACTION]<separation>[PARAMETER]<separation>[EXTRA]
      */
     private static class DistributedActions {
-        static String PING(){
+        static String PING() {
             return "PING";
         }
-        static String STORE(){
+
+        static String STORE() {
             return "STORE";
         }
-        static String FIND_NODE(){
+
+        static String FIND_NODE() {
             return "FIND_NODE";
         }
-        static String FIND_VALUE(){
+
+        static String FIND_VALUE() {
             return "FIND_VALUE";
         }
     }
@@ -55,6 +57,7 @@ public class DistributedNetworkManager extends NetworkInterface<SMSMessage, SMSP
     /**
      * This version of the constructor should be used to insert the peer that builds the object
      * (if it is a peer for the sms Network)
+     *
      * @param firstPeer the peer tha builds the network
      */
     public DistributedNetworkManager(Context registerContext, SMSPeer firstPeer) {
@@ -65,38 +68,43 @@ public class DistributedNetworkManager extends NetworkInterface<SMSMessage, SMSP
 
     /**
      * Method to send an invitation to a new User (Peer)
+     *
      * @param newPeer the Peer to invite
      */
-    public void invite(SMSPeer newPeer){
+    public void invite(SMSPeer newPeer) {
 
     }
 
     /**
      * Method to accept an invitation received
+     *
      * @param inviter the user that sent the invitation
      */
-    public void acceptInvite(SMSPeer inviter){
+    public void acceptInvite(SMSPeer inviter) {
 
     }
 
     /**
      * Method to request a Resource from the network.
+     *
      * @param key the key of Resource to request.
      */
-    public StringResource getResource(String key){
+    public StringResource getResource(String key) {
         return null;
     }
 
     /**
      * Method to get an array of the Peers.
+     *
      * @return array containing all Available Peers.
      */
-    public SMSPeer[] getAvailablePeers(){
-        return  null;
+    public SMSPeer[] getAvailablePeers() {
+        return null;
     }
 
     /**
      * Method to get an array of the Resources.
+     *
      * @return array containing all Available Resources.
      */
     public StringResource[] getAvailableResources() {
@@ -105,17 +113,18 @@ public class DistributedNetworkManager extends NetworkInterface<SMSMessage, SMSP
 
     /**
      * Setter for a listener that should listen for Resources being obtained.
+     *
      * @param listener the class listening for Resource events.
      */
-    public void setListener(OnNetworkEventListener<SMSMessage, StringResource> listener){
+    public void setListener(OnNetworkEventListener<SMSMessage, StringResource> listener) {
 
     }
 
-    public void ping(SMSPeer peerToPing){
+    public void ping(SMSPeer peerToPing) {
         //Async Task maybe
     }
 
-    public void storeResource(StringResource resourceToSostore, SMSPeer destination){
+    public void storeResource(StringResource resourceToSostore, SMSPeer destination) {
 
     }
 
@@ -125,9 +134,10 @@ public class DistributedNetworkManager extends NetworkInterface<SMSMessage, SMSP
 
     /**
      * Called when a message is received
+     *
      * @param message the received message that needs to be forwarded
      */
-    public void onMessageReceived(SMSMessage message){
+    public void onMessageReceived(SMSMessage message) {
 
     }
 }

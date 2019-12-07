@@ -23,7 +23,7 @@ public class ResourceNodeTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void PeerNode_Constructor_ResourceIllegalArgumentExceptionTest(){
+    public void ResourceNode__Constructor_ResourceIllegalArgumentExceptionTest(){
         StringResource resource = new StringResource("", "I'm invalid");
         ResourceNode node = new ResourceNode(128, resource);
     }
@@ -39,7 +39,7 @@ public class ResourceNodeTest {
     }
 
     @Test
-    public void PeerNode_distanceFromPeerTest(){
+    public void ResourceNode__distanceFromPeerTest(){
         BitSet A = ResourceNode.hash(testResource, testNode.keyLength());
 
         SMSPeer newPeer = new SMSPeer("+390425667007");
@@ -52,7 +52,7 @@ public class ResourceNodeTest {
     }
 
     @Test
-    public void PeerNode_distanceFromTest(){
+    public void ResourceNode__distanceFromTest(){
         BitSet A = ResourceNode.hash(testResource, testNode.keyLength());
 
         StringResource resource = new StringResource("Casual Name", "Some info");
@@ -64,4 +64,17 @@ public class ResourceNodeTest {
         assertEquals(A, newResourceNode.distanceFrom(testNode));
     }
 
+    @Test
+    public void ResourceNode_isValidPositiveTest(){
+        assertTrue(testNode.isValid());
+        BitSet A = ResourceNode.hash(testResource, testNode.keyLength());
+        ResourceNode newResNode = new ResourceNode(testNode.keyLength(), A);
+        assertTrue(newResNode.isValid());
+    }
+
+    @Test
+    public void ResourceNode_equalsPositiveTest(){
+        ResourceNode newResNode = new ResourceNode(testNode.keyLength(), testNode.getAddress().getKey());
+        assertTrue(testNode.equals(newResNode));
+    }
 }

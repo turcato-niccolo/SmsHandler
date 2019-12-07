@@ -72,8 +72,8 @@ public class SMSPeer extends Peer<String> {
         if(address.length() < MIN_ADDRESS_LENGTH)
             return PhoneNumberValidity.ADDRESS_TOO_SHORT;
 
-        //Failure of some other criteria in isGlobalPhoneNumber, the country code is probably invalid.
-        if(!PhoneNumberUtils.isGlobalPhoneNumber(address))
+
+        if(!isGlobalPhoneNumber(address))
             return PhoneNumberValidity.ADDRESS_GENERIC_INVALID;
 
         return PhoneNumberValidity.ADDRESS_VALID;
@@ -94,6 +94,10 @@ public class SMSPeer extends Peer<String> {
 
     @Override
     public boolean equals(@Nullable Object obj) {
+        if (obj == null)
+            return false;
+        if (this == obj)
+            return true;
         if(obj instanceof SMSPeer) return ((SMSPeer) obj).address.equals(this.address);
         else return false;
     }

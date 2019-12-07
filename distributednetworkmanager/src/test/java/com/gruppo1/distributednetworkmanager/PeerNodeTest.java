@@ -36,13 +36,26 @@ public class PeerNodeTest {
     @Test
     public void PeerNode_hashTest(){
         BitSet hash = PeerNode.hash(testPeer, testNode.keyLength());
-        assertEquals(hash, testNode.getAddress());
+        assertEquals(hash, testNode.getAddress().getKey());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void PeerNode_hashExceptionTest(){
+        BitSet hash = PeerNode.hash(testPeer, 120);
+    }
+
+    @Test
+    public void PeerNode_ConstructorBitSetTest(){
+        BitSet a = new BitSet(128);
+        a.set(0, 4);
+        PeerNode node = new PeerNode(128, a);
+        assertEquals(a, node.getAddress().getKey());
     }
 
     @Test
     public void PeerNode_getAddressNegativeTest() {
         SMSPeer newPeer = new SMSPeer("+390425667007");
-        assertNotEquals(PeerNode.hash(newPeer, testNode.keyLength()), testNode.getAddress());
+        assertNotEquals(PeerNode.hash(newPeer, testNode.keyLength()), testNode.getAddress().getKey());
     }
 
     @Test
@@ -89,8 +102,29 @@ public class PeerNodeTest {
         A.xor(C);
         B.xor(C);
 
-        assertEquals(Node.compare(A,B), Node.compare(confrontNode.distanceFrom(testNode), confrontNode.distanceFrom(newPeerNode)));
-        assertEquals(Node.compare(B,A), Node.compare(confrontNode.distanceFrom(newPeerNode), confrontNode.distanceFrom(testNode)));
-        assertEquals(Node.compare(A,A), Node.compare(confrontNode.distanceFrom(testNode), confrontNode.distanceFrom(testNode)));
+        assertEquals(DistributedNetworkNode.compare(A,B), DistributedNetworkNode.compare(confrontNode.distanceFrom(testNode), confrontNode.distanceFrom(newPeerNode)));
+        assertEquals(DistributedNetworkNode.compare(B,A), DistributedNetworkNode.compare(confrontNode.distanceFrom(newPeerNode), confrontNode.distanceFrom(testNode)));
+        assertEquals(DistributedNetworkNode.compare(A,A), DistributedNetworkNode.compare(confrontNode.distanceFrom(testNode), confrontNode.distanceFrom(testNode)));
+    }
+
+    @Test
+    public void PeerNode_isValidPositiveTest() {
+        assertTrue(testNode.isValid());
+        BitSet A = PeerNode.hash(testPeer, testNode.keyLength());
+        PeerNode newPeerNode = new PeerNode(testNode.keyLength(), A);
+        assertTrue(newPeerNode.isValid());
+    }
+
+
+        @Test
+    public void PeerNode_getPhysicalPeerPositiveTest(){
+        assertEquals(testPeer, testNode.getPhysicalPeer());
+    }
+
+    @Test
+    public void PeerNode_getPhysicalPeerNegativeTest(){
+        SMSPeer newPeer = new SMSPeer("+390425667007");
+        PeerNode newPeerNode = new PeerNode(testNode.keyLength(), newPeer);
+        assertNotEquals(testPeer, newPeerNode.getPhysicalPeer());
     }
 }

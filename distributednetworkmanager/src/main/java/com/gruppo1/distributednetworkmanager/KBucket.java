@@ -2,26 +2,28 @@ package com.gruppo1.distributednetworkmanager;
 
 import android.content.Context;
 
-public class KBucket extends Bucket<PeerNode> {
+import java.security.acl.NotOwnerException;
+
+public class KBucket extends Bucket<Node> {
     private int dimension;
     private int last;
-    private PeerNode[] elements;
+    private Node[] elements;
 
     /**
      * @param dim capacity of the bucket
      */
     public KBucket(int dim) {
         dimension = dim;
-        elements = new PeerNode[dimension];
+        elements = new Node[dimension];
     }
 
     /**
      * @param toFind object of which verify presence in bucket
      * @return true if the element is contained in the bucket, false otherwise
      */
-    public boolean Contains(PeerNode toFind){
-        for (int i = 0; i<last; i++)
-            if(elements[i].equals(toFind))
+    public boolean Contains(Node toFind) {
+        for (int i = 0; i < last; i++)
+            if (elements[i].equals(toFind))
                 return true;
         return false;
     }
@@ -29,27 +31,26 @@ public class KBucket extends Bucket<PeerNode> {
 
     /**
      * Added with stack logic, eventually replaces the one "on top"
+     *
      * @param peerNode object to add
      * @return true if it has been added, false otherwise
      */
-    public boolean Add(PeerNode peerNode){
-        if(!Contains(peerNode)){
-            if(last == dimension)
-                elements[dimension-1] = peerNode.clone();
+    public boolean Add(Node peerNode) {
+        if (!Contains(peerNode)) {
+            if (last == dimension)
+                elements[dimension - 1] = peerNode.clone();
             else
                 elements[last++] = peerNode.clone();
             return Contains(peerNode);
-        }
-        else return false;
+        } else return false;
     }
 
     /**
-     *
      * @param peerNode object to remove from bucket
      * @return true if obj has been removed, false otherwise
      */
-    public boolean Remove(PeerNode peerNode){
-        if(Contains(peerNode)) {
+    public boolean Remove(Node peerNode) {
+        if (Contains(peerNode)) {
             for (int i = 0; i < last; i++)
                 if (elements[i].equals(peerNode)) {
                     for (int j = i; j < dimension - 1; j++)
@@ -64,18 +65,18 @@ public class KBucket extends Bucket<PeerNode> {
     /**
      * @return an array containing (a copy) the elements in the bucket, sorted by insertion time
      */
-    public PeerNode[] getElements(){
-        PeerNode[] copy = new PeerNode[last];
-        for (int i = 0; i<last; i++) copy[i] = elements[i].clone();
+    public Node[] getElements() {
+        Node[] copy = new Node[last];
+        for (int i = 0; i < last; i++) copy[i] = elements[i].clone();
         return copy;
     }
 
     /**
      * @return (a copy of) the oldest peer in the network, the "bottom" one, if the bucket is empty returns null
      */
-    public PeerNode getOldest(){
-        if(dimension > 0)
-            return elements[0];
+    public Node getOldest() {
+        if (dimension > 0)
+            return elements[0].clone();
         return null;
     }
 }

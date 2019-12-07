@@ -19,34 +19,34 @@ public class KBucketTest {
     {
         bucket = new KBucket(dim);
         node = new PeerNode(128, peer);
-        bucket.Add(node);
+        bucket.Add(node.getAddress());
     }
 
     @Test
     public void KBucket_ContainsPositiveTest()
     {
-        assertTrue(bucket.Contains(node));
+        assertTrue(bucket.Contains(node.getAddress()));
         PeerNode otherNode = new PeerNode(128, new SMSPeer("+39348456789"));
 
-        assertFalse(bucket.Contains(otherNode));
+        assertFalse(bucket.Contains(otherNode.getAddress()));
     }
 
     @Test
     public void KBucket_AddsPositiveTest(){
         PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
 
-        assertTrue(bucket.Add(a));
-        assertTrue(bucket.Contains(a));
+        assertTrue(bucket.Add(a.getAddress()));
+        assertTrue(bucket.Contains(a.getAddress()));
     }
 
     @Test
     public void KBucket_RemovesPositiveTest() {
         PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
 
-        assertTrue(bucket.Add(a));
-        assertTrue(bucket.Contains(a));
-        assertTrue(bucket.Remove(a));
-        assertFalse(bucket.Contains(a));
+        assertTrue(bucket.Add(a.getAddress()));
+        assertTrue(bucket.Contains(a.getAddress()));
+        assertTrue(bucket.Remove(a.getAddress()));
+        assertFalse(bucket.Contains(a.getAddress()));
     }
 
     @Test
@@ -57,15 +57,15 @@ public class KBucketTest {
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a);
-        newBucket.Add(b);
-        newBucket.Add(c);
+        newBucket.Add(a.getAddress());
+        newBucket.Add(b.getAddress());
+        newBucket.Add(c.getAddress());
 
-        PeerNode[] result = newBucket.getElements();
+        Node[] result = newBucket.getElements();
 
-        assertTrue(result[0].equals(a));
-        assertTrue(result[1].equals(b));
-        assertTrue(result[2].equals(c));
+        assertEquals(result[0], a.getAddress());
+        assertEquals(result[1],b.getAddress());
+        assertEquals(result[2], c.getAddress());
     }
 
     @Test
@@ -76,16 +76,16 @@ public class KBucketTest {
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a);
-        newBucket.Add(b);
-        newBucket.Add(c);
+        newBucket.Add(a.getAddress());
+        newBucket.Add(b.getAddress());
+        newBucket.Add(c.getAddress());
 
-        newBucket.Remove(b);
+        newBucket.Remove(b.getAddress());
 
-        PeerNode[] elements = newBucket.getElements();
+        Node[] elements = newBucket.getElements();
 
-        assertEquals(elements[0], a);
-        assertEquals(elements[1], c);
+        assertEquals(elements[0], a.getAddress());
+        assertEquals(elements[1], c.getAddress());
     }
 
     @Test
@@ -96,10 +96,10 @@ public class KBucketTest {
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a);
-        newBucket.Add(b);
-        newBucket.Add(c);
+        newBucket.Add(a.getAddress());
+        newBucket.Add(b.getAddress());
+        newBucket.Add(c.getAddress());
 
-        assertEquals(a, newBucket.getOldest());
+        assertEquals(a.getAddress(), newBucket.getOldest());
     }
 }
