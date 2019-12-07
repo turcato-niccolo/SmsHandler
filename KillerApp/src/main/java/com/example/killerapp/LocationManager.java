@@ -35,8 +35,6 @@ class LocationManager {
     PendingIntent locationIntent;
     Location mLastLocation;
 
-
-
     FusedLocationProviderClient mFusedLocationClient;
 
 
@@ -81,7 +79,6 @@ class LocationManager {
     {
         return locationStringResponse.contains(locationMessages[response]);
     }
-
 
     /***
      * @author Turcato

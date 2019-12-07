@@ -14,8 +14,7 @@ import android.widget.Button;
 
 
 import com.dezen.riccardo.smshandler.ReceivedMessageListener;
-import com.dezen.riccardo.smshandler.SMSHandler;
-import com.dezen.riccardo.smshandler.SMSManager;
+
 
 import android.Manifest;
 import android.widget.EditText;
@@ -50,12 +49,8 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
     private Button sendAlarmRequestButton;
     private Button sendLocationRequestButton;
 
-    private SMSManager manager;
-    private LocationManager locationManager;
-    private AlarmManager alarmManager;
+    private Manager manager;
     private boolean MESSAGE_IS_URGENT = true;
-
-
     private final String MAPS_START_URL = "https://www.google.com/maps/search/?api=1&query=";
     //NOTE: concat latitude,longitude
 
@@ -67,22 +62,17 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
         txtPhoneNumber =findViewById(R.id.phoneNumber);
         sendButton=findViewById(R.id.sendButton);
         sendAlarmRequestButton = findViewById(R.id.sendAlarmRequestButton);
         sendLocationRequestButton = findViewById(R.id.sendLocationRequestButton);
 
-        manager = SMSManager.getInstance(getApplicationContext());
+        manager=Manager.getInstance(getApplicationContext());
         manager.setReceiveListener(this);
-
-
         constants = new Constants();
         requestPermissions();
-        locationManager = new LocationManager();
-        alarmManager = new AlarmManager();
+
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,40 +98,44 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
 
     /***
      * @author Turcato
+     *Send an urgent message to the @phoneNumber with a location request
      *
      * @param phoneNumber phone number to which send sms Location request
      */
     private void SendLocationRequest(String phoneNumber)
     {
-        String requestStringMessage = locationManager.getRequestStringMessage();
+        String requestStringMessage = manager.getLocationStringMessage();
         SMSMessage smsMessage = new SMSMessage(new SMSPeer(phoneNumber), requestStringMessage);
         manager.sendUrgentMessage(smsMessage);
     }
+
     /***
      * @author Turcato
+     * Send an urgent message to the @phoneNumber for an Alarm request
      *
      * @param phoneNumber phone number to which send sms Location & alarm request
      */
     private void SendAlarmRequest(String phoneNumber)
     {
-        String requestStringMessage = alarmManager.getRequestStringMessage();
+        String requestStringMessage = manager.getAlarmStringMessage();
         SMSMessage smsMessage = new SMSMessage(new SMSPeer(phoneNumber), requestStringMessage);
         manager.sendUrgentMessage(smsMessage);
     }
+
     /***
      * @author Turcato
+     *Send an urgent message to the @phoneNumber for an Alarm and Location request
      *
      * @param phoneNumber phone number to which send sms alarm request
      */
     private void SendAlarmAndLocationRequest(String phoneNumber)
     {
         //Wake key to indicate urgency to the device
-        String requestStringMessage = alarmManager.getRequestStringMessage()
-                +locationManager.getRequestStringMessage();
+        String requestStringMessage = manager.getAlarmStringMessage()
+                +manager.getLocationStringMessage();
         SMSMessage smsMessage = new SMSMessage(new SMSPeer(phoneNumber), requestStringMessage);
         manager.sendUrgentMessage(smsMessage);
     }
-
 
     @Override
     protected void onStart()
@@ -149,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
         super.onStart();
 
     }
+
     /***
      * @author Turcato
      * Requests Android permissions if not granted
@@ -168,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
             ActivityCompat.requestPermissions(this, permissions, APP_PERMISSION_REQUEST_CODE);
     }
 
-
     /***
      * @author Turcato
      * This method is executed both when the app is running or not.
@@ -183,23 +177,23 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
         String receivedStringMessage = message.getData();
 
         //Both Requests are handled by the other activity
-        if (locationManager.containsLocationRequest(receivedStringMessage)
-                || alarmManager.containsAlarmRequest(receivedStringMessage)) {
+        if (manager.containsLocationRequest(receivedStringMessage)
+                || manager.containsAlarmRequest(receivedStringMessage)) {
             OpenRequestsActivity(receivedStringMessage, message.getPeer().getAddress());
         }
 
         //The only expected response
-        if(locationManager.containsLocationResponse(receivedStringMessage)){
+        if(manager.containsLocationResponse(receivedStringMessage)){
             Double longitude;
             Double latitude;
             try {
-                longitude = Double.parseDouble(locationManager.getLongitude(receivedStringMessage));
-                latitude = Double.parseDouble(locationManager.getLatitude(receivedStringMessage));
+                longitude = Double.parseDouble(manager.getLongitude(receivedStringMessage));
+                latitude = Double.parseDouble(manager.getLatitude(receivedStringMessage));
                 OpenMapsUrl(latitude, longitude);
             }
             catch (Exception e){
                 //Written in log for future users to report
-                Log.e(MAIN_ACTIVITY_TAG,locationManager.response + ": " + e.getMessage());
+                Log.e(MAIN_ACTIVITY_TAG,manager.response + ": " + e.getMessage());
             }
 
         }
@@ -227,10 +221,6 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
         getApplicationContext().startActivity(openAlarmAndLocateActivityIntent);
     }
 
-
-
-
-
     /**
      * @author Turcato
      * Safely deletes the listeners
@@ -241,13 +231,12 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
         super.onDestroy();
     }
 
-
-
     /***
      * @author Turcato
      * Opens the default maps application at the given Location(latitude, longitude)
+     *
      * @param mapsLatitude latitude extracted by response sms
-     * @param mapsLongitude longtitude extracted by response sms
+     * @param mapsLongitude longitude extracted by response sms
      */
     public void OpenMapsUrl(Double mapsLatitude, Double mapsLongitude)
     {
@@ -255,8 +244,6 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
     }
-
-
 
 }
 
