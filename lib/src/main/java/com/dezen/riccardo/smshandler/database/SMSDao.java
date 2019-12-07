@@ -9,7 +9,7 @@ import com.dezen.riccardo.smshandler.SMSMessage;
  * Interface extending the BaseDao class for SMSMessage
  */
 @Dao
-abstract class SMSDao extends BaseDao<SMSMessage>{
+public abstract class SMSDao extends BaseDao<SMSMessage>{
     /**
      * @return the name of the table containing the SMSMessage entities.
      */
