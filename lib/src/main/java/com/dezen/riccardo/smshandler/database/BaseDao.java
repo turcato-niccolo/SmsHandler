@@ -18,7 +18,7 @@ import java.util.List;
  * @param <T> The Type of Entity the Dao provides access to.
  */
 @Dao
-public abstract class BaseDao<T>{
+abstract class BaseDao<T>{
 
     //Table name has to follow
     protected static final String COUNT_QUERY = "SELECT COUNT(*) FROM ";

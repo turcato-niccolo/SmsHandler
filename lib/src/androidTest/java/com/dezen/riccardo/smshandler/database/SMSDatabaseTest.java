@@ -1,4 +1,4 @@
-package com.dezen.riccardo.smshandler;
+package com.dezen.riccardo.smshandler.database;
 
 import android.content.Context;
 
@@ -6,8 +6,8 @@ import androidx.room.Room;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import com.dezen.riccardo.smshandler.database.SMSDao;
-import com.dezen.riccardo.smshandler.database.SMSDatabase;
+import com.dezen.riccardo.smshandler.SMSMessage;
+import com.dezen.riccardo.smshandler.SMSPeer;
 
 import org.junit.After;
 import org.junit.Before;
