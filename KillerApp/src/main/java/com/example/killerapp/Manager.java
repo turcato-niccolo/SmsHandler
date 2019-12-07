@@ -1,10 +1,14 @@
 package com.example.killerapp;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
 
 import com.dezen.riccardo.smshandler.ReceivedMessageListener;
 import com.dezen.riccardo.smshandler.SMSManager;
 import com.dezen.riccardo.smshandler.SMSMessage;
+import com.dezen.riccardo.smshandler.SMSPeer;
 
 /***
  * @author Pardeep
@@ -12,60 +16,21 @@ import com.dezen.riccardo.smshandler.SMSMessage;
  */
 
 public class Manager {
-    private static Manager instance;
     private static Context currentContext;
     AlarmManager alarmManager = new AlarmManager();
     LocationManager locationManager=new LocationManager();
     SMSManager smsManager;
+    Constants constants=new Constants();
+    private final String MAPS_START_URL = "https://www.google.com/maps/search/?api=1&query=";
+    //NOTE: concat latitude,longitude
 
-    final String[] audioAlarmMessages = {"AUDIO_ALARM_REQUEST", "AUDIO_ALARM_RESPONSE"};
-    String[] locationMessages = {"LOCATION_REQUEST", "LOCATION_RESPONSE"};
-    final int request = 0, response = 1;
+    private static final String MANAGER_TAG = "Manager";
+    private  SendResponseSms sendResponseSms;
 
-    private Manager(){
-        //prevent use of reflection to change constructor to public during runtime
-        if (instance != null)
-            throw new RuntimeException("This class uses the singleton design pattern. Use getInstance() to get a reference to the single instance of this class");
+    public Manager(Context context){
+        currentContext=context.getApplicationContext();
         smsManager=SMSManager.getInstance(Manager.currentContext);
-    }
 
-    /**
-     * Method to get the only valid instance of this class. A new instance is created only if it was
-     * null previously. The used context is always the parent application context of the parameter.
-     *
-     * @param context The calling context.
-     * @return the Manager instance.
-     */
-    public static Manager getInstance(Context context){
-        if(instance == null){
-            Manager.currentContext = context.getApplicationContext();
-            instance = new Manager();
-        }
-        return instance;
-    }
-
-     // Methods from SMSManager class
-
-    /**
-     * Method to send an SMSMessage classified as urgent (containing the corresponding code)
-     *
-     * @param message the valid SMSMessage to send
-     * @return true if the message is valid and it has been sent, false otherwise
-     */
-    public boolean sendSms(SMSMessage message) {
-        boolean checkMessageSent = smsManager.sendMessage(message);
-        return checkMessageSent;
-    }
-
-    /**
-     * Method to send an SMSMessage classified as urgent (containing the corresponding code)
-     *
-     * @param message the valid SMSMessage to send
-     * @return true if the message is valid and it has been sent, false otherwise
-     */
-    public boolean sendUrgentMessage(SMSMessage message) {
-        boolean checkUrgentMessageSent = smsManager.sendUrgentMessage(message);
-        return checkUrgentMessageSent;
     }
 
     /**
@@ -80,110 +45,129 @@ public class Manager {
      */
     public void setReceiveListener(ReceivedMessageListener<SMSMessage> newReceivedListener) { smsManager.setReceiveListener(newReceivedListener); }
 
-    /**
-     * Method to save String name for the Activity that should wake up on urgent messages.
+    /***
+     * @author Turcato
+     *Send an urgent message to the peer with a location request
      *
-     * @param activityClass the Activity Class that should wake up.
-     * @return true if the value was set, false otherwise.
-     * @throws IllegalArgumentException if the parameter class does not extend Activity
+     * @param smsPeer the peer to which  send sms Location request
      */
-    public boolean setActivityToWake(Class activityClass) throws IllegalArgumentException {
-        boolean valueSet = smsManager.setActivityToWake(activityClass);
-        return valueSet;
-    }
-
-     //Methods from alarm manager class
-    /**
-     *
-     * @return returns a formatted String containing the Alarm Request command
-     */
-    public String getAlarmStringMessage() { return audioAlarmMessages[request]; }
-
-    /**
-     *
-     * @param alarmStringRequest the text message received
-     * @return true if the received text contains the (formatted) alarm Request
-     */
-    public boolean containsAlarmRequest(String alarmStringRequest)
+    public void SendLocationRequest(SMSPeer smsPeer)
     {
-        boolean contains=alarmManager.containsAlarmRequest(alarmStringRequest);
-        return contains;
-    }
-
-    /**
-     * Starts an alarm with the default ringtone of the device, stops when activity is closed by the user
-     */
-    public void startAlarm(Context context)
-    {
-        alarmManager.startAlarm(context);
-    }
-
-     // Methods from LocationManager class
-
-    /**
-     *
-     * @return returns a formatted String containing the location Request command
-     */
-    public String getLocationStringMessage() { return locationMessages[request]; }
-
-    /**
-     *
-     * @param locationStringResponse string containing the received txt message
-     * @return true if the received message contains a location response message
-     */
-    public boolean containsLocationResponse(String locationStringResponse)
-    {
-        boolean contains=locationManager.containsLocationResponse(locationStringResponse);
-        return contains;
+        String requestStringMessage = LocationManager.locationMessages[LocationManager.request];
+        SMSMessage smsMessage = new SMSMessage(smsPeer, requestStringMessage);
+        smsManager.sendUrgentMessage(smsMessage);
     }
 
     /***
      * @author Turcato
-     * Extract the string contained between the latitude tags (if present)
-     * Returns empty string if it doesn't find the tags
+     * Send an urgent message to the peer for an Alarm request
      *
-     * @param receivedMessage string containing the text received sy sms
-     * @return if present, the string contained between the latitude tags, empty string if it doesn't find the tags
+     * @param smsPeer the peer to which  send sms Location & alarm request
      */
-    public String getLatitude(String receivedMessage)
+    public void SendAlarmRequest(SMSPeer smsPeer)
     {
-        String string=locationManager.getLatitude(receivedMessage);
-        return string;
+        String requestStringMessage = AlarmManager.audioAlarmMessages[LocationManager.request];
+        SMSMessage smsMessage = new SMSMessage(smsPeer, requestStringMessage);
+        smsManager.sendUrgentMessage(smsMessage);
     }
 
     /***
      * @author Turcato
-     * Extract the string contained between the longitude tags (if present)
-     * Returns empty string if it doesn't find the tags
+     *Send an urgent message to the peer for an Alarm and Location request
      *
-     * @param receivedMessage string containing the text received sy sms
-     * @return if present, the string contained between the longitude tags, empty string if it doesn't find the tags
+     * @param smsPeer the peer to which send sms alarm request
      */
-    public String getLongitude(String receivedMessage)
+    public void SendAlarmAndLocationRequest(SMSPeer smsPeer)
     {
-        String string=locationManager.getLongitude(receivedMessage);
-        return string;
+        //Wake key to indicate urgency to the device
+        String requestStringMessage = AlarmManager.audioAlarmMessages[LocationManager.request]
+                +LocationManager.locationMessages[LocationManager.request];
+        SMSMessage smsMessage = new SMSMessage(smsPeer, requestStringMessage);
+        smsManager.sendUrgentMessage(smsMessage);
     }
 
     /***
-     * Method that gets the last Location available of the device, and executes the imposed command
-     * calling command.execute(foundLocation)
+     * This method check the received string and can active alarm /send location or both based on its content
      *
-     * @param command object of a class that implements interface Command
+     * @param requestMessage the request message that decide which action to do
+     * @param phoneNumber the number to which send you'r phone's location
      */
-    public void getLastLocation(Context applicationContext, final Command command) {
-        locationManager.getLastLocation(applicationContext, command);
+    public void getRequest(String requestMessage,String phoneNumber)
+    {
+        if (locationManager.containsLocationRequest(requestMessage)) {
+            //Action to execute when device receives a Location request
+            sendResponseSms = new SendResponseSms(phoneNumber, currentContext.getApplicationContext());
+            locationManager.getLastLocation(currentContext.getApplicationContext(), sendResponseSms);
+        }
+        //User has to close app manually to stop the alarm
+        if (alarmManager.containsAlarmRequest(requestMessage))
+            alarmManager.startAlarm(currentContext.getApplicationContext());
     }
 
-    /**
-     *
-     * @param locationStringRequest the text message received
-     * @return true if the received text contains the (formatted) location Request
+    /***
+     *Based on the message received it opens an activity or open the default map app
+     * @param message The message received
      */
-    public boolean containsLocationRequest(String locationStringRequest)
+   public void getRequest(SMSMessage message)
     {
-        boolean contains=locationManager.containsLocationRequest(locationStringRequest);
-        return contains;
+        String requestMessage  = message.getData();
+        if (locationManager.containsLocationRequest(requestMessage)
+                || alarmManager.containsAlarmRequest(requestMessage)) {
+            OpenRequestsActivity(requestMessage, message.getPeer().getAddress());
+        }
+
+        //The only expected response
+        if(locationManager.containsLocationResponse(requestMessage)){
+            Double longitude;
+            Double latitude;
+            try {
+                longitude = Double.parseDouble(locationManager.getLongitude(requestMessage));
+                latitude = Double.parseDouble(locationManager.getLatitude(requestMessage));
+                OpenMapsUrl(latitude, longitude);
+            }
+            catch (Exception e){
+                //Written in log for future users to report
+                Log.e(MANAGER_TAG,AlarmManager.response + ": " + e.getMessage());
+            }
+
+        }
+    }
+
+    /***
+     * @author Turcato
+     * Opens the AlarmAndLocateResponseActivity, forwarding the receivedMessageText and the receivedMessageReturnAddress
+     * The opened activity's task is to respond to the given requests, that can't be handled on this
+     * activity because the app might be closed, so the response activity has to be forcedly opened.
+     *
+     * When app is closed the messages are received by KillerAppClosedReceiver,
+     * secondary BroadcastReceiver that responds to the forced WAKE and has the same job as this method
+     *
+     * @param receivedMessageText the text of the request message
+     * @param receivedMessageReturnAddress the return address of the request message
+     */
+    private void OpenRequestsActivity(String receivedMessageText, String receivedMessageReturnAddress)
+    {
+        Log.d(MANAGER_TAG, "OpenRequestsActivity");
+        Intent openAlarmAndLocateActivityIntent = new Intent(currentContext.getApplicationContext(), AlarmAndLocateResponseActivity.class);
+        openAlarmAndLocateActivityIntent.putExtra(constants.receivedStringMessage, receivedMessageText);
+        openAlarmAndLocateActivityIntent.putExtra(constants.receivedStringAddress, receivedMessageReturnAddress);
+        openAlarmAndLocateActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        currentContext.getApplicationContext().startActivity(openAlarmAndLocateActivityIntent);
+    }
+
+
+    /***
+     * @author Turcato
+     * Opens the default maps application at the given Location(latitude, longitude)
+     *
+     * @param mapsLatitude latitude extracted by response sms
+     * @param mapsLongitude longitude extracted by response sms
+     */
+    public void OpenMapsUrl(Double mapsLatitude, Double mapsLongitude)
+    {
+        String url = MAPS_START_URL + mapsLatitude + "," + mapsLongitude;
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        currentContext.getApplicationContext().startActivity(intent);
     }
 
 }

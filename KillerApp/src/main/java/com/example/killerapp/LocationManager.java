@@ -23,8 +23,8 @@ import static com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCU
  * @author Turcato
  */
 class LocationManager {
-    String[] locationMessages = {"LOCATION_REQUEST", "LOCATION_RESPONSE"};
-    final int request = 0, response = 1;
+    static String[] locationMessages = {"LOCATION_REQUEST", "LOCATION_RESPONSE"};
+    static final int request = 0, response = 1;
     final String longitudeTag = "<LG>";
     final String longitudeTagEnd = "</LG>";
     final String latitudeTag = "<LT>";

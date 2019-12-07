@@ -8,8 +8,8 @@ import android.provider.Settings;
 import android.util.Log;
 
 public class AlarmManager {
-    final String[] audioAlarmMessages = {"AUDIO_ALARM_REQUEST", "AUDIO_ALARM_RESPONSE"};
-    final int request = 0, response = 1;
+    static final String[] audioAlarmMessages = {"AUDIO_ALARM_REQUEST", "AUDIO_ALARM_RESPONSE"};
+    static final int request = 0, response = 1;
     final String AlarmManagerTag = "AlarmManagerTag";
 
     private MediaPlayer mediaPlayer;

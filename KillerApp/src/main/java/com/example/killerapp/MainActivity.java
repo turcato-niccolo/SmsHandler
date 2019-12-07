@@ -41,8 +41,6 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
     };
     private final int APP_PERMISSION_REQUEST_CODE = 0;
 
-    private static final String MAIN_ACTIVITY_TAG = "MainActivity";
-    private Constants constants;
 
     private EditText txtPhoneNumber;
     private Button sendButton;
@@ -50,10 +48,7 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
     private Button sendLocationRequestButton;
 
     private Manager manager;
-    private boolean MESSAGE_IS_URGENT = true;
-    private final String MAPS_START_URL = "https://www.google.com/maps/search/?api=1&query=";
-    //NOTE: concat latitude,longitude
-
+    private SMSPeer smsPeer;
 
     /***
      * @author Turcato
@@ -68,74 +63,36 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
         sendAlarmRequestButton = findViewById(R.id.sendAlarmRequestButton);
         sendLocationRequestButton = findViewById(R.id.sendLocationRequestButton);
 
-        manager=Manager.getInstance(getApplicationContext());
+        manager=new Manager(getApplicationContext());
         manager.setReceiveListener(this);
-        constants = new Constants();
         requestPermissions();
 
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SendAlarmAndLocationRequest(txtPhoneNumber.getText().toString());
+                smsPeer=new SMSPeer(txtPhoneNumber.getText().toString());
+                manager.SendAlarmAndLocationRequest(smsPeer);
             }
         });
 
         sendLocationRequestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SendLocationRequest(txtPhoneNumber.getText().toString());
+                smsPeer=new SMSPeer(txtPhoneNumber.getText().toString());
+                manager.SendLocationRequest(smsPeer);
             }
         });
 
         sendAlarmRequestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SendAlarmRequest(txtPhoneNumber.getText().toString());
+                smsPeer=new SMSPeer(txtPhoneNumber.getText().toString());
+                manager.SendAlarmRequest(smsPeer);
             }
         });
     }
 
-    /***
-     * @author Turcato
-     *Send an urgent message to the @phoneNumber with a location request
-     *
-     * @param phoneNumber phone number to which send sms Location request
-     */
-    private void SendLocationRequest(String phoneNumber)
-    {
-        String requestStringMessage = manager.getLocationStringMessage();
-        SMSMessage smsMessage = new SMSMessage(new SMSPeer(phoneNumber), requestStringMessage);
-        manager.sendUrgentMessage(smsMessage);
-    }
-
-    /***
-     * @author Turcato
-     * Send an urgent message to the @phoneNumber for an Alarm request
-     *
-     * @param phoneNumber phone number to which send sms Location & alarm request
-     */
-    private void SendAlarmRequest(String phoneNumber)
-    {
-        String requestStringMessage = manager.getAlarmStringMessage();
-        SMSMessage smsMessage = new SMSMessage(new SMSPeer(phoneNumber), requestStringMessage);
-        manager.sendUrgentMessage(smsMessage);
-    }
-
-    /***
-     * @author Turcato
-     *Send an urgent message to the @phoneNumber for an Alarm and Location request
-     *
-     * @param phoneNumber phone number to which send sms alarm request
-     */
-    private void SendAlarmAndLocationRequest(String phoneNumber)
-    {
-        //Wake key to indicate urgency to the device
-        String requestStringMessage = manager.getAlarmStringMessage()
-                +manager.getLocationStringMessage();
-        SMSMessage smsMessage = new SMSMessage(new SMSPeer(phoneNumber), requestStringMessage);
-        manager.sendUrgentMessage(smsMessage);
-    }
 
     @Override
     protected void onStart()
@@ -174,51 +131,8 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
      */
     public  void onMessageReceived(SMSMessage message)
     {
-        String receivedStringMessage = message.getData();
+        manager.getRequest(message);
 
-        //Both Requests are handled by the other activity
-        if (manager.containsLocationRequest(receivedStringMessage)
-                || manager.containsAlarmRequest(receivedStringMessage)) {
-            OpenRequestsActivity(receivedStringMessage, message.getPeer().getAddress());
-        }
-
-        //The only expected response
-        if(manager.containsLocationResponse(receivedStringMessage)){
-            Double longitude;
-            Double latitude;
-            try {
-                longitude = Double.parseDouble(manager.getLongitude(receivedStringMessage));
-                latitude = Double.parseDouble(manager.getLatitude(receivedStringMessage));
-                OpenMapsUrl(latitude, longitude);
-            }
-            catch (Exception e){
-                //Written in log for future users to report
-                Log.e(MAIN_ACTIVITY_TAG,manager.response + ": " + e.getMessage());
-            }
-
-        }
-    }
-
-    /***
-     * @author Turcato
-     * Opens the AlarmAndLocateResponseActivity, forwarding the receivedMessageText and the receivedMessageReturnAddress
-     * The opened activity's task is to respond to the given requests, that can't be handled on this
-     * activity because the app might be closed, so the response activity has to be forcedly opened.
-     *
-     * When app is closed the messages are received by KillerAppClosedReceiver,
-     * secondary BroadcastReceiver that responds to the forced WAKE and has the same job as this method
-     *
-     * @param receivedMessageText the text of the request message
-     * @param receivedMessageReturnAddress the return address of the request message
-     */
-    private void OpenRequestsActivity(String receivedMessageText, String receivedMessageReturnAddress)
-    {
-        Log.d(MAIN_ACTIVITY_TAG, "OpenRequestsActivity");
-        Intent openAlarmAndLocateActivityIntent = new Intent(getApplicationContext(), AlarmAndLocateResponseActivity.class);
-        openAlarmAndLocateActivityIntent.putExtra(constants.receivedStringMessage, receivedMessageText);
-        openAlarmAndLocateActivityIntent.putExtra(constants.receivedStringAddress, receivedMessageReturnAddress);
-        openAlarmAndLocateActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getApplicationContext().startActivity(openAlarmAndLocateActivityIntent);
     }
 
     /**
@@ -231,19 +145,7 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
         super.onDestroy();
     }
 
-    /***
-     * @author Turcato
-     * Opens the default maps application at the given Location(latitude, longitude)
-     *
-     * @param mapsLatitude latitude extracted by response sms
-     * @param mapsLongitude longitude extracted by response sms
-     */
-    public void OpenMapsUrl(Double mapsLatitude, Double mapsLongitude)
-    {
-        String url = MAPS_START_URL + mapsLatitude + "," + mapsLongitude;
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        startActivity(intent);
-    }
+
 
 }
 

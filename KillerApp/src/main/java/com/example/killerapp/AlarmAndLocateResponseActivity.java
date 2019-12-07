@@ -13,7 +13,6 @@ public class AlarmAndLocateResponseActivity extends AppCompatActivity {
     private String receivedMessageAddress;
     private Constants constants;
     private Manager manager;
-    private  SendResponseSms sendResponseSms;
     private MediaPlayer mediaPlayer;
 
 
@@ -30,25 +29,13 @@ public class AlarmAndLocateResponseActivity extends AppCompatActivity {
         win.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         win.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         setContentView(R.layout.activity_alarm_and_locate);
-
         constants = new Constants();
 
-
-        //Params passed by methods tha called this activity
+        //Params passed by method that calls this activity
         receivedTextMessage = getIntent().getStringExtra(constants.receivedStringMessage);
         receivedMessageAddress = getIntent().getStringExtra(constants.receivedStringAddress);
-        manager=Manager.getInstance(getApplicationContext());
-
-
-        if (manager.containsLocationRequest(receivedTextMessage)) {
-            //Action to execute when device receives a Location request
-            sendResponseSms = new SendResponseSms(receivedMessageAddress, getApplicationContext());
-            manager.getLastLocation(getApplicationContext(), sendResponseSms);
-        }
-        //User has to close app manually to stop
-        if (manager.containsAlarmRequest(receivedTextMessage))
-            manager.startAlarm(getApplicationContext());
-
+        manager=new Manager(getApplicationContext());
+        manager.getRequest(receivedTextMessage,receivedMessageAddress);
 
     }
 
