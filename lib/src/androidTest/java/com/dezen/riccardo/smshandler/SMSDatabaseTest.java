@@ -42,23 +42,59 @@ public class SMSDatabaseTest {
         smsDatabase.close();
     }
 
+    /**
+     * Test for insert SMSMessage which is created from constructor WITHOUT specifying parameter id
+     */
     @Test
-    public void insert() {
+    public void insert_withoutMessageIdSpecified() {
         SMSMessage message = new SMSMessage(peer, bodyMessage);
         SMSDao dbAccess = smsDatabase.access();
-        int countPrec = dbAccess.count();
+        int countBeforeInsert = dbAccess.count();
         dbAccess.insert(message);
-        assertEquals(countPrec+1 , dbAccess.count());
+        int countAfterInsert = countBeforeInsert+1;
+        assertEquals(countAfterInsert , dbAccess.count());
     }
 
+    /**
+     * Test for insert SMSMessage which is created from constructor WITH parameter id specified
+     */
     @Test
-    public void delete() {
+    public void insert_withMessageIdSpecified() {
+        SMSMessage message = new SMSMessage(4, peer, bodyMessage);
+        SMSDao dbAccess = smsDatabase.access();
+        int countBeforeInsert = dbAccess.count();
+        dbAccess.insert(message);
+        int countAfterInsert = countBeforeInsert+1;
+        assertEquals(countAfterInsert , dbAccess.count());
+    }
+
+    /**
+     * Test for delete SMSMessage which is created from constructor WITHOUT specifying parameter id
+     */
+    @Test
+    public void delete_withoutMessageIdSpecified() {
+        SMSMessage message = new SMSMessage(peer, bodyMessage);
+        SMSDao dbAccess = smsDatabase.access();
+        dbAccess.insert(message);
+        int countBeforeDelete = dbAccess.count();
+        List<SMSMessage> messages = dbAccess.getAll();
+        dbAccess.delete(messages.get(messages.size()-1));
+        int countAfterDelete = countBeforeDelete-1;
+        assertEquals(countAfterDelete, dbAccess.count());
+    }
+
+    /**
+     * Test for delete SMSMessage which is created from constructor WITH parameter id specified
+     */
+    @Test
+    public void delete_withMessageIdSpecified() {
         SMSMessage message = new SMSMessage(5, peer, bodyMessage);
         SMSDao dbAccess = smsDatabase.access();
         dbAccess.insert(message);
-        int countPrec = dbAccess.count();
+        int countBeforeDelete = dbAccess.count();
         dbAccess.delete(message);
-        assertEquals(countPrec-1, dbAccess.count());
+        int countAfterDelete = countBeforeDelete-1;
+        assertEquals(countAfterDelete, dbAccess.count());
     }
 }
 
