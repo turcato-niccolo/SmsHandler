@@ -2,7 +2,6 @@ package com.dezen.riccardo.networkmanager;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.telephony.PhoneNumberUtils;
 
 import androidx.room.Room;
 

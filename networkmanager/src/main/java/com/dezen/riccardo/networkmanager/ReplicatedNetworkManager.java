@@ -2,7 +2,6 @@ package com.dezen.riccardo.networkmanager;
 
 import android.content.Context;
 
-import com.dezen.riccardo.networkmanager.exceptions.InvalidMsgSyntaxException;
 import com.dezen.riccardo.smshandler.CommunicationHandler;
 import com.dezen.riccardo.smshandler.ReceivedMessageListener;
 import com.dezen.riccardo.smshandler.SMSHandler;
@@ -14,7 +13,7 @@ import com.dezen.riccardo.smshandler.SMSPeer;
  * @author Niccolò Turcato.
  * @author Riccardo De Zen.
  */
-public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,StringResource, NetworkDictionary>, ReceivedMessageListener<SMSMessage> {
+public class ReplicatedNetworkManager implements ReplicatedNetworkInterface<SMSMessage, SMSPeer>, ReceivedMessageListener<SMSMessage> {
     /**
      * Actions the network can send and receive.
      * Current syntax for messages is as follows:
@@ -31,7 +30,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
     private CommunicationHandler<SMSMessage> handler;
     private Context context;
 
-    public NetworkManager(Context registerContext) {
+    public ReplicatedNetworkManager(Context registerContext) {
          dictionary = new NetworkDictionary(registerContext);
          handler = SMSManager.getInstance(registerContext);
          handler.setReceiveListener(this);
@@ -44,7 +43,7 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * (if it is a peer for the sms Network)
      * @param firstPeer the peer tha builds the network
      */
-    public NetworkManager(Context registerContext, SMSPeer firstPeer) {
+    public ReplicatedNetworkManager(Context registerContext, SMSPeer firstPeer) {
         this(registerContext);
         dictionary.addPeer(firstPeer);
         myPeer = firstPeer;
@@ -162,12 +161,21 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * Method to request a Resource from the network.
      * @param key the Resource to request.
      */
-    @Override
     public StringResource getResource(String key) {
         for(StringResource res : dictionary.getResources()){
             if(res.getName().equals(key)) return res;
         }
         return StringResource.getDefaultInvalid();
+    }
+
+    @Override
+    public boolean isResourceAvailable(String key){
+        return dictionary.contains(new StringResource(key, ""));
+    }
+
+    @Override
+    public boolean isPeerConnected(SMSPeer peer){
+        return dictionary.contains(peer);
     }
 
     /**
@@ -192,7 +200,6 @@ public class NetworkManager implements NetworkInterface<SMSMessage, SMSPeer,Stri
      * Setter for a listener that should listen for Resources being obtained.
      * @param listener the class listening for Resource events.
      */
-    @Override
     public void setListener(OnNetworkEventListener<SMSMessage, StringResource> listener) {
         this.listener = listener;
     }
