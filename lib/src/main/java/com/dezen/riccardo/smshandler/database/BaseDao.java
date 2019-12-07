@@ -5,7 +5,6 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.RawQuery;
-import androidx.room.Update;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 import androidx.sqlite.db.SupportSQLiteQuery;
 
@@ -19,7 +18,7 @@ import java.util.List;
  * @param <T> The Type of Entity the Dao provides access to.
  */
 @Dao
-public abstract class BaseDao<T>{
+abstract class BaseDao<T>{
 
     //Table name has to follow
     protected static final String COUNT_QUERY = "SELECT COUNT(*) FROM ";
@@ -33,13 +32,6 @@ public abstract class BaseDao<T>{
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public abstract void insert(T... entity);
-
-    /**
-     * Default Query for existing entity updates
-     * @param entity the entities to update
-     */
-    @Update
-    public abstract void update(T... entity);
 
     /**
      * Default Query for deletion of existing entities

@@ -12,6 +12,6 @@ import com.dezen.riccardo.smshandler.SMSMessage;
  */
 @Database(entities = {SMSMessage.class}, version = 1)
 @TypeConverters({SMSConverters.class})
-abstract class SMSDatabase extends RoomDatabase {
+public abstract class SMSDatabase extends RoomDatabase {
     public abstract SMSDao access();
 }
