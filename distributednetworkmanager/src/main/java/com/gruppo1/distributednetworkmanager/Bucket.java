@@ -22,7 +22,7 @@ public abstract class Bucket<T> {
      * @param obj object of which verify presence in bucket
      * @return true if the element is contained in the bucket, false otherwise
      */
-    public abstract boolean Contains(T obj);
+    public abstract boolean contains(T obj);
 
 
     /**
@@ -30,14 +30,14 @@ public abstract class Bucket<T> {
      * @param obj object to add
      * @return true if it has been added, false otherwise
      */
-    public abstract boolean Add(T obj);
+    public abstract boolean add(T obj);
 
     /**
      *
      * @param obj object to remove from bucket
      * @return true if obj has been removed, false otherwise
      */
-    public abstract boolean Remove(T obj);
+    public abstract boolean remove(T obj);
 
     /**
      * @return an array containing (a copy) the elements in the bucket, sorted by insertion time

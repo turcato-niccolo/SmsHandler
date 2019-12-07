@@ -1,7 +1,8 @@
 package com.gruppo1.distributednetworkmanager;
 
-import android.content.Context;
-
+/**
+ * @author
+ */
 public class KBucket extends Bucket<PeerNode> {
     private int dimension;
     private int last;
@@ -19,7 +20,7 @@ public class KBucket extends Bucket<PeerNode> {
      * @param toFind object of which verify presence in bucket
      * @return true if the element is contained in the bucket, false otherwise
      */
-    public boolean Contains(PeerNode toFind){
+    public boolean contains(PeerNode toFind){
         for (int i = 0; i<last; i++)
             if(elements[i].equals(toFind))
                 return true;
@@ -32,13 +33,13 @@ public class KBucket extends Bucket<PeerNode> {
      * @param peerNode object to add
      * @return true if it has been added, false otherwise
      */
-    public boolean Add(PeerNode peerNode){
-        if(!Contains(peerNode)){
+    public boolean add(PeerNode peerNode){
+        if(!contains(peerNode)){
             if(last == dimension)
                 elements[dimension-1] = peerNode.clone();
             else
                 elements[last++] = peerNode.clone();
-            return Contains(peerNode);
+            return contains(peerNode);
         }
         else return false;
     }
@@ -48,15 +49,15 @@ public class KBucket extends Bucket<PeerNode> {
      * @param peerNode object to remove from bucket
      * @return true if obj has been removed, false otherwise
      */
-    public boolean Remove(PeerNode peerNode){
-        if(Contains(peerNode)) {
+    public boolean remove(PeerNode peerNode){
+        if(contains(peerNode)) {
             for (int i = 0; i < last; i++)
                 if (elements[i].equals(peerNode)) {
                     for (int j = i; j < dimension - 1; j++)
                         elements[j] = elements[j + 1];
                     elements[--last] = null;
                 }
-            return !Contains(peerNode);
+            return !contains(peerNode);
         }
         return false;
     }
