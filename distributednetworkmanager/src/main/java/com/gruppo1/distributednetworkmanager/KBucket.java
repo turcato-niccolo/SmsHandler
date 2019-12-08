@@ -1,10 +1,12 @@
 package com.gruppo1.distributednetworkmanager;
 
+
 import android.content.Context;
 
 import java.security.acl.NotOwnerException;
 
 public class KBucket extends Bucket<Node> {
+
     private int dimension;
     private int last;
     private Node[] elements;
@@ -21,9 +23,11 @@ public class KBucket extends Bucket<Node> {
      * @param toFind object of which verify presence in bucket
      * @return true if the element is contained in the bucket, false otherwise
      */
+
     public boolean Contains(Node toFind) {
         for (int i = 0; i < last; i++)
             if (elements[i].equals(toFind))
+
                 return true;
         return false;
     }
@@ -35,6 +39,7 @@ public class KBucket extends Bucket<Node> {
      * @param peerNode object to add
      * @return true if it has been added, false otherwise
      */
+
     public boolean Add(Node peerNode) {
         if (!Contains(peerNode)) {
             if (last == dimension)
@@ -43,21 +48,24 @@ public class KBucket extends Bucket<Node> {
                 elements[last++] = peerNode.clone();
             return Contains(peerNode);
         } else return false;
+
     }
 
     /**
      * @param peerNode object to remove from bucket
      * @return true if obj has been removed, false otherwise
      */
+
     public boolean Remove(Node peerNode) {
         if (Contains(peerNode)) {
+
             for (int i = 0; i < last; i++)
                 if (elements[i].equals(peerNode)) {
                     for (int j = i; j < dimension - 1; j++)
                         elements[j] = elements[j + 1];
                     elements[--last] = null;
                 }
-            return !Contains(peerNode);
+            return !contains(peerNode);
         }
         return false;
     }
