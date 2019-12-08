@@ -1,12 +1,13 @@
 package com.gruppo1.distributednetworkmanager;
 
-import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class KBucketTest {
     int dim = 20;
@@ -19,34 +20,34 @@ public class KBucketTest {
     {
         bucket = new KBucket(dim);
         node = new PeerNode(128, peer);
-        bucket.Add(node.getAddress());
+        bucket.add(node.getAddress());
     }
 
     @Test
     public void KBucket_ContainsPositiveTest()
     {
-        assertTrue(bucket.Contains(node.getAddress()));
+        assertTrue(bucket.contains(node.getAddress()));
         PeerNode otherNode = new PeerNode(128, new SMSPeer("+39348456789"));
 
-        assertFalse(bucket.Contains(otherNode.getAddress()));
+        assertFalse(bucket.contains(otherNode.getAddress()));
     }
 
     @Test
     public void KBucket_AddsPositiveTest(){
         PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
 
-        assertTrue(bucket.Add(a.getAddress()));
-        assertTrue(bucket.Contains(a.getAddress()));
+        assertTrue(bucket.add(a.getAddress()));
+        assertTrue(bucket.contains(a.getAddress()));
     }
 
     @Test
     public void KBucket_RemovesPositiveTest() {
         PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
 
-        assertTrue(bucket.Add(a.getAddress()));
-        assertTrue(bucket.Contains(a.getAddress()));
-        assertTrue(bucket.Remove(a.getAddress()));
-        assertFalse(bucket.Contains(a.getAddress()));
+        assertTrue(bucket.add(a.getAddress()));
+        assertTrue(bucket.contains(a.getAddress()));
+        assertTrue(bucket.remove(a.getAddress()));
+        assertFalse(bucket.contains(a.getAddress()));
     }
 
     @Test
@@ -57,9 +58,9 @@ public class KBucketTest {
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a.getAddress());
-        newBucket.Add(b.getAddress());
-        newBucket.Add(c.getAddress());
+        newBucket.add(a.getAddress());
+        newBucket.add(b.getAddress());
+        newBucket.add(c.getAddress());
 
         Node[] result = newBucket.getElements();
 
@@ -76,11 +77,11 @@ public class KBucketTest {
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a.getAddress());
-        newBucket.Add(b.getAddress());
-        newBucket.Add(c.getAddress());
+        newBucket.add(a.getAddress());
+        newBucket.add(b.getAddress());
+        newBucket.add(c.getAddress());
 
-        newBucket.Remove(b.getAddress());
+        newBucket.remove(b.getAddress());
 
         Node[] elements = newBucket.getElements();
 
@@ -96,9 +97,9 @@ public class KBucketTest {
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a.getAddress());
-        newBucket.Add(b.getAddress());
-        newBucket.Add(c.getAddress());
+        newBucket.add(a.getAddress());
+        newBucket.add(b.getAddress());
+        newBucket.add(c.getAddress());
 
         assertEquals(a.getAddress(), newBucket.getOldest());
     }
