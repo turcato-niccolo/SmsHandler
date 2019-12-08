@@ -1,5 +1,6 @@
 package com.example.killerapp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -21,8 +22,6 @@ public class Manager {
     LocationManager locationManager=new LocationManager();
     SMSManager smsManager;
     Constants constants=new Constants();
-    private final String MAPS_START_URL = "https://www.google.com/maps/search/?api=1&query=";
-    //NOTE: concat latitude,longitude
 
     private static final String MANAGER_TAG = "Manager";
     private  SendResponseSms sendResponseSms;
@@ -105,15 +104,15 @@ public class Manager {
     }
 
     /***
-     *Based on the message received it opens an activity or open the default map app
-     * @param message The message received
+     *Based on the response this method opens the activityClass or open the default map app
+     * @param messageResponse The message received
      */
-   public void getRequest(SMSMessage message)
+   public void getResponse(SMSMessage messageResponse,Class activityClass)
     {
-        String requestMessage  = message.getData();
+        String requestMessage  = messageResponse.getData();
         if (locationManager.containsLocationRequest(requestMessage)
                 || alarmManager.containsAlarmRequest(requestMessage)) {
-            OpenRequestsActivity(requestMessage, message.getPeer().getAddress());
+            OpenRequestsActivity(requestMessage, messageResponse.getPeer().getAddress(),activityClass);
         }
 
         //The only expected response
@@ -123,7 +122,7 @@ public class Manager {
             try {
                 longitude = Double.parseDouble(locationManager.getLongitude(requestMessage));
                 latitude = Double.parseDouble(locationManager.getLatitude(requestMessage));
-                OpenMapsUrl(latitude, longitude);
+                locationManager.OpenMapsUrl(latitude, longitude);
             }
             catch (Exception e){
                 //Written in log for future users to report
@@ -135,39 +134,21 @@ public class Manager {
 
     /***
      * @author Turcato
-     * Opens the AlarmAndLocateResponseActivity, forwarding the receivedMessageText and the receivedMessageReturnAddress
-     * The opened activity's task is to respond to the given requests, that can't be handled on this
-     * activity because the app might be closed, so the response activity has to be forcedly opened.
+     * Opens an activityClass, forwarding the receivedMessageText and the receivedMessageReturnAddress
      *
-     * When app is closed the messages are received by KillerAppClosedReceiver,
-     * secondary BroadcastReceiver that responds to the forced WAKE and has the same job as this method
-     *
+     * @param activityClass the activity to be opened
      * @param receivedMessageText the text of the request message
      * @param receivedMessageReturnAddress the return address of the request message
      */
-    private void OpenRequestsActivity(String receivedMessageText, String receivedMessageReturnAddress)
+    private void OpenRequestsActivity(String receivedMessageText, String receivedMessageReturnAddress, Class activityClass)
     {
         Log.d(MANAGER_TAG, "OpenRequestsActivity");
-        Intent openAlarmAndLocateActivityIntent = new Intent(currentContext.getApplicationContext(), AlarmAndLocateResponseActivity.class);
+        Intent openAlarmAndLocateActivityIntent = new Intent(currentContext.getApplicationContext(), activityClass);
         openAlarmAndLocateActivityIntent.putExtra(constants.receivedStringMessage, receivedMessageText);
         openAlarmAndLocateActivityIntent.putExtra(constants.receivedStringAddress, receivedMessageReturnAddress);
         openAlarmAndLocateActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         currentContext.getApplicationContext().startActivity(openAlarmAndLocateActivityIntent);
     }
 
-
-    /***
-     * @author Turcato
-     * Opens the default maps application at the given Location(latitude, longitude)
-     *
-     * @param mapsLatitude latitude extracted by response sms
-     * @param mapsLongitude longitude extracted by response sms
-     */
-    public void OpenMapsUrl(Double mapsLatitude, Double mapsLongitude)
-    {
-        String url = MAPS_START_URL + mapsLatitude + "," + mapsLongitude;
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        currentContext.getApplicationContext().startActivity(intent);
-    }
 
 }

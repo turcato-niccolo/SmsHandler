@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements ReceivedMessageLi
      */
     public  void onMessageReceived(SMSMessage message)
     {
-        manager.getRequest(message);
+        manager.getResponse(message,AlarmAndLocateResponseActivity.class);
 
     }
 
