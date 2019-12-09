@@ -2,15 +2,14 @@ package com.gruppo1.distributednetworkmanager;
 
 
 /**
- * Class that describes an abstract Node
+ * Interface that describes an abstract Node for the distributed Network
  *
  * @param <T> type of key
  */
-public abstract class Node<T> implements Cloneable {
+public interface Node<T> extends Cloneable{
+    int keyLength();
 
-    abstract public int keyLength();
+    T getKey();
 
-    abstract public T getKey();
-
-    abstract public Node<T> clone();
+    T getDistance(Node<T> node);
 }

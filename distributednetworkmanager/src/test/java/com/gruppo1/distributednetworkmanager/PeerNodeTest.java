@@ -18,113 +18,75 @@ public class PeerNodeTest {
     @Before
     public void initialize(){
         testPeer = new SMSPeer("+390425678123"); //Valid number
-        testNode = new PeerNode(64, testPeer);
+        testNode = new PeerNode(new BinarySet(BitSetUtils.hash(testPeer.getAddress(), 64)));
     }
 
     @Test
     public void PeerNode_Constructor_NoExceptionTest(){
         SMSPeer peer = new SMSPeer("+390425666001");
-        PeerNode node = new PeerNode(128, peer);
+        PeerNode node = new PeerNode(new BinarySet(BitSetUtils.hash(peer.getAddress(), 64)));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void PeerNode_Constructor_PeerIllegalArgumentExceptionTest(){
         SMSPeer peer = new SMSPeer("This is invalid");
-        PeerNode node = new PeerNode(128, peer);
-    }
-
-    @Test
-    public void PeerNode_hashTest(){
-        BitSet hash = PeerNode.hash(testPeer, testNode.keyLength());
-        assertEquals(hash, testNode.getAddress().getKey());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void PeerNode_hashExceptionTest(){
-        BitSet hash = PeerNode.hash(testPeer, 120);
+        PeerNode node = new PeerNode(new BinarySet(BitSetUtils.hash(peer.getAddress(), 64)));
     }
 
     @Test
     public void PeerNode_ConstructorBitSetTest(){
         BitSet a = new BitSet(128);
         a.set(0, 4);
-        PeerNode node = new PeerNode(128, a);
+        BinarySet set = new BinarySet(a);
+        PeerNode node = new PeerNode(set);
         assertEquals(a, node.getAddress().getKey());
+        assertEquals(set, node.getAddress());
     }
 
-    @Test
-    public void PeerNode_getAddressNegativeTest() {
-        SMSPeer newPeer = new SMSPeer("+390425667007");
-        assertNotEquals(PeerNode.hash(newPeer, testNode.keyLength()), testNode.getAddress().getKey());
-    }
 
     @Test
     public void PeerNode_distanceFromTest(){
-        BitSet A = PeerNode.hash(testPeer, testNode.keyLength());
+        BitSet A = BitSetUtils.hash(testPeer.getAddress(), testNode.keyLength());
 
         SMSPeer newPeer = new SMSPeer("+390425667007");
-        PeerNode newPeerNode = new PeerNode(testNode.keyLength(), newPeer);
-        BitSet B = PeerNode.hash(newPeer, testNode.keyLength());
+        PeerNode newPeerNode = new PeerNode(new BinarySet(BitSetUtils.hash(newPeer.getAddress(), testNode.keyLength())));
+        BitSet B = BitSetUtils.hash(newPeer.getAddress(), testNode.keyLength());
 
         A.xor(B);
-        assertEquals(A, testNode.distanceFrom(newPeerNode));
-        assertEquals(A, newPeerNode.distanceFrom(testNode));
+        assertEquals(A, testNode.getDistance(newPeerNode).getKey());
+        assertEquals(A, newPeerNode.getDistance(testNode).getKey());
     }
 
-    @Test
-    public void PeerNode_distanceFromResourceTest(){
-        BitSet A = PeerNode.hash(testPeer, testNode.keyLength());
-
-        StringResource resource = new StringResource("Casual Name", "Some info");
-        ResourceNode newResourceNode = new ResourceNode(testNode.keyLength(), resource);
-        BitSet B = ResourceNode.hash(resource, testNode.keyLength());
-
-        A.xor(B);
-        assertEquals(A, testNode.distanceFrom(newResourceNode));
-        assertEquals(A, newResourceNode.distanceFrom(testNode));
-    }
 
     @Test
     public void PeerNode_compareDistancePositiveTest(){
-        BitSet A = PeerNode.hash(testPeer, testNode.keyLength());
+        BitSet A = BitSetUtils.hash(testPeer.getAddress(), testNode.keyLength());
 
         SMSPeer newPeer = new SMSPeer("+390425667007");
-        PeerNode newPeerNode = new PeerNode(testNode.keyLength(), newPeer);
-        BitSet B = PeerNode.hash(newPeer, testNode.keyLength());
+        PeerNode newPeerNode = new PeerNode(new BinarySet(BitSetUtils.hash(newPeer.getAddress(), testNode.keyLength())));
+        BitSet B = BitSetUtils.hash(newPeer.getAddress(), testNode.keyLength());
 
         //A = testNode.getAddress(), B = newPeerNode.getAddress()
 
         BitSet C = new BitSet(testNode.keyLength()); //000...000
         C.set(0,4); //...00011111
 
-        PeerNode confrontNode = new PeerNode(testNode.keyLength(), C);
+        PeerNode confrontNode = new PeerNode(new BinarySet(C));
 
         A.xor(C);
         B.xor(C);
 
-        assertEquals(DistributedNetworkNode.compare(A,B), DistributedNetworkNode.compare(confrontNode.distanceFrom(testNode), confrontNode.distanceFrom(newPeerNode)));
-        assertEquals(DistributedNetworkNode.compare(B,A), DistributedNetworkNode.compare(confrontNode.distanceFrom(newPeerNode), confrontNode.distanceFrom(testNode)));
-        assertEquals(DistributedNetworkNode.compare(A,A), DistributedNetworkNode.compare(confrontNode.distanceFrom(testNode), confrontNode.distanceFrom(testNode)));
+        assertEquals(BitSetUtils.compare(A,B), BitSetUtils.compare(confrontNode.getDistance(testNode).getKey(), confrontNode.getDistance(newPeerNode).getKey()));
+        assertEquals(BitSetUtils.compare(B,A), BitSetUtils.compare(confrontNode.getDistance(newPeerNode).getKey(), confrontNode.getDistance(testNode).getKey()));
+        assertEquals(BitSetUtils.compare(A,A), BitSetUtils.compare(confrontNode.getDistance(testNode).getKey(), confrontNode.getDistance(testNode).getKey()));
     }
 
     @Test
     public void PeerNode_isValidPositiveTest() {
         assertTrue(testNode.isValid());
-        BitSet A = PeerNode.hash(testPeer, testNode.keyLength());
-        PeerNode newPeerNode = new PeerNode(testNode.keyLength(), A);
+        BitSet A = BitSetUtils.hash(testPeer.getAddress(), testNode.keyLength());
+        PeerNode newPeerNode = new PeerNode(new BinarySet(A));
         assertTrue(newPeerNode.isValid());
     }
 
-
-        @Test
-    public void PeerNode_getPhysicalPeerPositiveTest(){
-        assertEquals(testPeer, testNode.getPhysicalPeer());
-    }
-
-    @Test
-    public void PeerNode_getPhysicalPeerNegativeTest(){
-        SMSPeer newPeer = new SMSPeer("+390425667007");
-        PeerNode newPeerNode = new PeerNode(testNode.keyLength(), newPeer);
-        assertNotEquals(testPeer, newPeerNode.getPhysicalPeer());
-    }
 }

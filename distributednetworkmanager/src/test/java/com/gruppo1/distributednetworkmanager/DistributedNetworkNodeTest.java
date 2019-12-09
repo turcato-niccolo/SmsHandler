@@ -86,9 +86,9 @@ public class DistributedNetworkNodeTest {
     @Test
     public void Node_equalsTest() {
         SMSPeer calogero = new SMSPeer("+390425668606");
-        PeerNode a = new PeerNode(128, calogero);
-        PeerNode b = new PeerNode(128, calogero);
-        PeerNode c = new PeerNode(64, calogero);
+        PeerNode a = new PeerNode(new BinarySet(BitSetUtils.hash(calogero.getAddress(), 128)));
+        PeerNode b = new PeerNode(new BinarySet(BitSetUtils.hash(calogero.getAddress(), 128)));
+        PeerNode c = new PeerNode(new BinarySet(BitSetUtils.hash(calogero.getAddress(), 64)));
 
         assertTrue(a.equals(b));
         assertTrue(b.equals(a));

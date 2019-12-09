@@ -9,8 +9,7 @@ import java.util.BitSet;
  * @author Niccolo' Turcato
  * Class rapresenting a generic DistributedNetworkNode of the distributed Network
  */
-public class DistributedNetworkNode extends Node<BitSet> implements Comparable<DistributedNetworkNode> {
-
+public class DistributedNetworkNode implements Comparable<Node<BitSet>> {
     private BitSet key;
     private int keyLength;
     static final private int minLength = 64;
@@ -158,10 +157,18 @@ public class DistributedNetworkNode extends Node<BitSet> implements Comparable<D
      * @return a negative integer, zero, or a positive integer as this DistributedNetworkNode is less than, equal to, or greater than the specified DistributedNetworkNode.
      * @throws IllegalArgumentException if the given DistributedNetworkNode isn't part of this node's address space
      */
-    @Override
+
     public int compareTo(@NonNull DistributedNetworkNode other) {
         if (other.keyLength() == this.keyLength()) {
             return compare(other.getKey(), getKey());
         } else throw new IllegalArgumentException(NOT_SAME_ADDR_SPACE_EXCEPTION_MSG);
+    }
+
+    public int compareTo(@NonNull BitSet other) {
+        return 0;
+    }
+
+    public int compareTo(@NonNull Node other) {
+        return 0;
     }
 }

@@ -33,7 +33,7 @@ public class DistributedNetworkRoutingTable extends RoutingTable<Bucket<Node>> {
      * @return the owner of the resource (equal keys) if present, otherwise the closest one
      */
     public Node getOwner(Node resourceNode) {
-        return new DistributedNetworkNode(128, (new PeerNode(128, new SMSPeer("+390435"))).getAddress().getKey());
+        return new PeerNode(new BinarySet(BitSetUtils.hash("+39045678", 128)));
     }
 
 }
