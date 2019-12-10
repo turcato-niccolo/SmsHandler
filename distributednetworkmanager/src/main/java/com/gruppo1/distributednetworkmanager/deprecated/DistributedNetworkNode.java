@@ -1,7 +1,9 @@
-package com.gruppo1.distributednetworkmanager;
+package com.gruppo1.distributednetworkmanager.deprecated;
 
 import androidx.annotation.NonNull;
 
+
+import com.gruppo1.distributednetworkmanager.Node;
 
 import java.util.BitSet;
 

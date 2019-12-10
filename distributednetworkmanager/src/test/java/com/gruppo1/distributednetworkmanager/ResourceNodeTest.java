@@ -66,4 +66,9 @@ public class ResourceNodeTest {
         ResourceNode newResNode = new ResourceNode(testNode.getKey(), "This is value. No, this is Patrick");
         assertEquals(testNode, newResNode);
     }
+
+    @Test
+    public void ResourceNode_ClonePositiveTest() {
+        assertNotSame(testNode, testNode.clone());
+    }
 }

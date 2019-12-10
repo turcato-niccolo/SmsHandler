@@ -89,4 +89,8 @@ public class PeerNodeTest {
         assertTrue(newPeerNode.isValid());
     }
 
+    @Test
+    public void PeerNode_ClonePositiveTest() {
+        assertNotSame(testNode, testNode.clone());
+    }
 }

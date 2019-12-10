@@ -71,6 +71,11 @@ public class KBucketTest {
     }
 
     @Test
+    public void KBucket_AddAlreadyPresentTest(){
+        assertFalse(bucket.add(node));
+    }
+
+    @Test
     public void KBucket_RemovesKeepsSortedPositiveTest() {
         PeerNode a = new PeerNode(new BinarySet(BitSetUtils.hash("+39348456789", 128)));
         PeerNode b = new PeerNode(new BinarySet(BitSetUtils.hash("+39348676789", 128)));

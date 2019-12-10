@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.dezen.riccardo.networkmanager.*;
 import com.dezen.riccardo.smshandler.*;
+import com.gruppo1.distributednetworkmanager.deprecated.NetworkDictionaryWithOwnership;
 
 
 /**

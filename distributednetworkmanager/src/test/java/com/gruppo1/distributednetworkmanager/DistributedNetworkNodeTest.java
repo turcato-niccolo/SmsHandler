@@ -1,6 +1,7 @@
 package com.gruppo1.distributednetworkmanager;
 
 import com.dezen.riccardo.smshandler.SMSPeer;
+import com.gruppo1.distributednetworkmanager.deprecated.DistributedNetworkNode;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -78,10 +79,6 @@ public class DistributedNetworkNodeTest {
         assertEquals(DistributedNetworkNode.compare(A, A), DistributedNetworkNode.compare(confrontNode.distanceFrom(testNode), confrontNode.distanceFrom(testNode)));
     }
 
-    @Test
-    public void Node_compareDistanceWrongAddrSpaceTest(){
-
-    }
 
     @Test
     public void Node_equalsTest() {

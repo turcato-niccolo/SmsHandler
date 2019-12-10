@@ -1,4 +1,4 @@
-package com.gruppo1.distributednetworkmanager;
+package com.gruppo1.distributednetworkmanager.deprecated;
 
 import android.content.Context;
 

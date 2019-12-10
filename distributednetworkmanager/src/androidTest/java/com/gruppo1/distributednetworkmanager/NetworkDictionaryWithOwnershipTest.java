@@ -4,11 +4,10 @@ import android.content.Context;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.dezen.riccardo.networkmanager.NetworkDictionary;
 import com.dezen.riccardo.networkmanager.StringResource;
 import com.dezen.riccardo.smshandler.SMSPeer;
+import com.gruppo1.distributednetworkmanager.deprecated.NetworkDictionaryWithOwnership;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -75,7 +74,7 @@ public class NetworkDictionaryWithOwnershipTest {
         StringResource newResource = new StringResource("verifyOwnershipPositiveTestResourceKey", "verifyOwnershipPositiveTestResourceValue");
         assertTrue(networkVocabulary.addResource(newResource, peer));
         assertTrue(networkVocabulary.verifyOwnership(peer, newResource));
-        assertFalse(networkVocabulary.verifyOwnership(NetworkDictionaryWithOwnership.NON_EXISTENT_OWNER, newResource));
+        assertFalse(networkVocabulary.verifyOwnership(NetworkDictionaryWithOwnership.INVALID_PEER, newResource));
     }
 
     @Test
