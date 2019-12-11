@@ -2,6 +2,7 @@ package com.gruppo1.distributednetworkmanager;
 
 import androidx.annotation.NonNull;
 
+import java.math.BigInteger;
 import java.util.BitSet;
 
 
@@ -59,6 +60,14 @@ public class BinarySet implements Comparable<BinarySet>, Cloneable {
         BitSet distance = getKey();
         distance.xor(set.getKey());
         return new BinarySet(distance);
+    }
+
+    /**
+     * @param set node of which calculate distance
+     * @return the distance in XOR metric
+     */
+    public int getDistanceInteger(@NonNull BinarySet set) {
+        return new BigInteger(getDistance(set).getKey().toByteArray()).intValue();
     }
 
     /**
