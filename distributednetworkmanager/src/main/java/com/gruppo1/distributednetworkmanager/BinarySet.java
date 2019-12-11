@@ -64,7 +64,7 @@ public class BinarySet implements Comparable<BinarySet>, Cloneable {
 
     /**
      * @param set node of which calculate distance
-     * @return the distance in XOR metric
+     * @return the int distance in XOR metric
      */
     public int getDistanceInteger(@NonNull BinarySet set) {
         return new BigInteger(getDistance(set).getKey().toByteArray()).intValue();

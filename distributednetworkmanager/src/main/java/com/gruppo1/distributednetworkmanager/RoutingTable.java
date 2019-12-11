@@ -30,6 +30,23 @@ package com.gruppo1.distributednetworkmanager;
  * @param <B> type of Bucket used for this structure
  */
 public abstract class RoutingTable<B extends Bucket<Node<BinarySet>>> {
+
+    /**
+     * @return true if the node has been added, false otherwise
+     */
+    public abstract boolean add(Node node);
+
+    /**
+     * @param node Node to remove form the RT
+     */
+    public abstract boolean remove(Node node);
+
+    /**
+     * @param node node of which check presence in the RT
+     * @return true if present, false otherwise
+     */
+    public abstract boolean contains(Node node);
+
     /**
      * @param i index of the bucket in buckets container
      * @return the bucket at index i
@@ -40,32 +57,18 @@ public abstract class RoutingTable<B extends Bucket<Node<BinarySet>>> {
      * @param node Node of the distributed Network
      * @return the index (between 0 and N -1) of the bucket that maybe containing the given Node (Resource or Peer), -1 otherwise
      */
-    public abstract int getLocation(PeerNode node);
+    public abstract int getLocation(Node node);
 
     /**
-     * @return true if the node has been added, false otherwise
+     * @param node
+     * @return the closest Node at the node in the rt if it is present, otherwise null
      */
-    public abstract boolean add(PeerNode node);
+    public abstract Node getClosest(Node node);
 
     /**
-     * @return the closest Node at the ownerNode in the rt if present, otherwise null
+     * @param node
+     * @return the closest K Nodes at the node in the rt if it is present, otherwise null
      */
-    public abstract Node getClosest();
-
-    /**
-     * @return the closest K Nodes at the ownerNode in the rt if present, otherwise null
-     */
-    public abstract Node[] getKClosest();
-
-    /**
-     * @param node node of which check presence in the RT
-     * @return true if present, false otherwise
-     */
-    public abstract boolean contains(PeerNode node);
-
-    /**
-     * @param node Node to remove form the RT
-     */
-    public abstract boolean remove(PeerNode node);
+    public abstract Node[] getKClosest(Node node);
 
 }

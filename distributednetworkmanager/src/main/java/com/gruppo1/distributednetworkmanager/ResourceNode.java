@@ -100,4 +100,12 @@ public class ResourceNode extends Resource<BinarySet, String> implements Node<Bi
         return new Bundle();
     }
 
+    /**
+     * @param node node of which calculate distance
+     * @return the distance of the two nodes in XOR metric
+     */
+    public int getDistanceInteger(Node<BinarySet> node) {
+        return binaryKey.getDistanceInteger(node.getKey());
+    }
+
 }

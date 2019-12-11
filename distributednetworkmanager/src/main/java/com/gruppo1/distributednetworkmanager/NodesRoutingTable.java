@@ -5,30 +5,30 @@ import java.util.List;
 
 /**
  * Extends Rounting Table with KBucket that contains PeerNode
- * Size of RoutingTable is fixed and equals to peerOwner's key length
+ * Size of RoutingTable is fixed and equals to nodeOwner's key length
  * @author Giorgia Bortoletti
  */
-public class PeersRoutingTable extends RoutingTable<KBucket> {
+public class NodesRoutingTable extends RoutingTable<KBucket> {
 
     private List<KBucket> bucketsTable;
     private int sizeTable;
-    private PeerNode peerOwner;
+    private Node nodeOwner;
 
     /**
      * Constructor where the routing table lenght is equal to peer owner length
-     * @param peerOwner
+     * @param nodeOwner
      */
-    public PeersRoutingTable(PeerNode peerOwner){
-        new PeersRoutingTable(peerOwner, peerOwner.keyLength());
+    public NodesRoutingTable(Node nodeOwner){
+        new NodesRoutingTable(nodeOwner, nodeOwner.keyLength());
     }
 
     /**
      * Constructor where the routing table lenght is sizeTable
-     * @param peerOwner
+     * @param nodeOwner
      * @param sizeTable dimension of routing table
      */
-    public PeersRoutingTable(PeerNode peerOwner, int sizeTable){
-        this.peerOwner = peerOwner;
+    public NodesRoutingTable(Node nodeOwner, int sizeTable){
+        this.nodeOwner = nodeOwner;
         this.sizeTable = sizeTable;
         bucketsTable = new ArrayList<>(sizeTable);
         for(int i=0; i<sizeTable; i++)
@@ -36,24 +36,23 @@ public class PeersRoutingTable extends RoutingTable<KBucket> {
     }
 
     /**
-     * @return peerOwner of this routing table
+     * @return nodeOwner of this routing table
      */
-    public PeerNode getPeerOwner()
-    {
-        return peerOwner;
-    }
+    public Node getNodeOwner(){ return nodeOwner; }
+
+
     @Override
-    public boolean add(PeerNode node) {
+    public boolean add(Node node) {
         if(node == null)
             return false;
         return bucketsTable.get(getLocation(node)).add(node);
     }
 
     @Override
-    public boolean remove(PeerNode node) {
+    public boolean remove(Node node) {
         if(node == null)
             return false;
-        int distance = peerOwner.getDistanceInteger(node);
+        int distance = nodeOwner.getDistanceInteger(node);
         KBucket bucketFound = findBucket(distance); //bucket where should be the node
         if(bucketFound == null)
             return false;
@@ -61,10 +60,10 @@ public class PeersRoutingTable extends RoutingTable<KBucket> {
     }
 
     @Override
-    public boolean contains(PeerNode node) {
+    public boolean contains(Node node) {
         if(node == null || bucketsTable.size() == 0)
             return false;
-        int distance = peerOwner.getDistanceInteger(node);
+        int distance = nodeOwner.getDistanceInteger(node);
         KBucket bucketFound = findBucket(distance); //bucket where should be the node
         if(bucketFound == null)
             return false;
@@ -86,10 +85,10 @@ public class PeersRoutingTable extends RoutingTable<KBucket> {
     }
 
     @Override
-    public int getLocation(PeerNode node) {
+    public int getLocation(Node node) {
         if(node == null)
             return -1;
-        int distance = peerOwner.getDistanceInteger(node);
+        int distance = nodeOwner.getDistanceInteger(node);
         for(int i=0; i<sizeTable; i++){
             int min = (int)Math.pow(2,sizeTable-i-1);
             int max = (int)Math.pow(2,sizeTable-i)-1;
@@ -100,44 +99,48 @@ public class PeersRoutingTable extends RoutingTable<KBucket> {
     }
 
     @Override
-    public Node getClosest() {
-        Node[] nodesClosest = getKClosest();
-
-        if (nodesClosest != null){
-            int minDistance = sizeTable * 2;
-            Node nodeClosest = null;
-            for (int i = 0; i < nodesClosest.length; i++) {
-                int distance = peerOwner.getDistanceInteger(nodesClosest[i]);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    nodeClosest = nodesClosest[i];
+    public Node getClosest(Node node) {
+        if(!node.equals(nodeOwner)) {
+            Node[] nodesClosest = getKClosest(node);
+            if (nodesClosest != null){
+                int minDistance = sizeTable * 2;
+                Node nodeClosest = null;
+                for (int i = 0; i < nodesClosest.length; i++) {
+                    int distance = node.getDistanceInteger(nodesClosest[i]);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nodeClosest = nodesClosest[i];
+                    }
                 }
+                return nodeClosest;
             }
-            return nodeClosest;
         }
         return null;
     }
 
     @Override
-    public Node[] getKClosest() {
-        for(int i = bucketsTable.size()-1; i>= 0; i--){
-            Node[] nodesClosest = bucketsTable.get(i).getElements();
-            if(nodesClosest.length >= 1)
-                return nodesClosest;
+    public Node[] getKClosest(Node node) {
+        if(!node.equals(nodeOwner)) {
+            int position = getLocation(node); //the higher the position, the closer it is
+            for (int i = position; i >= 0; i--) { //moves away but it looks for a bucket with some nodes
+                Node[] nodesClosest = bucketsTable.get(i).getElements();
+                if (nodesClosest.length >= 1)
+                    return nodesClosest;
+            }
         }
         return null;
     }
 
     /**
      * This method is used to find which is the bucket of a Node with the distance from peer owner to Node
-     * @param distanceFromPeerOwner
+     * @param distanceFromnodeOwner
      * @return KBucket which maybe contains the Node, null otherwise
      */
-    private KBucket findBucket(int distanceFromPeerOwner){
+    private KBucket findBucket(int distanceFromnodeOwner){
         for(int i=0; i<sizeTable; i++){
             int min = (int)Math.pow(2,sizeTable-i-1);
             int max = (int)Math.pow(2,sizeTable-i)-1;
-            if(distanceFromPeerOwner >= min && distanceFromPeerOwner <= max)
+            if(distanceFromnodeOwner >= min && distanceFromnodeOwner <= max)
             {
                 return bucketsTable.get(i);
             }
