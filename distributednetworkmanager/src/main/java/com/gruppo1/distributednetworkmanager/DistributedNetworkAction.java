@@ -69,7 +69,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
 
         static private boolean usesExtra(int action) {
 
-            return action == FIND_VALUE || action==ANSWER_FIND_VALUE;
+            return action == FIND_VALUE || action==ANSWER_FIND_VALUE || action==STORE;
 
         }
 
@@ -92,7 +92,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
         static final int PING = 0;
         //<#>[ID] [1/1] <#>ANSWER_PING [NODE_ID] [IGNORED] [IGNORED]
         static final int ANSWER_PING = 1;
-        //<#>[ID] [k/N] STORE [NODE_ID] [IGNORED] [VALUE]
+        //<#>[ID] [k/N] STORE [NODE_ID] [NAME] [VALUE]
         static final int STORE = 2;
         //<#>[ID] [k/N] ANSWER_STORE [NODE_ID] [IGNORED] [IGNORED]
         static final int ANSWER_STORE = 3;
@@ -102,7 +102,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
         static final int ANSWER_FIND_NODE = 5;
         //<#>[ID] [k/N] FIND_VALUE [NODE_ID] [YES_RESOURCE] [IGNORED]
         static final int FIND_VALUE = 6;
-        //<#>[ID] [k/N] ANSWER_FIND_VALUE [NODE_ID] [YES_RESOURCE] [VALUE]
+        //<#>[ID] [k/N] ANSWER_FIND_VALUE [NODE_ID] [NAME] [VALUE]
         static final int ANSWER_FIND_VALUE = 7;
         //<#>[ID] [k/N] INVITE [NODE_ID] [IGNORED] [IGNORED]
         static final int INVITE = 8;
@@ -110,25 +110,17 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
         static final int ANSWER_INVITE = 9;
     }
 
-    public DistributedNetworkAction setNodeId(int nodeId)
+    public void setNodeId(int nodeId)
     {
         this.nodeId=nodeId;
-        return this;
     }
-    public DistributedNetworkAction setTotalMessages(int totalMessages)
-    {
-        this.totalMessages=totalMessages;
-        return this;
-    }
-    public DistributedNetworkAction setCurrentMessage(int currentMessage)
-    {
-        this.currentMessage=currentMessage;
-        return this;
-    }
-
-    public DistributedNetworkAction(int actionCommand, @NonNull String param, @NonNull String extra,@NonNull String payload){
+    public DistributedNetworkAction(int currentMessage, int totalMessages,int actionCommand, @NonNull String param, @NonNull String extra,@NonNull String payload){
 
         if(areValidParameters(actionCommand, param, extra,payload )){
+
+            this.currentMessage=currentMessage;
+
+            this.totalMessages=totalMessages;
 
             this.actionCommand=actionCommand;
 
@@ -231,10 +223,10 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
                         actionCommand==Type.ANSWER_PING || actionCommand==Type.ANSWER_STORE || actionCommand==Type.FIND_NODE)
                         && extra.equals(DEFAULT_IGNORED) && payload.equals(DEFAULT_IGNORED)&& !param.equals(DEFAULT_IGNORED))
 
-                || ((actionCommand==Type.FIND_VALUE || actionCommand==Type.ANSWER_FIND_VALUE ) &&
-                        payload.equals(DEFAULT_IGNORED) && !extra.equals(DEFAULT_IGNORED) &&!extra.equals(DEFAULT_IGNORED))
+                || ((actionCommand==Type.FIND_VALUE ) &&
+                        payload.equals(DEFAULT_IGNORED) && !extra.equals(DEFAULT_IGNORED) &&!param.equals(DEFAULT_IGNORED))
 
-                || ((actionCommand==Type.ANSWER_FIND_VALUE) && !extra.equals(DEFAULT_IGNORED)  &&
+                || ((actionCommand==Type.ANSWER_FIND_VALUE ||actionCommand==Type.STORE) && !extra.equals(DEFAULT_IGNORED)  &&
                         !payload.equals(DEFAULT_IGNORED) &&!param.equals(DEFAULT_IGNORED))
 
                 || ((actionCommand==Type.ANSWER_FIND_NODE) && !param.equals(DEFAULT_IGNORED) &&
