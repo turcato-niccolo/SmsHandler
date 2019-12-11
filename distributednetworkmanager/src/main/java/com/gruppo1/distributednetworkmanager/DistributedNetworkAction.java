@@ -114,13 +114,17 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
     {
         this.nodeId=nodeId;
     }
-    public DistributedNetworkAction(int currentMessage, int totalMessages,int actionCommand, @NonNull String param, @NonNull String extra,@NonNull String payload){
+    public void setCurrentMessage(int currentMessage)
+    {
+        this.currentMessage=currentMessage;
+    }
+    public void setTotalMessages(int totalMessages)
+    {
+        this.totalMessages=totalMessages;
+    }
+    public DistributedNetworkAction(int actionCommand, @NonNull String param, @NonNull String extra,@NonNull String payload){
 
         if(areValidParameters(actionCommand, param, extra,payload )){
-
-            this.currentMessage=currentMessage;
-
-            this.totalMessages=totalMessages;
 
             this.actionCommand=actionCommand;
 
