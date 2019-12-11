@@ -1,6 +1,6 @@
 package com.gruppo1.distributednetworkmanager;
 
-public class KBucket extends Bucket<Node> {
+public class KBucket extends Bucket<Node<BinarySet>> {
     private int dimension;
     private int last;
     private Node[] elements;
