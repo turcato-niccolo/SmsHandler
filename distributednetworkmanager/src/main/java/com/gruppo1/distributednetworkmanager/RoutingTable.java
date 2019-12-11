@@ -58,4 +58,16 @@ public abstract class RoutingTable<B extends Bucket<Node>> {
      */
     public abstract Node[] getKClosest(Node node);
 
+    /**
+     *
+     * @param node node of which check presence in the RT
+     * @return true if present, false otherwise
+     */
+    public abstract boolean contains(Node node);
+
+    /**
+     * @param node Node to remove form the RT
+     */
+    public abstract void remove(Node node);
+
 }
