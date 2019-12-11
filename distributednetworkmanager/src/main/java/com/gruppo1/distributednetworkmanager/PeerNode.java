@@ -3,6 +3,9 @@ package com.gruppo1.distributednetworkmanager;
 import androidx.annotation.NonNull;
 
 import com.dezen.riccardo.smshandler.Peer;
+import com.dezen.riccardo.smshandler.SMSPeer;
+
+import java.util.BitSet;
 
 /**
  * @author Niccolo' Turcato
@@ -48,14 +51,6 @@ class PeerNode extends Peer<BinarySet> implements Node<BinarySet> {
     @Override
     public BinarySet getDistance(Node<BinarySet> node) {
         return binaryKey.getDistance(node.getKey());
-    }
-
-    /**
-     * @param node node of which calculate distance
-     * @return the distance of the two nodes in XOR metric
-     */
-    public int getDistanceInteger(Node<BinarySet> node) {
-        return binaryKey.getDistanceInteger(node.getKey());
     }
 
     /**
