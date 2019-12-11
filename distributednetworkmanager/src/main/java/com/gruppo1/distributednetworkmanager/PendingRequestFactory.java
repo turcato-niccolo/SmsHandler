@@ -3,6 +3,7 @@ package com.gruppo1.distributednetworkmanager;
 import com.dezen.riccardo.smshandler.Peer;
 import com.gruppo1.distributednetworkmanager.exceptions.InvalidRequestException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,12 +15,12 @@ public class PendingRequestFactory<P extends Peer>{
     private static final String INVALID_ACTION_ERR = "The provided Action is invalid, only Request " +
             "type Actions can be used.";
 
-    public PendingRequest<P> getPendingRequest(KadAction<P> startingAction, int requestCode)
+    public PendingRequest<P> getPendingRequest(int startingAction, int requestCode)
             throws InvalidRequestException{
         //Getting the type of the action and returning the appropriate PendingRequest implementation
-        switch(startingAction.getType()){
+        switch(startingAction){
             case KadAction.Request.INVITE:
-                return new InvitePendingRequest(startingAction, requestCode);
+                return new InvitePendingRequest(requestCode);
             case KadAction.Request.PING:
                 break;
                 //TODO rest of actions
@@ -32,7 +33,7 @@ public class PendingRequestFactory<P extends Peer>{
     private class InvitePendingRequest implements PendingRequest<P>{
         private P invited;
         private int myCode;
-        public InvitePendingRequest(KadAction<P> startingAction, int requestCode){
+        public InvitePendingRequest(int requestCode){
             myCode = requestCode;
             invited = startingAction.getDestination();
         }
@@ -43,8 +44,9 @@ public class PendingRequestFactory<P extends Peer>{
         }
 
         @Override
-        public void start() {
-
+        public List<KadAction<P>> start(KadAction<P> startingAction) {
+            invited = startingAction.getDestination();
+            return new ArrayList<KadAction<P>>();
         }
 
         /**
@@ -55,11 +57,13 @@ public class PendingRequestFactory<P extends Peer>{
          */
         @Override
         public List<KadAction<P>> nextStep(KadAction<P> action) {
+            //TODO if type matches, do the thing
+            if(action.getType)
             return null;
         }
 
         @Override
-        public void cancel() {
+        public List<KadAction<P>> cancel() {
 
         }
     }

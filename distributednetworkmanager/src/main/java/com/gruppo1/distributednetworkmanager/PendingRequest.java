@@ -12,8 +12,9 @@ public interface PendingRequest<P extends Peer>{
 
     /**
      * Method to start the PendingRequest
+     * @return A list of Actions to be performed following the startup of this Request, if any
      */
-    void start();
+    List<KadAction<P>> start(KadAction<P> action);
 
     /**
      * Method to perform the next step for this PendingRequest
@@ -24,6 +25,7 @@ public interface PendingRequest<P extends Peer>{
 
     /**
      * Method called to cancel a PendingRequest, further calls to this Request should do nothing
+     * @return A list of Actions to be performed following the cancellation of this Request, if any
      */
-    void cancel();
+    List<KadAction<P>> cancel();
 }

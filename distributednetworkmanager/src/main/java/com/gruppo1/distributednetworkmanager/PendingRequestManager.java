@@ -1,5 +1,6 @@
 package com.gruppo1.distributednetworkmanager;
 
+import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.smshandler.Peer;
 import com.gruppo1.distributednetworkmanager.exceptions.InvalidRequestException;
 
@@ -12,34 +13,62 @@ import java.util.List;
  * @author Riccardo De Zen
  */
 public class PendingRequestManager<P extends Peer>{
-    private int requestCode = 0;
-    private int activeRequests = 0;
     private List<PendingRequest<P>> currentRequests = new ArrayList<>();
+    private PendingRequestFactory<P> factory = new PendingRequestFactory<>();
 
-    public PendingRequestManager(){
-
+    /**
+     * Method to enqueue an Invitation Request
+     * @param invitingPeer the inviting Peer
+     * @param invitedPeer the invited Peer
+     * @return true if the Request was enqueued, false otherwise
+     */
+    public boolean enqueueInvite(P invitingPeer, P invitedPeer){
+        //TODO generate action
+        return enqueueRequest(inviteAction);
     }
 
-    public boolean enqueueInvite(){
-        //TODO parameters
-        //TODO generate actions
-        return false;
+    /**
+     * Method to enqueue a Ping Request
+     * @param pingingPeer
+     * @param pingedPeer
+     * @return true if the Request was enqueued, false otherwise
+     */
+    public boolean enqueuePing(P pingingPeer, P pingedPeer){
+        //TODO generate action
+        return enqueueRequest(pingAction);
     }
 
-    public boolean enqueuePing(){
-        return false;
+    /**
+     * Method to enqueue a Find Node Request
+     * @param askingPeer
+     * @param target
+     * @return true if the Request was enqueued, false otherwise
+     */
+    public boolean enqueueFindNode(P askingPeer, Node target){
+        //TODO generate action
+        return enqueueRequest(findNodeAction);
     }
 
-    public boolean enqueueFindNode(){
-        return false;
+    /**
+     * Method to enqueue a Find Value Request
+     * @param askingPeer
+     * @param key
+     * @return true if the Request was enqueued, false otherwise
+     */
+    public boolean enqueueFindValue(P askingPeer, String key){
+        //TODO generate action
+        return enqueueRequest(findValueAction);
     }
 
-    public boolean enqueueFindValue(){
-        return false;
-    }
-
-    public boolean enqueueStore(){
-        return false;
+    /**
+     * Method to enqueue a Store Request
+     * @param askingPeer
+     * @param resourceToStore
+     * @return true if the Request was enqueued, false otherwise
+     */
+    public boolean enqueueStore(P askingPeer, Resource resourceToStore){
+        //TODO generate action
+        return enqueueRequest(storeAction);
     }
 
     /**
@@ -51,22 +80,54 @@ public class PendingRequestManager<P extends Peer>{
     private boolean enqueueRequest(KadAction<P> action) throws InvalidRequestException{
         if(currentRequests.size() >= KadAction.MAX_CODE) return false;
         PendingRequestFactory<P> factory = new PendingRequestFactory<>();
-        PendingRequest<P> request = factory.getPendingRequest(action, requestCode);
+        PendingRequest<P> request = factory.getPendingRequest(action.getType(), generateRequestCode());
         currentRequests.add(request);
+        request.start(action);
         return true;
     }
 
     /**
-     * Method to continue the elaboration of a Pending Request
+     * Method to continue the elaboration of a Pending Request. Only Response type Actions will be
+     * attempted
      * @param action The action continuing the corresponding Request
      * @return true if a matching Request was found and executed, false otherwise
      */
     public boolean continueRequest(KadAction<P> action){
         int code = action.getCode();
+        if(!KadAction.isResponse(code)) return false;
+        List<KadAction<P>> followUp = new ArrayList<>();
         for(PendingRequest<P> request : currentRequests){
             if(request.getCode() == code){
-                request.nextStep(action);
+                performContinuation(request.nextStep(action));
+                return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Method to find the lowest available code to give to a new Request
+     * @return the lowest available code for a Request, -1 if no code is available (the queue is full)
+     */
+    private int generateRequestCode(){
+        int max = KadAction.MAX_CODE;
+        for(int i = 0; i < max; i++){
+            if(isCodeAvailable(i)) return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Method to find whether a code is available or not
+     * @param code the code whose availability is to be checked
+     * @return true if the code is available, false otherwise
+     */
+    private boolean isCodeAvailable(int code){
+        for(PendingRequest<P> request : currentRequests){
+            if(request.getCode() == code){
+                return false;
+            }
+        }
+        return true;
     }
 }
