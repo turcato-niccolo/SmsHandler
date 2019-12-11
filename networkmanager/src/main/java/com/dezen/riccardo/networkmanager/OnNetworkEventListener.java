@@ -9,7 +9,14 @@ import com.dezen.riccardo.smshandler.Message;
  */
 public interface OnNetworkEventListener<M extends Message, R extends Resource>{
     /**
-     * //TODO better onMessageReceived with generic types
+     * Method called when a Resource has been obtained through the network.
+     * @param resource the obtained Resource.
+     */
+    void onResourceObtained(R resource);
+
+    /**
+     * Method called when a message is received through the network.
+     * @param message the received Message.
      */
     void onMessageReceived(M message);
 }

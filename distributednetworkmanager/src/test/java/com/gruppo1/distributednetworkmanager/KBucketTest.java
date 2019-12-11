@@ -1,10 +1,11 @@
 package com.gruppo1.distributednetworkmanager;
 
-import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.BitSet;
 
 import static org.junit.Assert.*;
 
@@ -13,92 +14,101 @@ public class KBucketTest {
     KBucket bucket;
     PeerNode node;
     SMSPeer peer = new SMSPeer("+390425678102");
+    BinarySet set;
 
     @Before
-    public void Initialize()
-    {
+    public void Initialize() {
         bucket = new KBucket(dim);
-        node = new PeerNode(128, peer);
-        bucket.Add(node);
+        set = new BinarySet(BitSetUtils.hash(peer.getAddress(), 128));
+        node = new PeerNode(set);
+        bucket.add(node);
     }
 
     @Test
-    public void KBucket_ContainsPositiveTest()
-    {
-        assertTrue(bucket.Contains(node));
-        PeerNode otherNode = new PeerNode(128, new SMSPeer("+39348456789"));
+    public void KBucket_ContainsPositiveTest() {
+        assertTrue(bucket.contains(node));
+        set = new BinarySet(BitSetUtils.hash("+39348456789", 128));
+        Node anotherNode = new PeerNode(set);
 
-        assertFalse(bucket.Contains(otherNode));
+        assertFalse(bucket.contains(anotherNode));
     }
 
     @Test
-    public void KBucket_AddsPositiveTest(){
-        PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
+    public void KBucket_AddsPositiveTest() {
+        PeerNode a = new PeerNode(new BinarySet(BitSetUtils.hash("+393444464789", 128)));
 
-        assertTrue(bucket.Add(a));
-        assertTrue(bucket.Contains(a));
+        assertTrue(bucket.add(a));
+        assertTrue(bucket.contains(a));
     }
 
     @Test
     public void KBucket_RemovesPositiveTest() {
-        PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
+        PeerNode a = new PeerNode(new BinarySet(BitSetUtils.hash("+39348456789", 128)));
 
-        assertTrue(bucket.Add(a));
-        assertTrue(bucket.Contains(a));
-        assertTrue(bucket.Remove(a));
-        assertFalse(bucket.Contains(a));
+        assertTrue(bucket.add(a));
+        assertTrue(bucket.contains(a));
+        assertTrue(bucket.remove(a));
+        assertFalse(bucket.contains(a));
     }
 
     @Test
-    public void KBucket_GetsElementsPositiveTest(){
-        PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
-        PeerNode b = new PeerNode(128, new SMSPeer("+39348676789"));
-        PeerNode c = new PeerNode(128, new SMSPeer("+39568456789"));
+    public void KBucket_GetsElementsPositiveTest() {
+        PeerNode a = new PeerNode(new BinarySet(BitSetUtils.hash("+39348456789", 128)));
+        PeerNode b = new PeerNode(new BinarySet(BitSetUtils.hash("+39348676789", 128)));
+        PeerNode c = new PeerNode(new BinarySet(BitSetUtils.hash("+39568456789", 128)));
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a);
-        newBucket.Add(b);
-        newBucket.Add(c);
+        newBucket.add(a);
+        newBucket.add(b);
+        newBucket.add(c);
 
-        PeerNode[] result = newBucket.getElements();
+        Node[] result = newBucket.getElements();
 
-        assertTrue(result[0].equals(a));
-        assertTrue(result[1].equals(b));
-        assertTrue(result[2].equals(c));
+        assertEquals(result[0], a);
+        assertEquals(result[1], b);
+        assertEquals(result[2], c);
+    }
+
+    @Test
+    public void KBucket_AddAlreadyPresentTest(){
+        assertFalse(bucket.add(node));
     }
 
     @Test
     public void KBucket_RemovesKeepsSortedPositiveTest() {
-        PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
-        PeerNode b = new PeerNode(128, new SMSPeer("+39348676789"));
-        PeerNode c = new PeerNode(128, new SMSPeer("+39568456789"));
+        PeerNode a = new PeerNode(new BinarySet(BitSetUtils.hash("+39348456789", 128)));
+        PeerNode b = new PeerNode(new BinarySet(BitSetUtils.hash("+39348676789", 128)));
+        PeerNode c = new PeerNode(new BinarySet(BitSetUtils.hash("+39568456789", 128)));
+
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a);
-        newBucket.Add(b);
-        newBucket.Add(c);
+        newBucket.add(a);
+        newBucket.add(b);
+        newBucket.add(c);
 
-        newBucket.Remove(b);
+        newBucket.remove(b);
 
-        PeerNode[] elements = newBucket.getElements();
+        Node[] elements = newBucket.getElements();
 
         assertEquals(elements[0], a);
         assertEquals(elements[1], c);
     }
 
     @Test
-    public void KBucket_getOldestPositiveTest(){
-        PeerNode a = new PeerNode(128, new SMSPeer("+39348456789"));
-        PeerNode b = new PeerNode(128, new SMSPeer("+39348676789"));
-        PeerNode c = new PeerNode(128, new SMSPeer("+39568456789"));
+    public void KBucket_getOldestPositiveTest() {
+
+        PeerNode a = new PeerNode(new BinarySet(BitSetUtils.hash("+39348456789", 128)));
+        PeerNode b = new PeerNode(new BinarySet(BitSetUtils.hash("+39348676789", 128)));
+        PeerNode c = new PeerNode(new BinarySet(BitSetUtils.hash("+39568456789", 128)));
+
 
         KBucket newBucket = new KBucket(3);
 
-        newBucket.Add(a);
-        newBucket.Add(b);
-        newBucket.Add(c);
+        newBucket.add(a);
+        newBucket.add(b);
+        newBucket.add(c);
 
         assertEquals(a, newBucket.getOldest());
     }

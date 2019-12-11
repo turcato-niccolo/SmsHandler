@@ -9,106 +9,78 @@ import java.util.BitSet;
 
 /**
  * @author Niccolo' Turcato
- * Class that represents the Peer Node of DistributedNetwork
+ * Class that represents the Peer DistributedNetworkNode of DistributedNetwork
+ * Address is a Bitset of fixed length
  */
-class PeerNode extends Peer<BitSet> {
-    private Node networkNode;
-    private SMSPeer physicalPeer; //might be null depending from the used constructor
+class PeerNode extends Peer<BinarySet> implements Node<BinarySet> {
+    private BinarySet binaryKey;
 
     /**
-     * Constructor: creates an instance of Node, based on the SMSPeer address
-     * Considers all the digits (except the '+') generates the key with the public Hash method
-     * @param numBits number of bits which constitute the Key, must be multiple of 64 and >0
-     * @param buildingPeer the physical Peer on which this node is based
-     * @throws IllegalArgumentException if peer isn't valid or the numBit isn't multiple of 64
-     */
-    public PeerNode(int numBits, SMSPeer buildingPeer){
-        if(buildingPeer.isValid()) {
-                networkNode = new Node(numBits, Node.hash(buildingPeer.getAddress(), numBits));
-                physicalPeer = buildingPeer;
-        }
-        else throw new IllegalArgumentException("buildingPeer isn't a valid peer, see SMSPeer.isValid()");
-    }
-
-    /**
-     * Version of the constructor that initializes the key with the given value
+     * Constructor that initializes the key with the given value
+     *
      * @param buildingKey given value for the node's Key
-     * @param numBits number of bits that compose the key (must be > length of buildingKey)
-     *
-     * @throws IllegalArgumentException if the numBit isn't multiple of 64 or numBits <= buildingKey.length()
      */
-    public PeerNode(int numBits, @NonNull BitSet buildingKey){
-        networkNode = new Node(numBits, buildingKey);
-    }
-
-    /**
-     * @param peer the peer of which generate hashcode
-     * @param numBits number of bits that the hash code will be constituted of, must be multiple of 64 and >0
-     *
-     * @throws IllegalArgumentException if peer isn't valid or the numBit isn't multiple of 64
-     *
-     * @return the bitSet containing the hash of the peer's address, bitSet's length is a multiple of 64
-     */
-    public static BitSet hash(SMSPeer peer, int numBits){
-        if(peer.isValid()) {
-            return Node.hash(peer.getAddress(), numBits);
-        }
-        else throw new IllegalArgumentException("buildingPeer isn't a valid peer, see SMSPeer.isValid()");
+    public PeerNode(@NonNull BinarySet buildingKey) {
+        binaryKey = (BinarySet) buildingKey.clone();
     }
 
 
     /**
-     * @return key of the node (hashCode of the building peer calculated with static Hash)
+     * @return binary address of the node
      */
-    public BitSet getAddress() {
-        return networkNode.getKey();
+    public BinarySet getAddress() {
+        return (BinarySet) binaryKey.clone();
+    }
+
+    public BinarySet getKey(){
+        return (BinarySet) binaryKey.clone();
     }
 
 
     /**
      * @return number of bits that compose the BitSet key
      */
-    public int keyLength(){
-        return networkNode.keyLength();
+    public int keyLength() {
+        return binaryKey.keyLength();
     }
 
     /**
-     * @param other the Node for which calculate distance from this Node
-     * @return The distance of the Keys, calculated as XOR of BitSets
+     * @param node node of which calculate distance
+     * @return the distance of the two nodes in XOR metric
      */
-    public BitSet distanceFrom(PeerNode other){
-        return networkNode.distanceFrom(new Node(other.keyLength(), other.getAddress()));
-    }
-
-    /**
-     * @param other the Node for which calculate distance from this Node
-     * @return The distance of the Keys, calculated as XOR of BitSets
-     */
-    public BitSet distanceFrom(ResourceNode other){
-        return networkNode.distanceFrom(new Node(other.keyLength(), other.getAddress()));
+    @Override
+    public BinarySet getDistance(Node<BinarySet> node) {
+        return binaryKey.getDistance(node.getKey());
     }
 
     /**
      * @return a new PeerNode equal to this
      */
     @Override
-    public PeerNode clone() {
-        if(physicalPeer != null && physicalPeer.isValid())
-            return new PeerNode(keyLength(), physicalPeer);
-        else
-            return new PeerNode(keyLength(), networkNode.getKey());
+    public Object clone() {
+        return new PeerNode(binaryKey);
     }
 
     /**
-     *
      * @param other peer to confront
      * @return true if this peer and the other are equals, false otherwise
      */
     @Override
-    public boolean equals(Object other){
-        if(other instanceof PeerNode)
-            return this.getAddress().equals(((PeerNode)other).getAddress());
+    public boolean equals(Object other) {
+        if (other == null)
+            return false;
+        if (this == other)
+            return true;
+        if (other instanceof PeerNode)
+            return this.getAddress().equals(((PeerNode) other).getAddress());
         else return false;
+    }
+
+    /**
+     * @return true if this Peer node is to consider Valid, false otherwise
+     */
+    public boolean isValid() {
+        return binaryKey != null && binaryKey.keyLength() > 0;
     }
 
 }

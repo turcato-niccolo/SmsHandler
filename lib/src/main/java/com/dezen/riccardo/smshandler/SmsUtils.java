@@ -2,7 +2,6 @@ package com.dezen.riccardo.smshandler;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.provider.Telephony;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsMessage;
@@ -10,10 +9,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.room.Room;
-
-import com.dezen.riccardo.smshandler.database.SmsDatabase;
-import com.dezen.riccardo.smshandler.database.SmsEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,34 +49,6 @@ public class SmsUtils {
             mCursor.close();
         }
         return list;
-    }
-
-    /**
-     * Method to log the unread messages in the database.
-     * @param context The calling context, used to instantiate the database.
-     */
-    public static void logUnreadMessages(@NonNull Context context){
-        SmsDatabase db = Room.databaseBuilder(context, SmsDatabase.class, SMSHandler.UNREAD_SMS_DATABASE_NAME)
-                .enableMultiInstanceInvalidation()
-                .build();
-        new LogTask(db).execute();
-    }
-
-    //AsyncTask to access database since it cannot be accessed from main Thread
-    private static class LogTask extends AsyncTask<String, Integer, Void>{
-        private SmsDatabase db;
-        public LogTask(SmsDatabase db){
-            this.db = db;
-        }
-        @Override
-        protected Void doInBackground(String... strings) {
-            SmsEntity[] messages = db.access().loadAllSms();
-            for(SmsEntity sms : messages){
-                db.access().deleteSms(sms);
-                Log.e("Unread Message", sms.address+" "+sms.body);
-            }
-            return null;
-        }
     }
 
     /**
@@ -133,25 +100,45 @@ public class SmsUtils {
     /**
      * Method to compose the body of a message that passed isMessageValid
      */
-    static String composeMessage(String message, boolean urgent){
+    static String composeMessage(@NonNull String message, boolean urgent){
         return SMSHandler.APP_KEY + message + (urgent ? SMSHandler.WAKE_KEY : "");
+    }
+
+    /**
+     * @return a String containing the give messageBody without the library's specific keys
+     *
+     * @param messageBody the body of an sms message received through SMSHandler library
+     */
+    static String removeKeysFromMessageBody(@NonNull String messageBody){
+        if(messageBody.contains(SMSHandler.APP_KEY))
+            messageBody = messageBody.replace(SMSHandler.APP_KEY, "");
+        if(messageBody.contains(SMSHandler.WAKE_KEY))
+            messageBody = messageBody.replace(SMSHandler.WAKE_KEY, "");
+        return messageBody;
+    }
+
+    /**
+     * @return a new SMSMessage with body cleaned from library's keys
+     *
+     * @param message a received SmsMessage
+     */
+    static SMSMessage removeKeysFromMessageBody(@NonNull SMSMessage message) {
+        return new SMSMessage(message.getPeer(), removeKeysFromMessageBody(message.getData()));
     }
 
     /**
      * Methods to tell whether the message is pertinent to the app or not
      */
     static boolean isMessagePertinent(String body){
-        String messageHead = body.substring(0,3);
+        String messageHead = body.substring(0,SMSHandler.APP_KEY.length());
         return messageHead.equals(SMSHandler.APP_KEY);
     }
     static boolean isMessagePertinent(SMSMessage message){
         String messageBody = message.getData();
-        String messageHead = messageBody.substring(0,3);
-        return messageHead.equals(SMSHandler.APP_KEY);
+        return isMessagePertinent(messageBody);
     }
     static boolean isMessagePertinent(SmsMessage message){
         String messageBody = message.getMessageBody();
-        String messageHead = messageBody.substring(0,3);
-        return messageHead.equals(SMSHandler.APP_KEY);
+        return isMessagePertinent(messageBody);
     }
 }

@@ -1,10 +1,10 @@
 package com.gruppo1.distributednetworkmanager;
 
+import com.dezen.riccardo.smshandler.Peer;
+
 /**
  * @author Niccolo' Turcato
  * Structure of K-Bucket object based on the peer-to-peer network protocol Kademlia
- *
- *
  */
 public abstract class Bucket<T> {
     private int dimension;
@@ -16,7 +16,8 @@ public abstract class Bucket<T> {
         dimension = dim;
     }
 
-    public Bucket(){}
+    public Bucket() {
+    }
 
     /**
      * @param obj object of which verify presence in bucket
@@ -27,13 +28,13 @@ public abstract class Bucket<T> {
 
     /**
      * Added with stack logic, eventually replaces the one "on top"
+     *
      * @param obj object to add
      * @return true if it has been added, false otherwise
      */
     public abstract boolean add(T obj);
 
     /**
-     *
      * @param obj object to remove from bucket
      * @return true if obj has been removed, false otherwise
      */
