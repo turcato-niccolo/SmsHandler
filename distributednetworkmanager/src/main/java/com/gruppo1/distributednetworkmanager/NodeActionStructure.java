@@ -7,7 +7,7 @@ import com.dezen.riccardo.smshandler.SMSMessage;
 /**
  * @param <T> type of the params and Payload
  *            <p>
- *            Syntax: [ID] [HEADER:action code] [PARAM: node id] [EXTRA: resource?/resourceName] [Payload]
+ *            Syntax: [ID] [k/N] [HEADER:action code] [PARAM: node id] [EXTRA: resource?/resourceName] [Payload]
  *            (with separators)
  * @author Turcato
  */
@@ -33,6 +33,17 @@ public abstract class NodeActionStructure<T> {
      * @return the numeric code that identifies the action
      */
     abstract public int getAction();
+
+    /**
+     * Given that One could send N messages regarding the same Action (ID)
+     * @return the progressive number that indicates which message this is of the totality expected
+     */
+    abstract public int getProgress();
+
+    /**
+     * @return the number of Total messages expected for this Action (ID)
+     */
+    abstract public int getTotalExpectedMessages();
 
     /**
      * @return the first param of the command message
