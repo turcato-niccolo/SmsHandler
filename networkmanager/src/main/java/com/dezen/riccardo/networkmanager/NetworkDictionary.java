@@ -2,7 +2,6 @@ package com.dezen.riccardo.networkmanager;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.telephony.PhoneNumberUtils;
 
 import androidx.room.Room;
 
@@ -13,6 +12,7 @@ import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.Long.valueOf;
@@ -21,11 +21,16 @@ import static java.lang.Long.valueOf;
  * Class implementing Dictionary. Conceived as a double dictionary on SMSPeer and StringResource,
  * also allowing Peer ownership of Resources.
  * Due to trouble with testing android class. Lists have been used.
- * @author Riccardo De Zen, Giorgia Bortoletti
+ * @author Riccardo De Zen, Giorgia Bortoletti, Niccolo' Turcato
  */
 public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
 
     public static final String NETWORK_DICTIONARY_DATABASE_NAME = "NETWORK_DICTIONARY_DATABASE";
+    public static final String NETWORK_DICTIONARY_PEER_TABLE_NAME = "peerentity";
+    public static final String NETWORK_DICTIONARY_RESOURCE_TABLE_NAME = "resourceentity";
+    public static final String PEER_TABLE_ADDRESS_COLUMN_NAME = "address";
+    public static final String RESOURCE_TABLE_KEY_COLUMN_NAME = "key";
+    public static final String RESOURCE_TABLE_VALUE_COLUMN_NAME = "value";
 
     private Map<String, String> peers;
     private Map<String, String> resources;
@@ -70,7 +75,6 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     }
 
     /**
-     * @author Niccolo' Turcato
      * @param mayInterruptIfRunning true if the thread executing this task should be interrupted; otherwise, in-progress tasks are allowed to complete
      */
     private void cancelImportFromDatabase(boolean mayInterruptIfRunning)
@@ -80,7 +84,6 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     }
 
     /**
-     * @author Niccolo' Turcato
      * @return Returns true if this task was cancelled before it completed normally. False if task has not been canceled or if there is no database defined
      */
     private boolean importFromDatabaseIsCanceled()
@@ -102,7 +105,6 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     }
 
     /**
-     * @author Niccolo' Turcato
      * @param mayInterruptIfRunning true if the thread executing this task should be interrupted; otherwise, in-progress tasks are allowed to complete
      */
     private void cancelexportToDatabase(boolean mayInterruptIfRunning)
@@ -112,7 +114,6 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
     }
 
     /**
-     * @author Niccolo' Turcato
      * @return Returns true if this task was cancelled before it completed normally. False if task has not been canceled or if there is no database defined
      */
     private boolean exportToDatabaseIsCanceled()
@@ -349,13 +350,12 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * Returns an array containing all Peers. Peers are not copied singularly.
          * @return a list containing all Peers
          */
-        private SMSPeer[] getPeers() {
-            int numbersPeer = dictionaryDatabase.access().getAllPeers().length;
-            SMSPeer[] peerArray = new SMSPeer[numbersPeer];
+        private List<SMSPeer> getPeers() {
+            List<SMSPeer> peerList = new ArrayList<SMSPeer>();
             PeerEntity[] peerEntities = dictionaryDatabase.access().getAllPeers();
-            for(int i=0; i<numbersPeer; i++)
-                peerArray[i] = new SMSPeer(peerEntities[i].address);
-            return peerArray;
+            for(PeerEntity peer : peerEntities)
+                peerList.add(new SMSPeer(peer.address));
+            return peerList;
         }
 
         /**
@@ -393,13 +393,12 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * Returns an array containing all Resources. Resources are not copied singularly.
          * @return a list containing all Resources
          */
-        private StringResource[] getResources() {
-            int numbersResource = dictionaryDatabase.access().getAllResources().length;
-            StringResource[] resourceArray = new StringResource[numbersResource];
+        private List<StringResource> getResources() {
+            List<StringResource> resourceList = new ArrayList<StringResource>();
             ResourceEntity[] resourceEntities = dictionaryDatabase.access().getAllResources();
-            for(int i=0; i<numbersResource; i++)
-                resourceArray[i] = new StringResource(resourceEntities[i].keyName, resourceEntities[i].value);
-            return resourceArray;
+            for(ResourceEntity resource : resourceEntities)
+                resourceList.add(new StringResource(resource.keyName, resource.value));
+            return resourceList;
         }
 
         /**
@@ -428,8 +427,8 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         protected Long doInBackground(NetworkDictionaryDatabase ... database)
         {
             for (NetworkDictionaryDatabase db: database) {
-                SMSPeer[] smsPeers = db.getPeers();
-                StringResource[] stringResources = db.getResources();
+                List<SMSPeer> smsPeers = db.getPeers();
+                List<StringResource> stringResources = db.getResources();
 
                 //Could this be done better?
                 // Maybe return the arrays so that maps are handled in main thread?

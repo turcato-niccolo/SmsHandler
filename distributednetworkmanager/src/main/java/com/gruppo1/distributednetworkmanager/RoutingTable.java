@@ -1,6 +1,7 @@
 package com.gruppo1.distributednetworkmanager;
 
 /**
+ * @author Niccolo' Turcato
  * Structure for a container that realizes the routing table described by Kademlia P2P algorithm
  * It is built using as base DistributedNetworkNode, the Peer that builds the object. So each peer of the network has its own
  *
@@ -46,9 +47,15 @@ public abstract class RoutingTable<B extends Bucket<Node>> {
     public abstract boolean Add(Node node);
 
     /**
-     * @param resourceNode the generic DistributedNetworkNode with the same key as the resource
-     * @return the owner of the resource (equal keys) if present, otherwise the closest one
+     * @param node the generic Node of the network
+     * @return the closest Node in the rt if present, otherwise an invalid Node
      */
-    public abstract Node getOwner(Node resourceNode);
+    public abstract Node getClosest(Node node);
+
+    /**
+     * @param node the generic Node of the network
+     * @return the closest K Nodes in the rt if present, otherwise an invalid Node
+     */
+    public abstract Node[] getKClosest(Node node);
 
 }
