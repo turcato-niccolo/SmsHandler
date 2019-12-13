@@ -285,17 +285,21 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
     }
 
     @Override
-    public void setDestination(@NonNull Node node) {
+    public void setDestination(@NonNull SMSPeer peer) {
+        if(peer instanceof SMSPeer && peer.isValid()){
 
+            currentPeer =  peer;
+
+        }
     }
 
     @Override
-    public Node getDestination() {
-        return null;
+    public SMSPeer getDestination() {
+        return currentPeer;
     }
 
     @Override
-    public Node getSender() {
-        return null;
+    public SMSPeer getSender() {
+        return currentPeer;
     }
 }
