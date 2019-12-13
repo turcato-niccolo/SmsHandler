@@ -1,10 +1,7 @@
-package com.gruppo1.distributednetworkmanager;
+package com.gruppo1.distributednetworkmanager.pendingrequests;
 
 import com.dezen.riccardo.smshandler.Peer;
 import com.gruppo1.distributednetworkmanager.exceptions.InvalidRequestException;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Class defining the various PendingRequest behaviours
@@ -14,11 +11,20 @@ public class PendingRequestFactory<P extends Peer>{
 
     private static final String INVALID_ACTION_ERR = "The provided Action is invalid, only Request " +
             "type Actions can be used.";
+    private static final String CANCELED_REQUEST_ERR = "Tried to access a PendingRequest that already " +
+            "got canceled.";
 
-    public PendingRequest<P> getPendingRequest(int startingAction, int requestCode)
+    /**
+     * Method to get the appropriate PendingRequest implementation based on the desired Request
+     * @param requestType the type of Request
+     * @param requestCode the unique code for the Request
+     * @return the built PendingRequest
+     * @throws InvalidRequestException if the supplied requestType does not correspond to a Request
+     */
+    public PendingRequest<P> getPendingRequest(int requestType, int requestCode)
             throws InvalidRequestException{
         //Getting the type of the action and returning the appropriate PendingRequest implementation
-        switch(startingAction){
+        switch(requestType){
             case KadAction.Request.INVITE:
                 return new InvitePendingRequest(requestCode);
             case KadAction.Request.PING:
@@ -28,44 +34,6 @@ public class PendingRequestFactory<P extends Peer>{
                 throw new InvalidRequestException(INVALID_ACTION_ERR);
         }
         return null;
-    }
-
-    private class InvitePendingRequest implements PendingRequest<P>{
-        private P invited;
-        private int myCode;
-        public InvitePendingRequest(int requestCode){
-            myCode = requestCode;
-            invited = startingAction.getDestination();
-        }
-
-        @Override
-        public int getCode() {
-            return myCode;
-        }
-
-        @Override
-        public List<KadAction<P>> start(KadAction<P> startingAction) {
-            invited = startingAction.getDestination();
-            return new ArrayList<KadAction<P>>();
-        }
-
-        /**
-         * Method to perform the next step for this InvitePendingRequest
-         *
-         * @param action the Action triggering the step
-         * @return
-         */
-        @Override
-        public List<KadAction<P>> nextStep(KadAction<P> action) {
-            //TODO if type matches, do the thing
-            if(action.getType)
-            return null;
-        }
-
-        @Override
-        public List<KadAction<P>> cancel() {
-
-        }
     }
 
     /**

@@ -1,7 +1,8 @@
-package com.gruppo1.distributednetworkmanager;
+package com.gruppo1.distributednetworkmanager.pendingrequests;
 
 import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.smshandler.Peer;
+import com.gruppo1.distributednetworkmanager.Node;
 import com.gruppo1.distributednetworkmanager.exceptions.InvalidRequestException;
 
 import java.util.ArrayList;
@@ -17,9 +18,9 @@ public class PendingRequestManager<P extends Peer>{
     private PendingRequestFactory<P> factory = new PendingRequestFactory<>();
     private RequestPropagator requestPropagator;
     private NodeDataProvider nodeProvider;
-    private RequestResultListener resultListener;
+    private ActionResultListener resultListener;
 
-    public PendingRequestManager(RequestPropagator propagator, NodeDataProvider provider, RequestResultListener listener){
+    public PendingRequestManager(RequestPropagator propagator, NodeDataProvider provider, ActionResultListener listener){
         requestPropagator = propagator;
         nodeProvider = provider;
         resultListener = listener;
