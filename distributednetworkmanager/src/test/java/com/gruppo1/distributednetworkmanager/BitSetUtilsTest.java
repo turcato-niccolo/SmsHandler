@@ -1,16 +1,13 @@
 package com.gruppo1.distributednetworkmanager;
 
-import com.dezen.riccardo.smshandler.SMSPeer;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.BitSet;
 
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class BitSetUtilsTest {
     public static String[] params = new String[]{
@@ -23,6 +20,24 @@ public class BitSetUtilsTest {
     };
     private BitSet[] resultingKeysStringHash = new BitSet[params.length];
     private BitSet[] resultingKeysSHA = new BitSet[params.length];
+    private final String[] HEX ={
+            "00",
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "0a",
+            "0b",
+            "0c",
+            "0d",
+            "0e",
+            "0f"
+    };
 
 
     @Before
@@ -68,10 +83,11 @@ public class BitSetUtilsTest {
         }
     }
 
+    @Test
     public void PeerNode_compareDistancePositiveTest() {
         BitSet A;
         BitSet B = new BitSet(128); //000...000
-        B.set(0, 1); //...00011
+        B.set(0, 2); //...00011
         BitSet C = new BitSet(128); //000...000
         C.set(0); //...0001
         for (BitSet resultingKey : resultingKeysSHA) {
@@ -81,6 +97,29 @@ public class BitSetUtilsTest {
             assertEquals(BitSetUtils.compare(A, A), BitSetUtils.compare(BitSetUtils.distanceFrom(A, C), BitSetUtils.distanceFrom(A, C)));
         }
     }
+    @Test
+    public void PeerNode_BitSetToHexTest() {
+        BitSet A;
+        A = BitSet.valueOf(new byte[]{(new Integer(16)).byteValue()});
 
+        assertEquals("10", BitSetUtils.BitSetsToHex(A));
+
+        for (int i = 1; i < HEX.length; i++){
+            byte[] binary = new byte[]{(new Integer(i)).byteValue()};
+            A = BitSet.valueOf(binary);
+            assertEquals(HEX[i], BitSetUtils.BitSetsToHex(A));
+        }
+    }
+
+    @Test
+    public void PeerNode_HexToBitSetTest(){
+        BitSet A;
+
+        for (int i = 1; i < HEX.length; i++){
+            byte[] binary = new byte[]{(new Integer(i)).byteValue()};
+            A = BitSet.valueOf(binary);
+            assertEquals(A, BitSetUtils.decodeHexString(HEX[i]));
+        }
+    }
 
 }

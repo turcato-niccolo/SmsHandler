@@ -15,6 +15,15 @@ import java.util.List;
 public class PendingRequestManager<P extends Peer>{
     private List<PendingRequest<P>> currentRequests = new ArrayList<>();
     private PendingRequestFactory<P> factory = new PendingRequestFactory<>();
+    private RequestPropagator requestPropagator;
+    private NodeDataProvider nodeProvider;
+    private RequestResultListener resultListener;
+
+    public PendingRequestManager(RequestPropagator propagator, NodeDataProvider provider, RequestResultListener listener){
+        requestPropagator = propagator;
+        nodeProvider = provider;
+        resultListener = listener;
+    }
 
     /**
      * Method to enqueue an Invitation Request
@@ -98,7 +107,7 @@ public class PendingRequestManager<P extends Peer>{
         List<KadAction<P>> followUp = new ArrayList<>();
         for(PendingRequest<P> request : currentRequests){
             if(request.getCode() == code){
-                performContinuation(request.nextStep(action));
+                performFollowing(request.nextStep(action));
                 return true;
             }
         }

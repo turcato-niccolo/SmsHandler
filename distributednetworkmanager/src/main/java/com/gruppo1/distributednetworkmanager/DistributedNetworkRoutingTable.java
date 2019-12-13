@@ -1,8 +1,5 @@
 package com.gruppo1.distributednetworkmanager;
 
-import com.dezen.riccardo.smshandler.SMSPeer;
-
-
 public class DistributedNetworkRoutingTable extends RoutingTable<Bucket<Node>> {
 
     /**
@@ -28,12 +25,23 @@ public class DistributedNetworkRoutingTable extends RoutingTable<Bucket<Node>> {
         return true;
     }
 
-    /**
-     * @param resourceNode the generic DistributedNetworkNode with the same key as the resource
-     * @return the owner of the resource (equal keys) if present, otherwise the closest one
-     */
-    public Node getOwner(Node resourceNode) {
-        return new PeerNode(new BinarySet(BitSetUtils.hash("+39045678", 128)));
+    @Override
+    public boolean contains(Node node) {
+        return false;
     }
 
+    @Override
+    public void remove(Node node) {
+
+    }
+
+    @Override
+    public Node getClosest(Node node) {
+        return null;
+    }
+
+    @Override
+    public Node[] getKClosest(Node node) {
+        return new Node[0];
+    }
 }
