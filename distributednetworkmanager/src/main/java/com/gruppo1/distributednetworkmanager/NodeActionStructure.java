@@ -3,6 +3,7 @@ package com.gruppo1.distributednetworkmanager;
 import androidx.annotation.NonNull;
 
 import com.dezen.riccardo.smshandler.SMSMessage;
+import com.dezen.riccardo.smshandler.SMSPeer;
 
 /**
  * @param <T> type of the params and Payload
@@ -62,18 +63,18 @@ public abstract class NodeActionStructure<T> {
     abstract public T getPayload();
 
     /**
-     * @param node the Node to which forward the action command
+     * @param smsPeer the Node to which forward the action command
      */
-    abstract public void setDestination(@NonNull Node node);
+    abstract public void setDestination(@NonNull SMSPeer smsPeer);
 
     /**
      * @return the destination Node of the action, if available
      */
-    abstract public Node getDestination();
+    abstract public SMSPeer getDestination();
 
     /**
      * @return If available, the node that forwarded this action
      */
-    abstract public Node getSender();
+    abstract public SMSPeer getSender();
 
 }
