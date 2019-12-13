@@ -15,6 +15,7 @@ import com.dezen.riccardo.smshandler.SMSManager;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
+import java.util.BitSet;
 import java.util.Set;
 
 
@@ -38,10 +39,12 @@ public class DistributedNetworkManager implements NetworkInterface<SMSMessage, S
     private Set<Resource> resources;
     private boolean isPartOfNetwork;
     private SMSPeer myPeer;
+    private Node<BinarySet> myNode;
     private OnNetworkEventListener<SMSMessage, StringResource> listener;
     private CommunicationHandler<SMSMessage> handler;
     private Context context;
     private final String MANAGER_TAG = "DISTRIBUTED_MANAGER_TAG";
+    private final int ADDRESS_LENGHT = 128;
 
     /**
      * This version of the constructor should be used to insert the peer that builds the object
@@ -56,6 +59,10 @@ public class DistributedNetworkManager implements NetworkInterface<SMSMessage, S
         handler = SMSManager.getInstance(registerContext);
         handler.setReceiveListener(this);
         context = registerContext;
+        myPeer = firstPeer;
+        BinarySet myAddress = new BinarySet(BitSetUtils.hash(firstPeer.getAddress().getBytes(), ADDRESS_LENGHT));
+        myNode = new PeerNode(myAddress);
+        ((PeerNode)myNode).setPhysicalPeer(myPeer);
         isPartOfNetwork = false;
     }
 
@@ -77,6 +84,37 @@ public class DistributedNetworkManager implements NetworkInterface<SMSMessage, S
      */
     public void acceptInvite(SMSPeer inviter) {
         //TODO answer with a positive or negative action
+    }
+
+    /**
+     * Method to perform the bootstrap of the network
+     * Asks to the inviter Nodes to insert in its own rt
+     * @param inviter the Peer of the network who invited myPeer
+     */
+    private void bootstrap(PeerNode inviter){
+        BinarySet mySet = myNode.getKey();
+        NodeActionStructure searchAction;
+        for (int i = 0; i < ADDRESS_LENGHT; i++){
+
+            Node<BinarySet> searchNode = new PeerNode(getFurthest(mySet, ADDRESS_LENGHT-(i+1)));
+
+            //Create action Find Node,  forward to inviter
+            //No need to wait here, PendingRequestManager will add the searched node once there will be a response
+            //If the prManager wont receive response it will act accordingly to its setup
+        }
+    }
+
+    /**
+     * @param binaryAddress a given binary address of the network
+     * @param index the index of the first most significant bit to keep equal to the given address
+     * @return the furthest Binary address with the most significant bits (Starting from bit i) equal to given set
+     */
+    private BinarySet getFurthest(BinarySet binaryAddress, int index){
+        BitSet address = binaryAddress.getKey();
+        for (int i = 0; i < index; i++)
+            address.set(i, !address.get(i));
+
+        return new BinarySet(address);
     }
 
     /**
