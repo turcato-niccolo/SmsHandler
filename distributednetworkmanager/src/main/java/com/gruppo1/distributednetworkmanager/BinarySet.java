@@ -63,11 +63,14 @@ public class BinarySet implements Comparable<BinarySet>, Cloneable {
     }
 
     /**
-     * @param set node of which calculate distance
-     * @return the int distance in XOR metric
+     * @return the position of most significant bit at 1
      */
-    public int getDistanceInteger(@NonNull BinarySet set) {
-        return new BigInteger(getDistance(set).getKey().toByteArray()).intValue();
+    public int getFirstPositionOfOne() {
+        BitSet bitSet = getKey();
+        for(int i=bitSet.size()-1; i>=0; i--)
+            if(bitSet.get(i))
+                return i;
+        return -1;
     }
 
     /**

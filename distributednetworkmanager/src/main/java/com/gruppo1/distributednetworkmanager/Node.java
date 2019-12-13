@@ -12,6 +12,4 @@ public interface Node<T> extends Cloneable{
     T getKey();
 
     T getDistance(Node<T> node);
-
-    int getDistanceInteger(Node<T> node);
 }

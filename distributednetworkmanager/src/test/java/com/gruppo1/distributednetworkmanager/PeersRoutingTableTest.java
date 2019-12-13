@@ -12,12 +12,13 @@ public class PeersRoutingTableTest {
 
     public static final int NUMBER_BITS = 3;
     private NodesRoutingTable rt;
+    private Node nodeOwner;
 
     @Before
     public void createRoutingTable(){
         BitSet bitSet = BitSet.valueOf(new byte[]{(new Integer(7)).byteValue()});
-        Node testNode = new PeerNode(new BinarySet(bitSet)); //KEY = 111
-        rt = new NodesRoutingTable(testNode, NUMBER_BITS);
+        nodeOwner = new PeerNode(new BinarySet(bitSet)); //KEY = 111
+        rt = new NodesRoutingTable(nodeOwner, NUMBER_BITS);
     }
 
     @Test
@@ -61,17 +62,21 @@ public class PeersRoutingTableTest {
     @Test
     public void getBucket() {
         BitSet bitSet = BitSet.valueOf(new byte[]{(new Integer(5)).byteValue()});
-        Node newNode = new PeerNode(new BinarySet(bitSet)); //KEY = 101
-        rt.add(newNode);
+        PeerNode newNode = new PeerNode(new BinarySet(bitSet)); //KEY = 101
+        assertTrue(rt.add(newNode));
         KBucket bucket = rt.getBucket(1);
         assertEquals(newNode, bucket.getOldest());
+    }
+
+    @Test
+    public void getNodeOwner() {
+        assertEquals(nodeOwner, rt.getNodeOwner());
     }
 
     @Test
     public void getLocation() {
         BitSet bitSet = BitSet.valueOf(new byte[]{(new Integer((int)Math.pow(2,NUMBER_BITS)-2)).byteValue()});
         Node newNode = new PeerNode(new BinarySet(bitSet)); //KEY = 110
-        rt.getLocation(newNode);
         assertEquals(NUMBER_BITS-1, rt.getLocation(newNode));
     }
 
@@ -96,19 +101,23 @@ public class PeersRoutingTableTest {
         rt.remove(closestNode);
 
         Node[] nodes = new PeerNode[2];
-        bitSet = BitSet.valueOf(new byte[]{(new Integer(4)).byteValue()});
-        nodes[0] = new PeerNode(new BinarySet(bitSet)); //KEY = 100
+        bitSet = BitSet.valueOf(new byte[]{(new Integer(1)).byteValue()});
+        nodes[0] = new PeerNode(new BinarySet(bitSet)); //KEY = 001
         rt.add(nodes[0]);
 
-        bitSet = BitSet.valueOf(new byte[]{(new Integer(5)).byteValue()});
-        nodes[1] = new PeerNode(new BinarySet(bitSet)); //KEY = 101
+        bitSet = BitSet.valueOf(new byte[]{(new Integer(2)).byteValue()});
+        nodes[1] = new PeerNode(new BinarySet(bitSet)); //KEY = 010
         rt.add(nodes[1]);
 
-        bitSet = BitSet.valueOf(new byte[]{(new Integer(1)).byteValue()});
-        Node newNode = new PeerNode(new BinarySet(bitSet)); //KEY = 001
+        bitSet = BitSet.valueOf(new byte[]{(new Integer(4)).byteValue()});
+        Node newNode = new PeerNode(new BinarySet(bitSet)); //KEY = 100
         rt.add(newNode);
 
-        assertEquals(nodes, rt.getKClosest(nodes[0]));
+        bitSet = BitSet.valueOf(new byte[]{(new Integer(3)).byteValue()});
+        Node nodeTest = new PeerNode(new BinarySet(bitSet)); //KEY = 011
+
+        assertEquals(nodes, rt.getKClosest(nodeTest));
+
 
     }
 

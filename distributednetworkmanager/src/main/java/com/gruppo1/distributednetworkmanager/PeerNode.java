@@ -51,14 +51,6 @@ class PeerNode extends Peer<BinarySet> implements Node<BinarySet> {
     }
 
     /**
-     * @param node node of which calculate distance
-     * @return the distance of the two nodes in XOR metric
-     */
-    public int getDistanceInteger(Node<BinarySet> node) {
-        return binaryKey.getDistanceInteger(node.getKey());
-    }
-
-    /**
      * @return a new PeerNode equal to this
      */
     @Override
