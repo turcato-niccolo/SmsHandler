@@ -1,7 +1,6 @@
-package com.gruppo1.distributednetworkmanager;
+package com.gruppo1.distributednetworkmanager.pendingrequests;
 
-import com.gruppo1.distributednetworkmanager.exceptions.InvalidRequestException;
-import com.gruppo1.distributednetworkmanager.pendingrequests.PendingRequestFactory;
+import com.gruppo1.distributednetworkmanager.exceptions.InvalidActionException;
 
 import org.junit.Test;
 
@@ -35,7 +34,7 @@ public class PendingRequestFactoryTest {
 
     }
 
-    @Test(expected = InvalidRequestException.class)
+    @Test(expected = InvalidActionException.class)
     public void factoryWontBuildFromResponse(){
 
     }

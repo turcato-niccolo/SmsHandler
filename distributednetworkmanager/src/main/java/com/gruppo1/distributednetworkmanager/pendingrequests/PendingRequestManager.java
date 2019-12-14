@@ -3,7 +3,7 @@ package com.gruppo1.distributednetworkmanager.pendingrequests;
 import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.smshandler.Peer;
 import com.gruppo1.distributednetworkmanager.Node;
-import com.gruppo1.distributednetworkmanager.exceptions.InvalidRequestException;
+import com.gruppo1.distributednetworkmanager.exceptions.InvalidActionException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +87,7 @@ public class PendingRequestManager<P extends Peer>{
      * @return true if the PendingRequest was enqueued, false if the maximum amount of Requests has
      * been reached.
      */
-    private boolean enqueueRequest(KadAction<P> action) throws InvalidRequestException{
+    private boolean enqueueRequest(KadAction<P> action) throws InvalidActionException {
         if(currentRequests.size() >= KadAction.MAX_CODE) return false;
         PendingRequestFactory<P> factory = new PendingRequestFactory<>();
         PendingRequest<P> request = factory.getPendingRequest(action.getType(), generateRequestCode());

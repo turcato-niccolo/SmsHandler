@@ -89,25 +89,25 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
         //<#>[ID] [k/N] [ACTION] [PARAM] [EXTRA] [PAYLOAD]
 
         //<#>[ID] [1/1] PING [NODE_ID] [IGNORED] [IGNORED]
-        static final int PING = 0;
+        public static final int PING = 0;
         //<#>[ID] [1/1] <#>ANSWER_PING [NODE_ID] [IGNORED] [IGNORED]
-        static final int ANSWER_PING = 1;
+        public static final int ANSWER_PING = 1;
         //<#>[ID] [k/N] STORE [NODE_ID] [NAME] [VALUE]
-        static final int STORE = 2;
+        public static final int STORE = 2;
         //<#>[ID] [k/N] ANSWER_STORE [NODE_ID] [IGNORED] [IGNORED]
-        static final int ANSWER_STORE = 3;
+        public static final int ANSWER_STORE = 3;
         //<#>[ID] [k/N] FIND_NODE [NODE_ID] [IGNORED] [IGNORED]
-        static final int FIND_NODE = 4;
+        public static final int FIND_NODE = 4;
         //<#>[ID] [k/N] ANSWER_FIND_NODE [NODE_ID] [IGNORED] [PHONENUMBER]
-        static final int ANSWER_FIND_NODE = 5;
+        public static final int ANSWER_FIND_NODE = 5;
         //<#>[ID] [k/N] FIND_VALUE [NODE_ID] [YES_RESOURCE] [IGNORED]
-        static final int FIND_VALUE = 6;
+        public static final int FIND_VALUE = 6;
         //<#>[ID] [k/N] ANSWER_FIND_VALUE [NODE_ID] [NAME] [VALUE]
-        static final int ANSWER_FIND_VALUE = 7;
+        public static final int ANSWER_FIND_VALUE = 7;
         //<#>[ID] [k/N] INVITE [NODE_ID] [IGNORED] [IGNORED]
-        static final int INVITE = 8;
+        public static final int INVITE = 8;
         //<#>[ID] [k/N] ANSWER_INVITE [NODE_ID] [IGNORED] [IGNORED]
-        static final int ANSWER_INVITE = 9;
+        public static final int ANSWER_INVITE = 9;
     }
 
     public void setNodeId(int nodeId)

@@ -5,18 +5,18 @@ package com.gruppo1.distributednetworkmanager.exceptions;
  * Action type.
  * @author Riccardo De Zen
  */
-public class InvalidRequestException extends Throwable {
+public class InvalidActionException extends Throwable {
     /**
      * Default constructor
      */
-    public InvalidRequestException(){
+    public InvalidActionException(){
         super();
     }
 
     /**
      * @param message Error message for this Exception
      */
-    public InvalidRequestException(String message){
+    public InvalidActionException(String message){
         super(message);
     }
 }

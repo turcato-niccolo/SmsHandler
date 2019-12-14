@@ -1,7 +1,7 @@
 package com.gruppo1.distributednetworkmanager.pendingrequests;
 
 import com.dezen.riccardo.smshandler.Peer;
-import com.gruppo1.distributednetworkmanager.exceptions.InvalidRequestException;
+import com.gruppo1.distributednetworkmanager.exceptions.InvalidActionException;
 
 /**
  * Class defining the various PendingRequest behaviours
@@ -19,10 +19,10 @@ public class PendingRequestFactory<P extends Peer>{
      * @param requestType the type of Request
      * @param requestCode the unique code for the Request
      * @return the built PendingRequest
-     * @throws InvalidRequestException if the supplied requestType does not correspond to a Request
+     * @throws InvalidActionException if the supplied requestType does not correspond to a Request
      */
     public PendingRequest<P> getPendingRequest(int requestType, int requestCode)
-            throws InvalidRequestException{
+            throws InvalidActionException {
         //Getting the type of the action and returning the appropriate PendingRequest implementation
         switch(requestType){
             case KadAction.Request.INVITE:
@@ -31,7 +31,7 @@ public class PendingRequestFactory<P extends Peer>{
                 break;
                 //TODO rest of actions
             default:
-                throw new InvalidRequestException(INVALID_ACTION_ERR);
+                throw new InvalidActionException(INVALID_ACTION_ERR);
         }
         return null;
     }

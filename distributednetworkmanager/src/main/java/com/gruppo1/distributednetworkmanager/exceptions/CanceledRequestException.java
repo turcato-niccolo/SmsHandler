@@ -5,7 +5,11 @@ package com.gruppo1.distributednetworkmanager.exceptions;
  * @author Riccardo De Zen
  */
 public class CanceledRequestException extends IllegalStateException {
+    /**
+     * @param message Message for this Exception
+     */
     public CanceledRequestException(String message){
         super(message);
     }
+    public CanceledRequestException(){super();}
 }
