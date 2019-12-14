@@ -6,16 +6,21 @@ import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 /***
- * @author  Pardeep Kumar
+ * Class defining an Action travelling through a Kademlia Network.
+ * Syntax for a Message is as follows:
+ * [ACTION TYPE] [OPERATION ID] [PART K] [MAX PARTS] [PAYLOAD TYPE] [PAYLOAD]
+ * @author  Pardeep Kumar, Riccardo De Zen
  */
 
-public class KadAction extends DistributedNetworkAction<String> {
+public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSMessage> {
 
     private static final String SEPARATOR =  "\r";
+    private static final int DEFAULT_PARTS = 1;
+    private static final int DEFAULT_MAX_PARTS = 1;
+
+    private int currentMessage;
+    private int totalMessages;
     private int nodeId;
-    private final int DEFAULT_VALUE_FOR_MESSAGES=1;
-    private int currentMessage=DEFAULT_VALUE_FOR_MESSAGES;
-    private int totalMessages=DEFAULT_VALUE_FOR_MESSAGES;
     private int actionCommand;
     private String param;
     private String extra;
@@ -36,93 +41,107 @@ public class KadAction extends DistributedNetworkAction<String> {
 
     public static final String DEFAULT_IGNORED = " ";
 
-    public static class Type {
+    /**
+     * Enum for Action type
+     */
+    public enum ActionType {
+        INVALID(-1),
+        //Codes should be even for Requests, odd for Responses
+        PING(0),
+        PING_ANSWER(1),
+        INVITE(2),
+        INVITE_ANSWER(3),
+        STORE(4),
+        STORE_ANSWER(5),
+        FIND_NODE(6),
+        FIND_NODE_ANSWER(7),
+        FIND_VALUE(8),
+        FIND_VALUE_ANSWER(9);
+
+        private final int code;
 
         /**
-         * @param action the int value to be checked
-         * @return true if the int matches an action, false if not
+         * Constructor. Used only by enum.
+         * @param code the value for code field.
          */
-
-        static private boolean isValid(int action) {
-
-            return action >= MIN_ACTION && action <= MAX_ACTION;
-
-        }
-
-
-        /**
-         * @param action the int value to be checked
-         * @return true if the given action uses the "PARAM" part of the message
-         */
-
-        static private boolean usesParam(int action) {
-
-            return isValid(action);
-
-        }
-
-
-        /**
-         * @param action the int value to be checked
-         * @return true if the given action uses the "EXTRA" part of message
-         */
-
-        static private boolean usesExtra(int action) {
-
-            return action == FIND_VALUE || action==ANSWER_FIND_VALUE || action==STORE;
-
+        ActionType(int code){
+            this.code = code;
         }
 
         /**
-         * @param action the int value to be checked
-         * @return true if the given action uses the "PAYLOAD" part of message
+         * @return the numerical value for the instance
          */
-
-        static private boolean usesPayload(int action) {
-
-            return action == FIND_VALUE || action==ANSWER_FIND_VALUE || action==STORE;
-
+        public int getCode() {
+            return code;
         }
 
-        static private final int MIN_ACTION = 0;
-        static private final int MAX_ACTION = 9;
-        //<#>[ID] [k/N] [ACTION] [PARAM] [EXTRA] [PAYLOAD]
+        /**
+         * @return true if this is a Request Action type, false if it is a Response type
+         */
+        public boolean isRequest(){
+            return (code >= 0) && (code % 2 == 0);
+        }
 
-        //<#>[ID] [1/1] PING [NODE_ID] [IGNORED] [IGNORED]
-        static final int PING = 0;
-        //<#>[ID] [1/1] <#>ANSWER_PING [NODE_ID] [IGNORED] [IGNORED]
-        static final int ANSWER_PING = 1;
-        //<#>[ID] [k/N] STORE [NODE_ID] [NAME] [VALUE]
-        static final int STORE = 2;
-        //<#>[ID] [k/N] ANSWER_STORE [NODE_ID] [IGNORED] [IGNORED]
-        static final int ANSWER_STORE = 3;
-        //<#>[ID] [k/N] FIND_NODE [NODE_ID] [IGNORED] [IGNORED]
-        static final int FIND_NODE = 4;
-        //<#>[ID] [k/N] ANSWER_FIND_NODE [NODE_ID] [IGNORED] [PHONENUMBER]
-        static final int ANSWER_FIND_NODE = 5;
-        //<#>[ID] [k/N] FIND_VALUE [NODE_ID] [YES_RESOURCE] [IGNORED]
-        static final int FIND_VALUE = 6;
-        //<#>[ID] [k/N] ANSWER_FIND_VALUE [NODE_ID] [NAME] [VALUE]
-        static final int ANSWER_FIND_VALUE = 7;
-        //<#>[ID] [k/N] INVITE [NODE_ID] [IGNORED] [IGNORED]
-        static final int INVITE = 8;
-        //<#>[ID] [k/N] ANSWER_INVITE [NODE_ID] [IGNORED] [IGNORED]
-        static final int ANSWER_INVITE = 9;
+        /**
+         * @return true if this is a Request Action type, false if it is a Response type
+         */
+        public boolean isResponse(){
+            return (code >= 0) && (code % 2 != 0);
+        }
+
+        /**
+         * @param code the code for the Action
+         * @return the ActionType with the corresponding code, or INVALID if an invalid code is passed.
+         */
+        public static ActionType getTypeFromVal(int code){
+            for(ActionType actionType : ActionType.values()){
+                if(actionType.code == code) return actionType;
+            }
+            return INVALID;
+        }
     }
 
-    public void setNodeId(int nodeId)
-    {
-        this.nodeId=nodeId;
+    /**
+     * Enum for type of content attached to the Action, if any
+     */
+    public enum ContentType {
+
+        INVALID(-1),
+        EMPTY(0),
+        PEER_ADDRESS(1),
+        NODE_ID(2),
+        RESOURCE(3);
+
+        private final int code;
+
+        /**
+         * Constructor. Used only by enum.
+         * @param code the value for code field.
+         */
+        ContentType(int code){
+            this.code = code;
+        }
+
+        /**
+         * @return the numerical value for the instance.
+         */
+        public int getCode() {
+            return code;
+        }
+
+        /**
+         * @param code the code for the Action
+         * @return the ActionType with the corresponding code, or invalid if an invalid code is passed.
+         */
+        public static ContentType getTypeFromCode(int code){
+            for(ContentType contentType : ContentType.values()){
+                if(contentType.code == code) return contentType;
+            }
+            return INVALID;
+        }
     }
-    public void setCurrentMessage(int currentMessage)
-    {
-        this.currentMessage=currentMessage;
-    }
-    public void setTotalMessages(int totalMessages)
-    {
-        this.totalMessages=totalMessages;
-    }
-    public KadAction(int actionCommand, @NonNull String param, @NonNull String extra, @NonNull String payload){
+
+    private KadAction(@NonNull ActionType actionType, int id, int part, int maxParts, @NonNull String payload){
 
         if(areValidParameters(actionCommand, param, extra,payload )){
 
@@ -215,32 +234,17 @@ public class KadAction extends DistributedNetworkAction<String> {
 
     }
 
-    public boolean areValidParameters(int actionType, String param, String extra,String payload)
-    {
-     return Type.isValid(actionType) && (param.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType)) &&
-        (extra.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType))&&(payload.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType));
-    }
     @Override
     public boolean isValid() {
-        return currentPeerNode !=null && (
-                ((actionCommand == Type.INVITE || actionCommand == Type.ANSWER_INVITE || actionCommand==Type.PING ||
-                        actionCommand==Type.ANSWER_PING || actionCommand==Type.ANSWER_STORE || actionCommand==Type.FIND_NODE)
-                        && extra.equals(DEFAULT_IGNORED) && payload.equals(DEFAULT_IGNORED)&& !param.equals(DEFAULT_IGNORED))
+        return false;
+    }
 
-                || ((actionCommand==Type.FIND_VALUE ) &&
-                        payload.equals(DEFAULT_IGNORED) && !extra.equals(DEFAULT_IGNORED) &&!param.equals(DEFAULT_IGNORED))
-
-                || ((actionCommand==Type.ANSWER_FIND_VALUE ||actionCommand==Type.STORE) && !extra.equals(DEFAULT_IGNORED)  &&
-                        !payload.equals(DEFAULT_IGNORED) &&!param.equals(DEFAULT_IGNORED))
-
-                || ((actionCommand==Type.ANSWER_FIND_NODE) && !param.equals(DEFAULT_IGNORED) &&
-                        !payload.equals(DEFAULT_IGNORED) && extra.equals(DEFAULT_IGNORED))
-
-                );
+    public boolean areValidParameters(int i, String s1, String s2, String s3){
+        return false;
     }
 
     @Override
-    public SMSMessage generateMessage() {
+    public SMSMessage toMessage() {
         if (isValid()){
             String body=nodeId+SEPARATOR+currentMessage+SEPARATOR+totalMessages+SEPARATOR+
                     actionCommand+SEPARATOR+param+SEPARATOR+extra+SEPARATOR+payload;
@@ -249,32 +253,26 @@ public class KadAction extends DistributedNetworkAction<String> {
         return null;
     }
 
-    @Override
     public String getActionID() {
         return Integer.toString(nodeId);
     }
 
-    @Override
     public int getAction() {
         return actionCommand;
     }
 
-    @Override
     public int getProgress() {
         return currentMessage;
     }
 
-    @Override
     public int getTotalExpectedMessages() {
         return totalMessages;
     }
 
-    @Override
     public String getParam() {
         return param;
     }
 
-    @Override
     public String getExtra() {
         return extra;
     }
@@ -284,7 +282,6 @@ public class KadAction extends DistributedNetworkAction<String> {
         return payload;
     }
 
-    @Override
     public void setDestination(@NonNull SMSPeer peer) {
         if(peer instanceof SMSPeer && peer.isValid()){
 
@@ -293,13 +290,12 @@ public class KadAction extends DistributedNetworkAction<String> {
         }
     }
 
-    @Override
     public SMSPeer getDestination() {
         return currentPeer;
     }
 
     @Override
-    public SMSPeer getSender() {
+    public SMSPeer getPeer() {
         return currentPeer;
     }
 }
