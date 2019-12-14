@@ -142,96 +142,55 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     }
 
     private KadAction(@NonNull ActionType actionType, int id, int part, int maxParts, @NonNull String payload){
-
         if(areValidParameters(actionCommand, param, extra,payload )){
-
             this.actionCommand=actionCommand;
-
             this.param=param;
-
             this.extra=extra;
-
             this.payload=extra;
-
         }
         else throw new IllegalArgumentException(NOT_FORMATTED_PARAMS);
-
     }
     public KadAction(@NonNull SMSMessage buildingMessage){
-
         String messageBody = buildingMessage.getData();
-
         String[] parameteres = messageBody.split(SEPARATOR);
-
         if(buildingMessage.getPeer() != null && buildingMessage.getPeer().isValid())
-
             currentPeer = buildingMessage.getPeer();
-
         if(parameteres.length == TOTAL_PARAMS){
-
             int actionType;
-
             try {
-
                 actionType = Integer.parseInt(parameteres[ACTION_POSITION]);
-
             }
-
             catch (NumberFormatException e){
-
                 throw new IllegalArgumentException(e.getMessage() + "\n" + ACTION_CODE_NOT_FOUND_ERROR_MSG);
-
             }
             int nodeId;
             try {
-
                 nodeId = Integer.parseInt(parameteres[ID_POSITION]);
-
             }
-
             catch (NumberFormatException e) {
-
                 throw new IllegalArgumentException(e.getMessage() + "\n" + ID_NOT_FOUND_ERROR_MSG);
-
             }
             int totalMessages;
             try {
-
                 totalMessages = Integer.parseInt(parameteres[TOTAL_MESSAGES_POSITION]);
-
             }
-
             catch (NumberFormatException e) {
-
                 throw new IllegalArgumentException(e.getMessage() + "\n" + TOTAL_MESSAGES_NOT_FOUND_ERROR_MSG);
-
             }
             int currentMessage;
             try {
-
                 currentMessage = Integer.parseInt(parameteres[CURRENT_MESSAGE_POSITION]);
-
             }
-
             catch (NumberFormatException e) {
-
                 throw new IllegalArgumentException(e.getMessage() + "\n" + CURRENT_MESSAGE_NOT_FOUND_ERROR_MSG);
-
             }
             if (areValidParameters(actionType, parameteres[PARAM_POSITION], parameteres[EXTRA_POSITION],parameteres [PAYLOAD_POSITION])){
-
                 actionCommand = actionType;
-
                 param = parameteres[PARAM_POSITION];
-
                 extra = parameteres[EXTRA_POSITION];
-
             }
-
         }
-
         else throw new IllegalArgumentException(FORMATTED_ACTION_NOT_FOUND_ERROR_MSG);
-
     }
 
     @Override
@@ -284,9 +243,7 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
 
     public void setDestination(@NonNull SMSPeer peer) {
         if(peer instanceof SMSPeer && peer.isValid()){
-
             currentPeer =  peer;
-
         }
     }
 
