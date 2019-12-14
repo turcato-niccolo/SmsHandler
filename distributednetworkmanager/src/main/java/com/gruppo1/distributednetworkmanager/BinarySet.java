@@ -62,6 +62,17 @@ public class BinarySet implements Comparable<BinarySet>, Cloneable {
     }
 
     /**
+     * @return the position of most significant bit at 1
+     */
+    public int getFirstPositionOfOne() {
+        BitSet bitSet = getKey();
+        for(int i=bitSet.size()-1; i>=0; i--)
+            if(bitSet.get(i))
+                return i;
+        return -1;
+    }
+
+    /**
      * @return the BitSet key
      */
     public BitSet getKey() {
