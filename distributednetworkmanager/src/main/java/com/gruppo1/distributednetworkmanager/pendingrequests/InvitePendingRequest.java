@@ -1,51 +1,61 @@
 package com.gruppo1.distributednetworkmanager.pendingrequests;
 
-import com.gruppo1.distributednetworkmanager.exceptions.CanceledRequestException;
+import androidx.annotation.NonNull;
+
+import com.dezen.riccardo.smshandler.SMSPeer;
+import com.gruppo1.distributednetworkmanager.DistributedNetworkAction;
+import com.gruppo1.distributednetworkmanager.RequestResultListener;
+import com.gruppo1.distributednetworkmanager.exceptions.InvalidActionException;
 
 import java.util.List;
 
-public class InvitePendingRequest implements PendingRequest {
-    private final ANSWER_CODE = KadAction...;
-    private P invited;
-    private int myCode;
-    private boolean canceled = false;
+public class InvitePendingRequest implements PendingRequest<SMSPeer>{
 
-    public InvitePendingRequest(int requestCode){
-        myCode = requestCode;
-        invited = startingAction.getDestination();
-    }
+    private static final String CON_ERR = "Tried to initialize Ping Request with a different Request Type: ";
+    private static final String INVITE_ACCEPTED = "1";
 
-    @Override
-    public int getCode() {
-        return myCode;
-    }
+    private DistributedNetworkAction inviteAction;
+    private RequestResultListener<SMSPeer> resultListener;
 
-    @Override
-    public List<KadAction<P>> start(KadAction<P> startingAction) {
-        if(canceled) throw new CanceledRequestException();
-        invited = startingAction.getDestination();
-        return null;
+    public InvitePendingRequest(@NonNull DistributedNetworkAction action, @NonNull RequestResultListener<SMSPeer> listener) throws InvalidActionException {
+        if(action.getAction() != DistributedNetworkAction.Type.INVITE)
+            throw new InvalidActionException();
+        inviteAction = action;
+        resultListener = listener;
     }
 
     /**
-     * Method to perform the next step for this InvitePendingRequest
-     *
-     * @param action the Action triggering the step
-     * @return
+     * @return the unique Code for this PendingRequest
      */
     @Override
-    public List<KadAction<P>> nextStep(KadAction<P> action) {
-        if(canceled) return null;
-        //TODO if type matches, do the thing
-        if(action.getType == INVITE_ANSWER && peer_corresponds){
-            //call on listener cuz we done here boyz
-        }
-        return null;
+    public int getCode() {
+        return Integer.parseInt(inviteAction.getActionID());
     }
 
+    /**
+     * @param action an Action
+     * @return true if the given action can be used by the Request (i.e. same type and code) false
+     * otherwise.
+     */
     @Override
-    public List<KadAction<P>> cancel() {
-        //call on listener for invite failed???
+    public boolean isPertinent(DistributedNetworkAction action){
+        return DistributedNetworkAction.Type.ANSWER_INVITE == action.getAction() &&
+                action.getActionID().equals(inviteAction.getActionID()) &&
+                action.getSender().equals(inviteAction.getDestination());
+    }
+
+    /**
+     * Method to perform the next step for this Invite Request.
+     * If the Result came back, then the User answered to the invitation, and no further Action is needed.
+     *
+     * @param action the Action triggering the step
+     * @return null
+     */
+    @Override
+    public List<DistributedNetworkAction> nextStep(DistributedNetworkAction action) {
+        if(!isPertinent(action)) return null;
+        boolean inviteAccepted = action.getPayload().equals(INVITE_ACCEPTED);
+        resultListener.onInviteResult(action.getSender(), inviteAccepted);
         return null;
     }
 }

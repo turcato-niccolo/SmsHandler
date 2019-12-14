@@ -1,28 +1,32 @@
 package com.gruppo1.distributednetworkmanager.pendingrequests;
 
+import androidx.annotation.NonNull;
+
+import com.dezen.riccardo.smshandler.SMSPeer;
 import com.gruppo1.distributednetworkmanager.DistributedNetworkAction;
-import com.gruppo1.distributednetworkmanager.exceptions.CanceledRequestException;
+import com.gruppo1.distributednetworkmanager.RequestResultListener;
 import com.gruppo1.distributednetworkmanager.exceptions.InvalidActionException;
 
 import java.util.List;
 
-class PingPendingRequest implements PendingRequest {
+class PingPendingRequest implements PendingRequest<SMSPeer>{
 
     private static final String CON_ERR = "Tried to initialize Ping Request with a different Request Type: ";
 
     private final DistributedNetworkAction pingAction;
-
-    private boolean canceled = false;
+    private final RequestResultListener<SMSPeer> resultListener;
 
     /**
      * Default constructor
      * @param action the Action from which to build this PendingRequest
+     * @param listener the listener to this Request's Result
      * @throws InvalidActionException if the Action is not a Ping Action
      */
-    public PingPendingRequest(DistributedNetworkAction action, ) throws InvalidActionException{
+    public PingPendingRequest(@NonNull DistributedNetworkAction action, @NonNull RequestResultListener<SMSPeer> listener) throws InvalidActionException{
         if(action.getAction() != DistributedNetworkAction.Type.PING)
             throw new InvalidActionException(CON_ERR);
         pingAction = action;
+        resultListener = listener;
     }
 
     /**
@@ -34,8 +38,8 @@ class PingPendingRequest implements PendingRequest {
     }
 
     /**
-     * @return true if the given action can be used to continue the Request (i.e. appropriate type
-     * and code), and false otherwise.
+     * @return true if the given action can be used to continue the Request, false otherwise. The action
+     * can be used if Type and ID match, and if this request hasn't been canceled yet.
      */
     @Override
     public boolean isPertinent(DistributedNetworkAction action){
@@ -45,30 +49,16 @@ class PingPendingRequest implements PendingRequest {
     }
 
     /**
-     * Method called to cancel a PendingRequest, further calls to this Request's nextStep()
-     * will return null
-     *
-     * @return A list of Actions to be performed following the cancellation of this Request, null if list
-     * would be empty
-     */
-    @Override
-    public List<DistributedNetworkAction> cancel() {
-        canceled = true;
-        return null;
-    }
-
-    /**
      * Method to perform the next step for this PendingRequest. Receiving a response is already
      *
      * @param action the Action triggering the step
-     * @return a List containing the Actions that should be performed following the step, null if list
-     * would be empty
+     * @return null
      */
     @Override
     public List<DistributedNetworkAction> nextStep(DistributedNetworkAction action) {
-        if(canceled) throw new CanceledRequestException();
         if(!isPertinent(action)) return null;
-
+        //The Ping, one way or another, came back, so the result is positive and no further Actions are needed
+        resultListener.onPingResult(action.getSender(), true);
         return null;
     }
 }

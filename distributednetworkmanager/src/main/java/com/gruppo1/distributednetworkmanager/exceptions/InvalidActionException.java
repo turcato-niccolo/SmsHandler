@@ -5,7 +5,7 @@ package com.gruppo1.distributednetworkmanager.exceptions;
  * Action type.
  * @author Riccardo De Zen
  */
-public class InvalidActionException extends Throwable {
+public class InvalidActionException extends IllegalArgumentException {
     /**
      * Default constructor
      */
