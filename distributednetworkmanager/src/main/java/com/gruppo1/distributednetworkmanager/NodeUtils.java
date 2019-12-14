@@ -11,9 +11,9 @@ import java.util.BitSet;
  * Uses SHA-1 Hashing from class BitSetUtils
  */
 class NodeUtils {
-    private static String KEY_LENGTH_INVALID_MSG = "invalid key length, must be > 0 && <=160";
-    private static String PEER_INVALID_MSG = "invalid or null Peer";
-    private static String RESOURCE_INVALID_MSG = "invalid or null Resource";
+    private final static String KEY_LENGTH_INVALID_MSG = "invalid key length, must be > 0 && <=160";
+    private final static String PEER_INVALID_MSG = "invalid or null Peer";
+    private final static String RESOURCE_INVALID_MSG = "invalid or null Resource";
 
     /**
      * @param peer      the peer for which generate the binary key
