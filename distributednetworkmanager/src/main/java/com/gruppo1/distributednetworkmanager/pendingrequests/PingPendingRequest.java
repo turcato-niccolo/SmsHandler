@@ -18,8 +18,8 @@ class PingPendingRequest implements PendingRequest<SMSPeer>{
 
     /**
      * Default constructor
-     * @param action the Action from which to build this PendingRequest
-     * @param listener the listener to this Request's Result
+     * @param action the Action from which to build this PendingRequest. Must not be null
+     * @param listener the listener to this Request's Result. Must not be null.
      * @throws InvalidActionException if the Action is not a Ping Action
      */
     public PingPendingRequest(@NonNull DistributedNetworkAction action, @NonNull RequestResultListener<SMSPeer> listener) throws InvalidActionException{
