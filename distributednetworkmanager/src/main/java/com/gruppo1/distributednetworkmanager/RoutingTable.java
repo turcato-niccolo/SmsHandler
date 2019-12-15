@@ -34,7 +34,7 @@ package com.gruppo1.distributednetworkmanager;
  * @author Niccolò Turcato
  * @author Giorgia Bortoletti (some fixes)
  */
-public abstract class RoutingTable<B extends Bucket<Node<BinarySet>>> {
+public abstract class RoutingTable<B extends Bucket<Node>> {
 
     /**
      * @param node Node to add

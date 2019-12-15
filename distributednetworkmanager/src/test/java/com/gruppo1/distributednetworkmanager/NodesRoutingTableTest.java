@@ -2,7 +2,7 @@ package com.gruppo1.distributednetworkmanager;
 
 import org.junit.Before;
 import org.junit.Test;
-
+import java.util.ArrayList;
 import java.util.BitSet;
 import static org.mockito.Mockito.*;
 
@@ -30,6 +30,27 @@ public class NodesRoutingTableTest {
         rt = new NodesRoutingTable(nodeOwner, NUMBER_BITS);
     }
 
+    /**
+     * Calculating distance of node respect of nodeOwner using getDistance of PeerNode
+     * @param nodeOwner
+     * @param node
+     * @return BinarySet represents distance between two parameters
+     */
+    private BinarySet getDistancePeerNode(Node<BinarySet> nodeOwner, Node<BinarySet> node){
+        return new PeerNode(nodeOwner.getKey()).getDistance(node);
+    }
+
+    /**
+     * Calculating distance of node respect of nodeOwner using getDistance of ResourceNode
+     * @param nodeOwner
+     * @param node
+     * @return BinarySet represents distance between two parameters
+     */
+    private BinarySet getDistanceResourceNode(Node<BinarySet> nodeOwner, Node<BinarySet> node){
+        return new ResourceNode(nodeOwner.getKey(), "").getDistance(node);
+    }
+
+
     @Test
     public void add() {
         bitSet = BitSet.valueOf(new byte[]{(new Integer(1)).byteValue()}); //KEY = 001
@@ -38,10 +59,6 @@ public class NodesRoutingTableTest {
         when(nodeOwner.getDistance(node)).thenReturn(distance);
 
         assertTrue(rt.add(node));
-    }
-
-    private BinarySet getDistancePeerNode(Node<BinarySet> nodeOwner, Node<BinarySet> node){
-        return new PeerNode(nodeOwner.getKey()).getDistance(node);
     }
 
     @Test
@@ -143,33 +160,101 @@ public class NodesRoutingTableTest {
 
         distance =  getDistancePeerNode(referenceNode, closestNode);
         when(referenceNode.getDistance(closestNode)).thenReturn(distance);
+        distance =  getDistancePeerNode(referenceNode, node);
+        when(referenceNode.getDistance(node)).thenReturn(distance);
+        distance =  getDistancePeerNode(referenceNode, referenceNode);
+        when(referenceNode.getDistance(referenceNode)).thenReturn(distance);
 
-        assertEquals(closestNode.getKey(), rt.getClosest(referenceNode).getKey());
+        assertEquals(closestNode, rt.getClosest(referenceNode));
     }
 
     @Test
     public void getKClosest() {
-        BitSet bitSet = BitSet.valueOf(new byte[]{(new Integer(6)).byteValue()});
-        Node closestNode = new PeerNode(new BinarySet(bitSet)); //KEY = 110
-        rt.remove(closestNode);
+        bitSet = BitSet.valueOf(new byte[]{(new Integer(3)).byteValue()}); //KEY = 011
+        when(node.getKey()).thenReturn(new BinarySet(bitSet));
+        distance =  getDistancePeerNode(nodeOwner, node);
+        when(nodeOwner.getDistance(node)).thenReturn(distance);
 
-        Node[] nodes = new PeerNode[2];
-        bitSet = BitSet.valueOf(new byte[]{(new Integer(1)).byteValue()});
-        nodes[0] = new PeerNode(new BinarySet(bitSet)); //KEY = 001
-        rt.add(nodes[0]);
+        int numberNodesClosest = 2;
+        ArrayList<Node<BinarySet>> nodesClosest = new ArrayList<>();
+        int key = 1;
+        for(int i=0; i<numberNodesClosest; i++){  //1,2,3
+            nodesClosest.add(mock(Node.class));
+            Node<BinarySet> nodeAdded = nodesClosest.get(i);
+            bitSet = BitSet.valueOf(new byte[]{(new Integer(key)).byteValue()});
+            when(nodeAdded.getKey()).thenReturn(new BinarySet(bitSet));
 
-        bitSet = BitSet.valueOf(new byte[]{(new Integer(2)).byteValue()});
-        nodes[1] = new PeerNode(new BinarySet(bitSet)); //KEY = 010
-        rt.add(nodes[1]);
+            distance =  getDistancePeerNode(nodeOwner, nodeAdded); //from nodeOwner for the add in rt
+            when(nodeOwner.getDistance(nodeAdded)).thenReturn(distance);
 
-        bitSet = BitSet.valueOf(new byte[]{(new Integer(4)).byteValue()});
-        Node newNode = new PeerNode(new BinarySet(bitSet)); //KEY = 100
-        rt.add(newNode);
+            distance =  getDistancePeerNode(node, nodeAdded); //from the node to getKClosest
+            when(node.getDistance(nodeAdded)).thenReturn(distance);
 
-        bitSet = BitSet.valueOf(new byte[]{(new Integer(3)).byteValue()});
-        Node nodeTest = new PeerNode(new BinarySet(bitSet)); //KEY = 011
+            assertTrue(rt.add(nodeAdded));
 
-        assertEquals(nodes, rt.getKClosest(nodeTest));
+            key++;
+        }
+
+        ArrayList<Node<BinarySet>> othersNodes = new ArrayList<>();
+        key += 2;
+        for(int i=0; i<2; i++){ //5,6
+            othersNodes.add(mock(Node.class));
+            Node<BinarySet> nodeAdded = othersNodes.get(i);
+            bitSet = BitSet.valueOf(new byte[]{(new Integer(key)).byteValue()});
+            when(nodeAdded.getKey()).thenReturn(new BinarySet(bitSet));
+
+            distance =  getDistancePeerNode(nodeOwner, nodeAdded); //from nodeOwner for the add in rt
+            when(nodeOwner.getDistance(nodeAdded)).thenReturn(distance);
+
+            distance =  getDistancePeerNode(node, nodeAdded); //from the node to getKClosest
+            when(node.getDistance(nodeAdded)).thenReturn(distance);
+
+            key++;
+
+            assertTrue(rt.add(nodeAdded));
+        }
+
+        assertEquals(nodesClosest.toArray(), rt.getKClosest(node));
+
+
+    }
+
+    @Test
+    public void getKClosest_NodeOwner() {
+        int numberNodesClosest = 3;
+        ArrayList<Node<BinarySet>> othersNodes = new ArrayList<>();
+        int key = 1;
+        for(int i=0; i<numberNodesClosest; i++){
+            othersNodes.add(mock(Node.class));
+            Node<BinarySet> nodeAdded = othersNodes.get(i);
+            bitSet = BitSet.valueOf(new byte[]{(new Integer(key)).byteValue()});
+            when(nodeAdded.getKey()).thenReturn(new BinarySet(bitSet));
+
+            distance =  getDistancePeerNode(nodeOwner, nodeAdded); //from nodeOwner
+            when(nodeOwner.getDistance(nodeAdded)).thenReturn(distance);
+
+            assertTrue(rt.add(nodeAdded));
+
+            key++;
+        }
+
+        ArrayList<Node<BinarySet>> nodesClosest = new ArrayList<>();
+        key++;
+        for(int i=0; i<2; i++){ //4,5
+            nodesClosest.add(mock(Node.class));
+            Node<BinarySet> nodeAdded = nodesClosest.get(i);
+            bitSet = BitSet.valueOf(new byte[]{(new Integer(key)).byteValue()});
+            when(nodeAdded.getKey()).thenReturn(new BinarySet(bitSet));
+
+            distance =  getDistancePeerNode(nodeOwner, nodeAdded); //from nodeOwner for the add in rt
+            when(nodeOwner.getDistance(nodeAdded)).thenReturn(distance);
+
+            key++;
+
+            assertTrue(rt.add(nodeAdded));
+        }
+
+        assertEquals(nodesClosest.toArray(), rt.getKClosest(nodeOwner));
 
 
     }

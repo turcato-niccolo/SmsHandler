@@ -115,21 +115,21 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      */
     @Override
     public Node getClosest(Node node) {
-        if(!node.equals(nodeOwner)) {
-            Node[] nodesClosest = getKClosest(node);
-            if (nodesClosest != null){
-                int minDistance = sizeTable * 2;
-                Node nodeClosest = null;
-                for (int i = 0; i < nodesClosest.length; i++) {
-                    BinarySet distanceBinarySet = (BinarySet) nodeOwner.getDistance(node);
+        Node[] nodesClosest = getKClosest(node);
+        if (nodesClosest != null){
+            int minDistance = sizeTable+1;
+            Node nodeClosest = null;
+            for (int i = 0; i < nodesClosest.length; i++) {
+                if(!nodesClosest[i].equals(node)) {
+                    BinarySet distanceBinarySet = (BinarySet) node.getDistance(nodesClosest[i]);
                     int distance = sizeTable - 1 - distanceBinarySet.getFirstPositionOfOne();
                     if (distance < minDistance) {
                         minDistance = distance;
                         nodeClosest = nodesClosest[i];
                     }
                 }
-                return nodeClosest;
             }
+            return nodeClosest;
         }
         return null;
     }
@@ -140,13 +140,15 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      */
     @Override
     public Node[] getKClosest(Node node) {
-        if(!node.equals(nodeOwner)) {
-            int position = getLocation(node); //the higher the position, the closer it is
-            for (int i = position; i >= 0; i--) { //moves away but it looks for a bucket with some nodes
-                Node[] nodesClosest = bucketsTable.get(i).getElements();
-                if (nodesClosest.length >= 1)
-                    return nodesClosest;
-            }
+        int position;
+        if(!node.equals(nodeOwner))
+            position = getLocation(node); //the higher the position, the closer it is
+        else
+            position = sizeTable-1;
+        for (int i = position; i >= 0; i--) { //moves away but it looks for a bucket with some nodes
+            Node[] nodesClosest = bucketsTable.get(i).getElements();
+            if (nodesClosest.length >= 1)
+                return nodesClosest;
         }
         return null;
     }
