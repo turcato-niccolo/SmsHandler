@@ -2,9 +2,20 @@ package com.gruppo1.distributednetworkmanager;
 
 import android.content.Context;
 
-import com.dezen.riccardo.networkmanager.*;
-import com.dezen.riccardo.smshandler.*;
-import com.gruppo1.distributednetworkmanager.deprecated.NetworkDictionaryWithOwnership;
+import androidx.collection.ArraySet;
+
+import com.dezen.riccardo.networkmanager.NetworkDictionary;
+import com.dezen.riccardo.networkmanager.NetworkInterface;
+import com.dezen.riccardo.networkmanager.OnNetworkEventListener;
+import com.dezen.riccardo.networkmanager.Resource;
+import com.dezen.riccardo.networkmanager.StringResource;
+import com.dezen.riccardo.smshandler.CommunicationHandler;
+import com.dezen.riccardo.smshandler.ReceivedMessageListener;
+import com.dezen.riccardo.smshandler.SMSManager;
+import com.dezen.riccardo.smshandler.SMSMessage;
+import com.dezen.riccardo.smshandler.SMSPeer;
+
+import java.util.Set;
 
 
 /**
@@ -20,40 +31,17 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      * Current syntax for messages is as follows:
      * <SMSLibrary-TAG>[ACTION]<separation>[PARAMETER]<separation>[EXTRA]
      */
-    private static class DistributedActions {
-        static String PING() {
-            return "PING";
-        }
 
-        static String STORE() {
-            return "STORE";
-        }
+    private int PENDING_ACTION;
 
-        static String FIND_NODE() {
-            return "FIND_NODE";
-        }
-
-        static String FIND_VALUE() {
-            return "FIND_VALUE";
-        }
-    }
-
-    private NetworkDictionaryWithOwnership dictionary;
+    private RoutingTable routingTable;
+    private Set<Resource> resources;
     private boolean isPartOfNetwork;
     private SMSPeer myPeer;
     private OnNetworkEventListener<SMSMessage, StringResource> listener;
     private CommunicationHandler<SMSMessage> handler;
     private Context context;
     private final String MANAGER_TAG = "DISTRIBUTED_MANAGER_TAG";
-
-
-    public DistributedNetworkManager(Context registerContext) {
-        dictionary = new NetworkDictionaryWithOwnership(registerContext);
-        handler = SMSManager.getInstance(registerContext);
-        handler.setReceiveListener(this);
-        context = registerContext;
-        isPartOfNetwork = false;
-    }
 
     /**
      * This version of the constructor should be used to insert the peer that builds the object
@@ -62,9 +50,13 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      * @param firstPeer the peer tha builds the network
      */
     public DistributedNetworkManager(Context registerContext, SMSPeer firstPeer) {
-        this(registerContext);
-        dictionary.addPeer(firstPeer);
-        myPeer = firstPeer;
+        //TODO instantiate routing table
+        routingTable = null;
+        resources = new ArraySet<>();
+        handler = SMSManager.getInstance(registerContext);
+        handler.setReceiveListener(this);
+        context = registerContext;
+        isPartOfNetwork = false;
     }
 
     /**
@@ -73,7 +65,9 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      * @param newPeer the Peer to invite
      */
     public void invite(SMSPeer newPeer) {
-
+        //TODO build an invite action
+        // set PENDING_ACTION to the value for that action
+        // convert the Action to sms and send it to newPeer
     }
 
     /**
@@ -82,7 +76,7 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      * @param inviter the user that sent the invitation
      */
     public void acceptInvite(SMSPeer inviter) {
-
+        //TODO answer with a positive or negative action
     }
 
     /**
@@ -91,6 +85,7 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      * @param key the key of Resource to request.
      */
     public StringResource getResource(String key) {
+        //TODO answer with the resource if available
         return null;
     }
 
@@ -100,6 +95,7 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      * @return array containing all Available Peers.
      */
     public SMSPeer[] getAvailablePeers() {
+        //TODO return the peers from the routing table
         return null;
     }
 
@@ -109,6 +105,7 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      * @return array containing all Available Resources.
      */
     public StringResource[] getAvailableResources() {
+        //yadda yadda
         return null;
     }
 
@@ -121,16 +118,16 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
 
     }
 
-    public void ping(SMSPeer peerToPing) {
-        //Async Task maybe
+    public void ping(SMSPeer pingedPeer) {
+        //TODO build ping action
     }
 
     public void storeResource(StringResource resourceToSostore, SMSPeer destination) {
-
+        //TODO build ping action
     }
 
     public void findNode() {
-
+        //TODO build findNode action
     }
 
     /**
@@ -139,6 +136,6 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      * @param message the received message that needs to be forwarded
      */
     public void onMessageReceived(SMSMessage message) {
-
+        //TODO if it's a Request then Answer, else Elaborate the result if it is a Response
     }
 }

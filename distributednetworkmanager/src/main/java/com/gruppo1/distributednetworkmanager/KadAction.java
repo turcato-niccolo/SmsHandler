@@ -30,7 +30,8 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     private PayloadType payloadType;
     private String payload;
 
-    private static final int ACTION_TYPE_POSITION = 0, OPERATION_ID_POSITION = 1, CURRENT_MESSAGE_POSITION = 2, TOTAL_MESSAGES_POSITION = 3, PAYLOAD_TYPE_POSITION = 4, PAYLOAD_POSITION = 5;
+    private static final int ACTION_TYPE_POSITION = 0, OPERATION_ID_POSITION = 1, CURRENT_MESSAGE_POSITION = 2,
+            TOTAL_MESSAGES_POSITION = 3, PAYLOAD_TYPE_POSITION = 4, PAYLOAD_POSITION = 5;
     private static final int TOTAL_PARAMS = 6;
 
 
