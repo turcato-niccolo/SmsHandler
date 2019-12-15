@@ -6,93 +6,53 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
+import androidx.sqlite.db.SimpleSQLiteQuery;
+
+import com.dezen.riccardo.networkmanager.NetworkDictionary;
+import com.dezen.riccardo.smshandler.SMSPeer;
 
 /**
  * @author Giorgia Bortoletti
+ * Class extending the BaseDao class for PeerEntity, ResourceEntity
  */
 @Dao
-public interface DictionaryDao {
-    public static final String databaseResource="resourceentity";
-    public static final String databasePeer="peerentity";
-
+public abstract class DictionaryDao extends BaseDao<PeerEntity, ResourceEntity>{
     /**
-     * Add a new resource
-     * @param resourceEntities to add
+     * @return the name of the table containing the peer entities.
      */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public void addResource(ResourceEntity... resourceEntities);
+    @Override
+    public String getPeerTableName(){
+        return NetworkDictionary.NETWORK_DICTIONARY_PEER_TABLE_NAME;
+    }
 
     /**
-     * Update a resource
-     * @param resourceEntities to update
+     * @return the name of the table containing the resource entities.
      */
-    @Update
-    public void updateResource(ResourceEntity... resourceEntities);
+    @Override
+    public String getResourceTableName(){
+        return NetworkDictionary.NETWORK_DICTIONARY_RESOURCE_TABLE_NAME;
+    }
 
     /**
-     * Delete a resource
-     * @param resourceEntities to remove
+     * @param address of peer
+     * @return peer with that address
      */
-    @Delete
-    public void removeResource(ResourceEntity... resourceEntities);
+    public PeerEntity getPeer(String address){
+        SimpleSQLiteQuery query = new SimpleSQLiteQuery(
+                GET_ALL_QUERY + getResourceTableName() +" WHERE "+NetworkDictionary.PEER_TABLE_ADDRESS_COLUMN_NAME+"='"+address+"'"
+        );
+        return performGetPeer(query);
+    }
 
     /**
-     * Find and return only one resource with this key
      * @param key of resource
-     * @return ResourceEntity
+     * @return resource with that key
      */
-    @Query("SELECT * FROM "+databaseResource+" WHERE keyName=:key")
-    public ResourceEntity getResource(String key);
-
-    /**
-     * Get all resources
-     * @return array of ResourceEntity
-     */
-    @Query("SELECT * FROM "+databaseResource)
-    public ResourceEntity[] getAllResources();
-
-    /**
-     * Verify if a Resource is in the database
-     * @param key of Resource to find
-     * @return true if database contains the resource
-     */
-    @Query("SELECT COUNT(*) FROM "+databaseResource+" WHERE keyName=:key")
-    public boolean containsResource(String key);
-
-    /**
-     * Add a new peer
-     * @param peerEntities to add
-     */
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public void addPeer(PeerEntity... peerEntities);
-
-    /**
-     * Update a peer
-     * @param peerEntities to update
-     */
-    @Update
-    public void updatePeer(PeerEntity... peerEntities);
-
-    /**
-     * Delete a peer
-     * @param peerEntities to remove
-     */
-    @Delete
-    public void removePeer(PeerEntity... peerEntities);
-
-    /**
-     * Get all peers
-     * @return array of PeerEntity
-     */
-    @Query("SELECT * FROM "+databasePeer)
-    public PeerEntity[] getAllPeers();
-
-    /**
-     * Verify if a Resource is in the database
-     * @param address of Peer to find
-     * @return true if database contains the peer
-     */
-    @Query("SELECT COUNT(*) FROM " +databasePeer+" WHERE address=:address")
-    public boolean containsPeer(String address);
-
+    public ResourceEntity getResource(String key){
+        SimpleSQLiteQuery query = new SimpleSQLiteQuery(
+                GET_ALL_QUERY + getResourceTableName() +" WHERE "+ NetworkDictionary.RESOURCE_TABLE_KEY_COLUMN_NAME+" ='"+key+"'"
+        );
+        return performGetResource(query);
+    }
 }
+

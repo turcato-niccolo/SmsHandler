@@ -1,21 +1,8 @@
 package com.dezen.riccardo.smshandler;
 
-import android.content.Context;
-
-import androidx.room.Room;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
-import androidx.test.platform.app.InstrumentationRegistry;
 
-
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.IOException;
-
-import static junit.framework.TestCase.assertEquals;
 
 /**
  * @author Giorgia Bortoletti

@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.dezen.riccardo.networkmanager.StringResource;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
+import com.dezen.riccardo.smshandler.exceptions.InvalidMessageException;
 
 import java.util.BitSet;
 
@@ -17,7 +18,7 @@ import java.util.BitSet;
 
 public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSMessage> {
 
-    private static final String SEPARATOR =  "\r";
+    private static final String SEPARATOR = "\r";
     private static final int DEFAULT_PARTS = 1;
     private static final int DEFAULT_MAX_PARTS = 1;
 
@@ -27,14 +28,10 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     private int currentPart;
     private int totalParts;
     private PayloadType payloadType;
-    //Possible payload contents
-    private SMSPeer carriedPeer;
-    private BitSet carriedNodeId;
-    private StringResource carriedResource;
+    private String payload;
 
-    private static final int ID_POSITION = 0,CURRENT_MESSAGE_POSITION=1, TOTAL_MESSAGES_POSITION = 2, ACTION_POSITION = 3
-            , PARAM_POSITION=4, EXTRA_POSITION=5, PAYLOAD_POSITION=6;
-    private static final int TOTAL_PARAMS=7;
+    private static final int ACTION_TYPE_POSITION = 0, OPERATION_ID_POSITION = 1, CURRENT_MESSAGE_POSITION = 2, TOTAL_MESSAGES_POSITION = 3, PAYLOAD_TYPE_POSITION = 4, PAYLOAD_POSITION = 5;
+    private static final int TOTAL_PARAMS = 6;
 
 
     private final String ACTION_CODE_NOT_FOUND_ERROR_MSG = "Expected ActionType as int number, found not parsable String instead";
@@ -67,9 +64,10 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
 
         /**
          * Constructor. Used only by enum.
+         *
          * @param code the value for code field.
          */
-        ActionType(int code){
+        ActionType(int code) {
             this.code = code;
         }
 
@@ -83,14 +81,14 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
         /**
          * @return true if this is a Request Action type, false if it is a Response type
          */
-        public boolean isRequest(){
+        public boolean isRequest() {
             return (code >= 0) && (code % 2 == 0);
         }
 
         /**
          * @return true if this is a Request Action type, false if it is a Response type
          */
-        public boolean isResponse(){
+        public boolean isResponse() {
             return (code >= 0) && (code % 2 != 0);
         }
 
@@ -98,9 +96,9 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
          * @param code the code for the Action
          * @return the ActionType with the corresponding code, or INVALID if an invalid code is passed.
          */
-        public static ActionType getTypeFromVal(int code){
-            for(ActionType type : ActionType.values()){
-                if(type.code == code) return type;
+        public static ActionType getTypeFromVal(int code) {
+            for (ActionType type : ActionType.values()) {
+                if (type.code == code) return type;
             }
             return INVALID;
         }
@@ -112,18 +110,20 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     public enum PayloadType {
 
         INVALID(-1),
-        EMPTY(0),
-        PEER_ADDRESS(1),
-        NODE_ID(2),
-        RESOURCE(3);
+        IGNORED(0),
+        BOOLEAN(1),
+        PEER_ADDRESS(2),
+        NODE_ID(3),
+        RESOURCE(4);
 
         private final int code;
 
         /**
          * Constructor. Used only by enum.
+         *
          * @param code the value for code field.
          */
-        PayloadType(int code){
+        PayloadType(int code) {
             this.code = code;
         }
 
@@ -138,9 +138,9 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
          * @param code the code for the Action
          * @return the ActionType with the corresponding code, or invalid if an invalid code is passed.
          */
-        public static PayloadType getTypeFromCode(int code){
-            for(PayloadType type : PayloadType.values()){
-                if(type.code == code) return type;
+        public static PayloadType getTypeFromCode(int code) {
+            for (PayloadType type : PayloadType.values()) {
+                if (type.code == code) return type;
             }
             return INVALID;
         }
@@ -148,98 +148,137 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
 
     /**
      * Private constructor. Parameters should already come in valid.
+     *
      * @param actionType
      * @param id
      * @param part
      * @param maxParts
+     * @param payloadType
      * @param payload
      */
-    private KadAction(@NonNull ActionType actionType, int id, int part, int maxParts, @NonNull String payload){
-        //TODO assign fields
+    public KadAction(@NonNull SMSPeer smsPeer, @NonNull ActionType actionType, int id, int part, int maxParts, @NonNull PayloadType payloadType, @NonNull String payload) {
+        this.actionPeer = smsPeer;
+        this.actionType = actionType;
+        this.operationId = id;
+        this.currentPart = part;
+        this.totalParts = maxParts;
+        this.payloadType = payloadType;
+        this.payload = payload;
+        if (!isValid())
+            throw new IllegalArgumentException();
     }
-    public KadAction(@NonNull SMSMessage buildingMessage){
+
+    public KadAction(@NonNull SMSMessage buildingMessage) {
         String messageBody = buildingMessage.getData();
         String[] parameteres = messageBody.split(SEPARATOR);
-        if(buildingMessage.getPeer() != null && buildingMessage.getPeer().isValid())
-            actionPeer = buildingMessage.getPeer();
-        if(parameteres.length == TOTAL_PARAMS){
-            int actionType;
+        actionPeer = buildingMessage.getPeer();
+        if (parameteres.length == TOTAL_PARAMS) {
             try {
-                actionType = Integer.parseInt(parameteres[ACTION_POSITION]);
-            }
-            catch (NumberFormatException e){
+                actionType = ActionType.getTypeFromVal(Integer.parseInt(parameteres[ACTION_TYPE_POSITION]));
+            } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(e.getMessage() + "\n" + ACTION_CODE_NOT_FOUND_ERROR_MSG);
             }
-            int nodeId;
+
             try {
-                nodeId = Integer.parseInt(parameteres[ID_POSITION]);
-            }
-            catch (NumberFormatException e) {
+                operationId = Integer.parseInt(parameteres[OPERATION_ID_POSITION]);
+            } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(e.getMessage() + "\n" + ID_NOT_FOUND_ERROR_MSG);
             }
-            int totalMessages;
+
             try {
-                totalMessages = Integer.parseInt(parameteres[TOTAL_MESSAGES_POSITION]);
-            }
-            catch (NumberFormatException e) {
+                totalParts = Integer.parseInt(parameteres[TOTAL_MESSAGES_POSITION]);
+            } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(e.getMessage() + "\n" + TOTAL_MESSAGES_NOT_FOUND_ERROR_MSG);
             }
-            int currentMessage;
             try {
-                currentMessage = Integer.parseInt(parameteres[CURRENT_MESSAGE_POSITION]);
-            }
-            catch (NumberFormatException e) {
+                currentPart = Integer.parseInt(parameteres[CURRENT_MESSAGE_POSITION]);
+            } catch (NumberFormatException e) {
                 throw new IllegalArgumentException(e.getMessage() + "\n" + CURRENT_MESSAGE_NOT_FOUND_ERROR_MSG);
             }
-            if (areValidParameters(actionType, parameteres[PARAM_POSITION], parameteres[EXTRA_POSITION],parameteres [PAYLOAD_POSITION])){
-                 //= actionType;
-                 //TODO
+            try {
+                payloadType = PayloadType.getTypeFromCode(Integer.parseInt(parameteres[PAYLOAD_TYPE_POSITION]));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(e.getMessage() + "\n" + "");
             }
+            payload = parameteres[PAYLOAD_POSITION];
+            //= actionType;
+            //TODO
         }
-        else throw new IllegalArgumentException(FORMATTED_ACTION_NOT_FOUND_ERROR_MSG);
+        if (isValid()) ;
     }
 
     @Override
     public boolean isValid() {
-        return false;
+        if (this.actionType.equals(ActionType.INVALID))
+            return false;
+        if (this.payloadType.equals(PayloadType.INVALID))
+            return false;
+        if (currentPart <= 0 || totalParts <= 0 || currentPart > totalParts)
+            return false;
+        if (!payloadMatchesType(payloadType, payload))
+            return false;
+        try {
+            toMessage();
+        } catch (InvalidMessageException e) {
+            return false;
+        }
+        return true;
     }
 
-    public boolean areValidParameters(int i, String s1, String s2, String s3){
-        return false;
+    public static boolean payloadMatchesType(PayloadType payloadType, String payload) {
+        switch (payloadType) {
+            case IGNORED:
+                return true;
+            case BOOLEAN:
+                Boolean.valueOf(payload);
+            case NODE_ID:
+                //TODO
+            case PEER_ADDRESS:
+                return SMSPeer.isAddressValid(payload) == SMSPeer.PhoneNumberValidity.ADDRESS_VALID;
+            case RESOURCE:
+                //metodo statico parse resource
+            default:
+                return false;
+        }
+
     }
 
     @Override
     public SMSMessage toMessage() {
-        if (isValid()){
-            //TODO
-        }
-        return null;
+        StringBuilder body = new StringBuilder();
+        body.append(actionType.getCode()).append(SEPARATOR).append(operationId)
+                .append(SEPARATOR).append(currentPart).append(SEPARATOR).append(totalParts)
+                .append(payloadType.getCode()).append(SEPARATOR).append(payload);
+
+        return new SMSMessage(actionPeer, body.toString());
     }
 
-    public int getActionID() {
-        return operationId;
-    }
-
-    public ActionType getAction() {
+    public ActionType getActionType() {
         return actionType;
     }
 
-    public int getProgress() {
+    public int getOperationId() {
+        return operationId;
+    }
+
+    public int getCurrentPart() {
         return currentPart;
     }
 
-    public int getTotalExpectedMessages() {
+    public int getTotalParts() {
         return totalParts;
+    }
+
+    public PayloadType getPayloadType() {
+        return payloadType;
+    }
+    @Override
+    public SMSPeer getPeer() {
+        return actionPeer;
     }
 
     @Override
     public String getPayload() {
-        //TODO
-        return "";
-    }
-
-    @Override
-    public SMSPeer getPeer() {
-        return actionPeer;
+        return payload;
     }
 }
