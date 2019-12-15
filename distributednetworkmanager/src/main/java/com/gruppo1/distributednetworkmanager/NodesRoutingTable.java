@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Extends Rounting Table with KBucket that contains Node
+ * Extends Routing Table with KBucket that contains Node
  * Size of RoutingTable is fixed and equals to nodeOwner's key length
  * @author Giorgia Bortoletti
  */
@@ -72,7 +72,7 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      */
     @Override
     public boolean contains(Node node) {
-        if(node == null || bucketsTable.size() == 0)
+        if(node == null || bucketsTable.isEmpty())
             return false;
         int positionNode = getLocation(node);
         if(positionNode == -1)
@@ -82,7 +82,7 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
 
     /**
      * @param i index of the bucket in buckets container
-     * @return the bucket at index i
+     * @return the bucket at index i, null otherwise
      */
     @Override
     public KBucket getBucket(int i) {
