@@ -11,7 +11,7 @@ import com.dezen.riccardo.smshandler.SMSMessage;
  * Structure of an Action that uses numerical code identification and generic types Parameter and extra Parameter
  */
 
-abstract class ActionStructure<T extends Comparable<T>> {
+public abstract class ActionStructure<T extends Comparable<T>> {
 
     abstract public boolean isValid();
 

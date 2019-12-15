@@ -2,29 +2,28 @@ package com.gruppo1.distributednetworkmanager;
 
 import androidx.annotation.NonNull;
 
+import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 /***
- * @author  Pardeep Kumar
+ * @author Pardeep Kumar
  */
 
 public class DistributedNetworkAction extends NodeActionStructure<String> {
 
-    private static final String SEPARATOR =  "\r";
+    private static final String SEPARATOR = "\r";
     private int nodeId;
-    private final int DEFAULT_VALUE_FOR_MESSAGES=1;
-    private int currentMessage=DEFAULT_VALUE_FOR_MESSAGES;
-    private int totalMessages=DEFAULT_VALUE_FOR_MESSAGES;
+    private final int DEFAULT_VALUE_FOR_MESSAGES = 1;
+    private int currentMessage = DEFAULT_VALUE_FOR_MESSAGES;
+    private int totalMessages = DEFAULT_VALUE_FOR_MESSAGES;
     private int actionCommand;
     private String param;
     private String extra;
     private String payload;
-    private PeerNode currentPeerNode;
     private SMSPeer currentPeer;
-    private static final int ID_POSITION = 0,CURRENT_MESSAGE_POSITION=1, TOTAL_MESSAGES_POSITION = 2, ACTION_POSITION = 3
-            , PARAM_POSITION=4, EXTRA_POSITION=5, PAYLOAD_POSITION=6;
-    private static final int TOTAL_PARAMS=7;
+    private static final int ID_POSITION = 0, CURRENT_MESSAGE_POSITION = 1, TOTAL_MESSAGES_POSITION = 2, ACTION_POSITION = 3, PARAM_POSITION = 4, EXTRA_POSITION = 5, PAYLOAD_POSITION = 6;
+    private static final int TOTAL_PARAMS = 7;
 
 
     private final String ACTION_CODE_NOT_FOUND_ERROR_MSG = "Expected ActionType as int number, found not parsable String instead";
@@ -69,7 +68,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
 
         static private boolean usesExtra(int action) {
 
-            return action == FIND_VALUE || action==ANSWER_FIND_VALUE || action==STORE;
+            return action == FIND_VALUE || action == ANSWER_FIND_VALUE || action == STORE;
 
         }
 
@@ -80,7 +79,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
 
         static private boolean usesPayload(int action) {
 
-            return action == FIND_VALUE || action==ANSWER_FIND_VALUE || action==STORE;
+            return action == FIND_VALUE || action == ANSWER_FIND_VALUE || action == STORE;
 
         }
 
@@ -110,45 +109,45 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
         static final int ANSWER_INVITE = 9;
     }
 
-    public void setNodeId(int nodeId)
-    {
-        this.nodeId=nodeId;
+    public void setNodeId(int nodeId) {
+        this.nodeId = nodeId;
     }
-    public void setCurrentMessage(int currentMessage)
-    {
-        this.currentMessage=currentMessage;
+
+    public void setCurrentMessage(int currentMessage) {
+        this.currentMessage = currentMessage;
     }
-    public void setTotalMessages(int totalMessages)
-    {
-        this.totalMessages=totalMessages;
+
+    public void setTotalMessages(int totalMessages) {
+        this.totalMessages = totalMessages;
     }
-    public DistributedNetworkAction(int actionCommand, @NonNull String param, @NonNull String extra,@NonNull String payload){
 
-        if(areValidParameters(actionCommand, param, extra,payload )){
+    public DistributedNetworkAction(int actionCommand, @NonNull String param, @NonNull String extra, @NonNull String payload) {
 
-            this.actionCommand=actionCommand;
+        if (areValidParameters(actionCommand, param, extra, payload)) {
 
-            this.param=param;
+            this.actionCommand = actionCommand;
 
-            this.extra=extra;
+            this.param = param;
 
-            this.payload=extra;
+            this.extra = extra;
 
-        }
-        else throw new IllegalArgumentException(NOT_FORMATTED_PARAMS);
+            this.payload = extra;
+
+        } else throw new IllegalArgumentException(NOT_FORMATTED_PARAMS);
 
     }
-    public DistributedNetworkAction(@NonNull SMSMessage buildingMessage){
+
+    public DistributedNetworkAction(@NonNull SMSMessage buildingMessage) {
 
         String messageBody = buildingMessage.getData();
 
         String[] parameteres = messageBody.split(SEPARATOR);
 
-        if(buildingMessage.getPeer() != null && buildingMessage.getPeer().isValid())
+        if (buildingMessage.getPeer() != null && buildingMessage.getPeer().isValid())
 
             currentPeer = buildingMessage.getPeer();
 
-        if(parameteres.length == TOTAL_PARAMS){
+        if (parameteres.length == TOTAL_PARAMS) {
 
             int actionType;
 
@@ -156,9 +155,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
 
                 actionType = Integer.parseInt(parameteres[ACTION_POSITION]);
 
-            }
-
-            catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
 
                 throw new IllegalArgumentException(e.getMessage() + "\n" + ACTION_CODE_NOT_FOUND_ERROR_MSG);
 
@@ -168,9 +165,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
 
                 nodeId = Integer.parseInt(parameteres[ID_POSITION]);
 
-            }
-
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
 
                 throw new IllegalArgumentException(e.getMessage() + "\n" + ID_NOT_FOUND_ERROR_MSG);
 
@@ -180,9 +175,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
 
                 totalMessages = Integer.parseInt(parameteres[TOTAL_MESSAGES_POSITION]);
 
-            }
-
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
 
                 throw new IllegalArgumentException(e.getMessage() + "\n" + TOTAL_MESSAGES_NOT_FOUND_ERROR_MSG);
 
@@ -192,14 +185,12 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
 
                 currentMessage = Integer.parseInt(parameteres[CURRENT_MESSAGE_POSITION]);
 
-            }
-
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
 
                 throw new IllegalArgumentException(e.getMessage() + "\n" + CURRENT_MESSAGE_NOT_FOUND_ERROR_MSG);
 
             }
-            if (areValidParameters(actionType, parameteres[PARAM_POSITION], parameteres[EXTRA_POSITION],parameteres [PAYLOAD_POSITION])){
+            if (areValidParameters(actionType, parameteres[PARAM_POSITION], parameteres[EXTRA_POSITION], parameteres[PAYLOAD_POSITION])) {
 
                 actionCommand = actionType;
 
@@ -209,41 +200,40 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
 
             }
 
-        }
-
-        else throw new IllegalArgumentException(FORMATTED_ACTION_NOT_FOUND_ERROR_MSG);
+        } else throw new IllegalArgumentException(FORMATTED_ACTION_NOT_FOUND_ERROR_MSG);
 
     }
 
-    public boolean areValidParameters(int actionType, String param, String extra,String payload)
-    {
-     return Type.isValid(actionType) && (param.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType)) &&
-        (extra.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType))&&(payload.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType));
+    public boolean areValidParameters(int actionType, String param, String extra, String payload) {
+        return Type.isValid(actionType) && (param.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType))
+                && (extra.equals(DEFAULT_IGNORED) ^ Type.usesExtra(actionType))
+                && (payload.equals(DEFAULT_IGNORED) ^ Type.usesPayload(actionType));
     }
+
     @Override
     public boolean isValid() {
-        return currentPeerNode !=null && (
-                ((actionCommand == Type.INVITE || actionCommand == Type.ANSWER_INVITE || actionCommand==Type.PING ||
-                        actionCommand==Type.ANSWER_PING || actionCommand==Type.ANSWER_STORE || actionCommand==Type.FIND_NODE)
-                        && extra.equals(DEFAULT_IGNORED) && payload.equals(DEFAULT_IGNORED)&& !param.equals(DEFAULT_IGNORED))
+        return currentPeer != null && (
+                ((actionCommand == Type.INVITE || actionCommand == Type.ANSWER_INVITE || actionCommand == Type.PING ||
+                        actionCommand == Type.ANSWER_PING || actionCommand == Type.ANSWER_STORE || actionCommand == Type.FIND_NODE)
+                        && extra.equals(DEFAULT_IGNORED) && payload.equals(DEFAULT_IGNORED) && !param.equals(DEFAULT_IGNORED))
 
-                || ((actionCommand==Type.FIND_VALUE ) &&
-                        payload.equals(DEFAULT_IGNORED) && !extra.equals(DEFAULT_IGNORED) &&!param.equals(DEFAULT_IGNORED))
+                        || ((actionCommand == Type.FIND_VALUE) &&
+                        payload.equals(DEFAULT_IGNORED) && !extra.equals(DEFAULT_IGNORED) && !param.equals(DEFAULT_IGNORED))
 
-                || ((actionCommand==Type.ANSWER_FIND_VALUE ||actionCommand==Type.STORE) && !extra.equals(DEFAULT_IGNORED)  &&
-                        !payload.equals(DEFAULT_IGNORED) &&!param.equals(DEFAULT_IGNORED))
+                        || ((actionCommand == Type.ANSWER_FIND_VALUE || actionCommand == Type.STORE) && !extra.equals(DEFAULT_IGNORED) &&
+                        !payload.equals(DEFAULT_IGNORED) && !param.equals(DEFAULT_IGNORED))
 
-                || ((actionCommand==Type.ANSWER_FIND_NODE) && !param.equals(DEFAULT_IGNORED) &&
+                        || ((actionCommand == Type.ANSWER_FIND_NODE) && !param.equals(DEFAULT_IGNORED) &&
                         !payload.equals(DEFAULT_IGNORED) && extra.equals(DEFAULT_IGNORED))
 
-                );
+        );
     }
 
     @Override
     public SMSMessage generateMessage() {
-        if (isValid()){
-            String body=nodeId+SEPARATOR+currentMessage+SEPARATOR+totalMessages+SEPARATOR+
-                    actionCommand+SEPARATOR+param+SEPARATOR+extra+SEPARATOR+payload;
+        if (isValid()) {
+            String body = nodeId + SEPARATOR + currentMessage + SEPARATOR + totalMessages + SEPARATOR +
+                    actionCommand + SEPARATOR + param + SEPARATOR + extra + SEPARATOR + payload;
             return new SMSMessage(currentPeer, body);
         }
         return null;
@@ -284,22 +274,22 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
         return payload;
     }
 
+    /**
+     * @param peer must be a valid SMSPeer
+     */
     @Override
-    public void setDestination(@NonNull SMSPeer peer) {
-        if(peer instanceof SMSPeer && peer.isValid()){
+    public void setDestinationPeer(@NonNull Peer peer) {
 
-            currentPeer =  peer;
+        if (peer instanceof SMSPeer && peer.isValid()) {
+
+            currentPeer = (SMSPeer) peer;
 
         }
+
     }
 
     @Override
-    public SMSPeer getDestination() {
-        return currentPeer;
-    }
-
-    @Override
-    public SMSPeer getSender() {
+    public Peer getPeer() {
         return currentPeer;
     }
 }

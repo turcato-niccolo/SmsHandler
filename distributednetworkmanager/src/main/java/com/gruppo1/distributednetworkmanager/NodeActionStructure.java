@@ -2,6 +2,8 @@ package com.gruppo1.distributednetworkmanager;
 
 import androidx.annotation.NonNull;
 
+import com.dezen.riccardo.networkmanager.ActionStructure;
+import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
@@ -12,7 +14,7 @@ import com.dezen.riccardo.smshandler.SMSPeer;
  *            (with separators)
  * @author Turcato
  */
-public abstract class NodeActionStructure<T> {
+public abstract class NodeActionStructure<T extends Comparable<T>> extends ActionStructure {
 
     /**
      * @return true if the defined action is valid
@@ -61,20 +63,5 @@ public abstract class NodeActionStructure<T> {
      */
 
     abstract public T getPayload();
-
-    /**
-     * @param smsPeer the Node to which forward the action command
-     */
-    abstract public void setDestination(@NonNull SMSPeer smsPeer);
-
-    /**
-     * @return the destination Node of the action, if available
-     */
-    abstract public SMSPeer getDestination();
-
-    /**
-     * @return If available, the node that forwarded this action
-     */
-    abstract public SMSPeer getSender();
 
 }

@@ -1,5 +1,6 @@
 package com.dezen.riccardo.networkmanager;
 
+import com.dezen.riccardo.networkmanager.exceptions.InvalidActionFormatException;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
@@ -7,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 /*
@@ -27,11 +29,32 @@ import static org.junit.Assert.assertTrue;
 public class NetworkActionTest {
     NetworkAction testAction;
     SMSPeer testPeer;
+    StringResource testResource;
 
 
     @Before
     public void Initialize(){
         testPeer = new SMSPeer("+390425669011");
+        testResource = new StringResource("My name", "My value");
+    }
+
+
+    @Test
+    public void NetworkAction_ConstructorSMSPeerPositiveTest(){
+        testAction = new NetworkAction(NetworkAction.Type.GREET_USER, testPeer);
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void NetworkAction_ConstructorSMSPeerNegativeTest(){
+        testAction = new NetworkAction(NetworkAction.Type.INVITE, testPeer);
+    }
+
+    @Test
+    public void NetworkAction_ConstructorStringResourcePositiveTest(){
+        testAction = new NetworkAction(NetworkAction.Type.ADD_RESOURCE, testResource);
+    }
+    @Test(expected = IllegalArgumentException.class)
+    public void NetworkAction_ConstructorStringResourceNegativeTest(){
+        testAction = new NetworkAction(NetworkAction.Type.MSG, testResource);
     }
 
     @Test
@@ -102,6 +125,12 @@ public class NetworkActionTest {
         assertEquals(testAction.getPeer(), receivedAction.getPeer());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void NetworkAction_ConstructorFromSMSNegativeTest(){
+        SMSMessage testMessage = new SMSMessage(testPeer, "f  ");
+        testAction = new NetworkAction(testMessage);
+    }
+
     @Test
     public void NetworkAction_SetDestinationPeerPositiveTest(){
         testAction = new NetworkAction(NetworkAction.Type.ADD_RESOURCE, "This is a Res key", "This is the resource's body");
@@ -134,5 +163,18 @@ public class NetworkActionTest {
         assertEquals(NetworkAction.Type.ADD_RESOURCE, testAction.getAction());
         assertEquals(testResource.getName(), testAction.getParam());
         assertEquals(testResource.getValue(), testAction.getExtra());
+    }
+
+    @Test(expected = InvalidActionFormatException.class)
+    public void NetworkAction_InvalidGenerateSMSTest(){
+        testAction = new NetworkAction(NetworkAction.Type.ADD_RESOURCE, testResource.getName(), testResource.getValue());
+        testAction.generateMessage();
+    }
+
+    @Test
+    public void NetworkAction_isValidNegativeSMSTest(){
+        testAction = new NetworkAction(NetworkAction.Type.GREET_USER, "Not a phone number", NetworkAction.DEFAULT_IGNORED);
+        testAction.setDestinationPeer(testPeer);
+        assertFalse(testAction.isValid());
     }
 }
