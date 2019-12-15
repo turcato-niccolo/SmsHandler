@@ -13,7 +13,7 @@ import com.gruppo1.distributednetworkmanager.deprecated.NetworkDictionaryWithOwn
  * Using the already built NetworkDictionary which has a list of
  */
 
-public class DistributedNetworkManager implements NetworkInterface<SMSMessage, SMSPeer, StringResource, NetworkDictionary>, ReceivedMessageListener<SMSMessage> {
+public class DistributedNetworkManager implements ReceivedMessageListener<SMSMessage> {
 
     /**
      * Actions the network can send and receive.
