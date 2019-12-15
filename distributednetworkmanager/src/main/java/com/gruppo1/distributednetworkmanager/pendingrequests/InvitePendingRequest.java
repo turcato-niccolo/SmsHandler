@@ -12,6 +12,7 @@ public class InvitePendingRequest implements PendingRequest{
 
     private static final String CON_ERR = "Tried to initialize Invite Request with a different Request Type: ";
 
+    private int stepsTaken = 0;
     private KadAction inviteAction;
     private ActionPropagator actionPropagator;
     private NodeDataProvider nodeProvider;
@@ -35,6 +36,15 @@ public class InvitePendingRequest implements PendingRequest{
             throw new InvalidActionException(CON_ERR+action.getActionType());
         inviteAction = action;
         this.resultListener = resultListener;
+    }
+
+    /**
+     * @return the number of steps performed (number of times nextStep took a valid Action and acted
+     * accordingly). Should be either 0 or 1.
+     */
+    @Override
+    public int getStepsTaken(){
+        return stepsTaken;
     }
 
     /**
@@ -84,5 +94,6 @@ public class InvitePendingRequest implements PendingRequest{
         if(!isActionPertinent(action)) return;
         boolean inviteAccepted = Boolean.valueOf(action.getPayload());
         resultListener.onInviteResult(getOperationId(), action.getPeer(), inviteAccepted);
+        stepsTaken++;
     }
 }

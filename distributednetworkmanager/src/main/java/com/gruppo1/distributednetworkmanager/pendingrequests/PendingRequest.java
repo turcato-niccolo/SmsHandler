@@ -15,6 +15,12 @@ import com.gruppo1.distributednetworkmanager.KadAction;
 public interface PendingRequest{
 
     /**
+     * @return the number of steps performed (number of times nextStep took a valid Action and acted
+     * accordingly).
+     */
+    int getStepsTaken();
+
+    /**
      * @return the unique Code for this PendingRequest
      */
     int getOperationId();
