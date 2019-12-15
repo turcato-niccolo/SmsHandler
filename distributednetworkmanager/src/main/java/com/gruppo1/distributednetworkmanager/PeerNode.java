@@ -3,6 +3,9 @@ package com.gruppo1.distributednetworkmanager;
 import androidx.annotation.NonNull;
 
 import com.dezen.riccardo.smshandler.Peer;
+import com.dezen.riccardo.smshandler.SMSPeer;
+
+import java.util.BitSet;
 
 /**
  * @author Niccolo' Turcato
@@ -11,6 +14,7 @@ import com.dezen.riccardo.smshandler.Peer;
  */
 class PeerNode extends Peer<BinarySet> implements Node<BinarySet> {
     private BinarySet binaryKey;
+    private SMSPeer physicalPeer;
 
     /**
      * Constructor that initializes the key with the given value
@@ -21,6 +25,15 @@ class PeerNode extends Peer<BinarySet> implements Node<BinarySet> {
         binaryKey = (BinarySet) buildingKey.clone();
     }
 
+    public void setPhysicalPeer(SMSPeer peer) {
+        if (peer != null && peer.isValid())
+            physicalPeer = peer;
+    }
+
+    public SMSPeer getPhysicalPeer() {
+        return physicalPeer;
+    }
+
 
     /**
      * @return binary address of the node
@@ -29,7 +42,7 @@ class PeerNode extends Peer<BinarySet> implements Node<BinarySet> {
         return (BinarySet) binaryKey.clone();
     }
 
-    public BinarySet getKey(){
+    public BinarySet getKey() {
         return (BinarySet) binaryKey.clone();
     }
 

@@ -1,7 +1,6 @@
 package com.gruppo1.distributednetworkmanager;
 
 /**
- *
  * Structure for a container that realizes the routing table described by Kademlia P2P algorithm
  * It is built using as base Node, the Peer that builds the object. So each peer of the network has its own
  *

@@ -2,7 +2,6 @@ package com.gruppo1.distributednetworkmanager;
 
 import androidx.annotation.NonNull;
 
-import java.math.BigInteger;
 import java.util.BitSet;
 
 

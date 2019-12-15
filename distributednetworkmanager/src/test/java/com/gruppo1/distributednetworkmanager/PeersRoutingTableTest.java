@@ -7,7 +7,6 @@ import java.util.BitSet;
 
 import static org.junit.Assert.*;
 
-//TODO? add a test with Node as ResourceNode
 public class PeersRoutingTableTest {
 
     public static final int NUMBER_BITS = 3;
