@@ -239,7 +239,7 @@ public class NodesRoutingTableTest {
         }
 
         ArrayList<Node<BinarySet>> nodesClosest = new ArrayList<>();
-        key++;
+        key = 4;
         for(int i=0; i<2; i++){ //4,5
             nodesClosest.add(mock(Node.class));
             Node<BinarySet> nodeAdded = nodesClosest.get(i);
