@@ -8,12 +8,14 @@ import org.junit.Test;
 
 import java.util.BitSet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class DistributedNetworkNodeTest {
 
-    DistributedNetworkNode testNode;
-    String testString = "This is a random Key String";
+    private DistributedNetworkNode testNode;
+    private String testString = "This is a random Key String";
 
     @Before
     public void initialize() {
@@ -47,7 +49,7 @@ public class DistributedNetworkNodeTest {
     public void Node_distanceFromTest() {
         BitSet A = DistributedNetworkNode.hash(testString, testNode.keyLength());
 
-        String newString = "Another valid string key";
+        String newString = "Another valid string peerKey";
         DistributedNetworkNode newPeerNode = new DistributedNetworkNode(testNode.keyLength(), DistributedNetworkNode.hash(newString, testNode.keyLength()));
         BitSet B = DistributedNetworkNode.hash(newString, testNode.keyLength());
 
@@ -60,7 +62,7 @@ public class DistributedNetworkNodeTest {
     public void Node_compareDistancePositiveTest() {
         BitSet A = DistributedNetworkNode.hash(testString, testNode.keyLength());
 
-        String newString = "Another valid string key";
+        String newString = "Another valid string peerKey";
         DistributedNetworkNode newPeerNode = new DistributedNetworkNode(testNode.keyLength(), DistributedNetworkNode.hash(newString, testNode.keyLength()));
         BitSet B = DistributedNetworkNode.hash(newString, testNode.keyLength());
 

@@ -9,7 +9,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-//TODO? add a test with Node as ResourceNode
 public class PeersRoutingTableTest {
 
     public static final int NUMBER_BITS = 3;

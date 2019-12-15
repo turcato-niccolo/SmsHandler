@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Extends Rounting Table with KBucket that contains Node
+ * Extends Routing Table with KBucket that contains Node
  * Size of RoutingTable is fixed and equals to nodeOwner's key length
  * @author Giorgia Bortoletti
  */
@@ -12,22 +12,22 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
 
     private List<KBucket> bucketsTable;
     private int sizeTable;
-    private Node nodeOwner;
+    private Node<BinarySet> nodeOwner;
 
     /**
-     * Constructor where the routing table lenght is equal to peer owner length
+     * Constructor where the routing table length is equal to nodeOwner length
      * @param nodeOwner
      */
-    public NodesRoutingTable(Node nodeOwner){
+    public NodesRoutingTable(Node<BinarySet>  nodeOwner){
         new NodesRoutingTable(nodeOwner, nodeOwner.keyLength());
     }
 
     /**
-     * Constructor where the routing table lenght is sizeTable
+     * Constructor where the routing table length is sizeTable
      * @param nodeOwner
      * @param sizeTable dimension of routing table
      */
-    public NodesRoutingTable(Node nodeOwner, int sizeTable){
+    public NodesRoutingTable(Node<BinarySet> nodeOwner, int sizeTable){
         this.nodeOwner = nodeOwner;
         this.sizeTable = sizeTable;
         bucketsTable = new ArrayList<>(sizeTable);
@@ -45,7 +45,7 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      * @return true if the node has been added, false otherwise
      */
     @Override
-    public boolean add(Node node) {
+    public boolean add(Node<BinarySet> node) {
         if(node == null)
             return false;
         return bucketsTable.get(getLocation(node)).add(node);
@@ -56,7 +56,7 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      * @return true if the node has been removed, false otherwise
      */
     @Override
-    public boolean remove(Node node) {
+    public boolean remove(Node<BinarySet> node) {
         if(node == null)
             return false;
         int positionNode = getLocation(node);
@@ -71,8 +71,8 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      * @return true if present, false otherwise
      */
     @Override
-    public boolean contains(Node node) {
-        if(node == null || bucketsTable.size() == 0)
+    public boolean contains(Node<BinarySet> node) {
+        if(node == null || bucketsTable.isEmpty())
             return false;
         int positionNode = getLocation(node);
         if(positionNode == -1)
@@ -82,7 +82,7 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
 
     /**
      * @param i index of the bucket in buckets container
-     * @return the bucket at index i
+     * @return the bucket at index i, null otherwise
      */
     @Override
     public KBucket getBucket(int i) {
@@ -98,15 +98,11 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      * @return the index (between 0 and N -1) of the bucket that maybe containing the given Node with BinarySet, -1 otherwise
      */
     @Override
-    public int getLocation(Node node) {
+    public int getLocation(Node<BinarySet> node) {
         if(node == null)
             return -1;
-        Object distanceObject = nodeOwner.getDistance(node);
-        if(distanceObject instanceof BinarySet) {
-            BinarySet distance = (BinarySet) distanceObject;
-            return sizeTable - 1 - distance.getFirstPositionOfOne();
-        }
-        return -1;
+        BinarySet distance = nodeOwner.getDistance(node);
+        return (sizeTable - 1 - distance.getFirstPositionOfOne());
     }
 
     /**
@@ -114,22 +110,22 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      * @return the closest Node at the node in the routing table if it is present, null otherwise
      */
     @Override
-    public Node getClosest(Node node) {
-        if(!node.equals(nodeOwner)) {
-            Node[] nodesClosest = getKClosest(node);
-            if (nodesClosest != null){
-                int minDistance = sizeTable * 2;
-                Node nodeClosest = null;
-                for (int i = 0; i < nodesClosest.length; i++) {
-                    BinarySet distanceBinarySet = (BinarySet) nodeOwner.getDistance(node);
+    public Node getClosest(Node<BinarySet> node) {
+        Node[] nodesClosest = getKClosest(node);
+        if (nodesClosest != null){
+            int minDistance = sizeTable+1;
+            Node nodeClosest = null;
+            for (int i = 0; i < nodesClosest.length; i++) {
+                if(!nodesClosest[i].equals(node)) {
+                    BinarySet distanceBinarySet = node.getDistance(nodesClosest[i]);
                     int distance = sizeTable - 1 - distanceBinarySet.getFirstPositionOfOne();
                     if (distance < minDistance) {
                         minDistance = distance;
                         nodeClosest = nodesClosest[i];
                     }
                 }
-                return nodeClosest;
             }
+            return nodeClosest;
         }
         return null;
     }
@@ -139,14 +135,16 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
      * @return the closest K Nodes at the node in the routing table if it is present, null otherwise
      */
     @Override
-    public Node[] getKClosest(Node node) {
-        if(!node.equals(nodeOwner)) {
-            int position = getLocation(node); //the higher the position, the closer it is
-            for (int i = position; i >= 0; i--) { //moves away but it looks for a bucket with some nodes
-                Node[] nodesClosest = bucketsTable.get(i).getElements();
-                if (nodesClosest.length >= 1)
-                    return nodesClosest;
-            }
+    public Node[] getKClosest(Node<BinarySet> node) {
+        int position;
+        if(!node.equals(nodeOwner))
+            position = getLocation(node); //the higher the position, the closer it is
+        else
+            position = sizeTable-1;
+        for (int i = position; i >= 0; i--) { //moves away but it looks for a bucket with some nodes
+            Node[] nodesClosest = bucketsTable.get(i).getElements();
+            if (nodesClosest.length >= 1)
+                return nodesClosest;
         }
         return null;
     }

@@ -12,6 +12,7 @@ class BitSetUtils {
 
     private static int minLength = 64;
     private static final String NOT_VALID_NUMBIT_EXCEPTION_MSG = "numBits isn't > 0 or a multiple of 64";
+    private static final String NOT_VALID_NUMBIT_SHA_EXCEPTION_MSG = "numBits isn't > 0 or <= 160";
     private static final String INVALID_HEX_CHAR_MSG = "Invalid Hexadecimal Character: ";
     private static final String INVALID_HEX_STRING_MSG="Invalid hexadecimal String supplied.";
     private static final String UTILS_TAG = BitSetUtils.class.toString();
@@ -46,26 +47,29 @@ class BitSetUtils {
 
     /**
      * @param toHash  the String (a key) of which generate hashcode
-     * @param numBits number of bits that the hash code will be constituted of, must be > 0
+     * @param numBits number of bits that the hash code will be constituted of, must be > 0 &&  <= 160
      * @return the bitSet containing the hash (SHA-1) of the bytes in input, truncated to numBits, bitSet's size is <= numBits
-     * @throws IllegalArgumentException if peer isn't valid or the numBit isn't multiple of 64
+     * @throws IllegalArgumentException if peer isn't valid or the numBit isn't in its bounds
      */
     public static BitSet hash(@NonNull byte[] toHash, int numBits) {
-        byte[] digest = {0};
-        try {
-            MessageDigest md = MessageDigest.getInstance(SHA_1);
-            md.update(toHash);
-            digest = md.digest();
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(UTILS_TAG, e.getMessage());
-            //Shouldn't happen, reported to log
+        if(numBits > 0 && numBits <= 160) {
+            byte[] digest = {0};
+            try {
+                MessageDigest md = MessageDigest.getInstance(SHA_1);
+                md.update(toHash);
+                digest = md.digest();
+            } catch (NoSuchAlgorithmException e) {
+                Log.e(UTILS_TAG, e.getMessage());
+                //Shouldn't happen, reported to log
+            }
+            if (digest.length * 8 > numBits) {
+                byte[] trunk = new byte[(numBits % 8 > 0) ? numBits / 8 + 1 : numBits / 8];
+                System.arraycopy(digest, 0, trunk, 0, trunk.length);
+                digest = trunk;
+            }
+            return BitSet.valueOf(digest);
         }
-        if(digest.length*8 > numBits){
-            byte[] trunk = new byte[(numBits%8 > 0) ? numBits/8+1 : numBits/8];
-            System.arraycopy(digest, 0, trunk, 0, trunk.length);
-            digest = trunk;
-        }
-        return BitSet.valueOf(digest);
+        throw new  IllegalArgumentException(NOT_VALID_NUMBIT_SHA_EXCEPTION_MSG);
     }
 
     /**

@@ -24,7 +24,6 @@ public class KBucket extends Bucket<Node<BinarySet>> {
         return false;
     }
 
-
     /**
      * Added with stack logic, eventually replaces the one "on top"
      *
