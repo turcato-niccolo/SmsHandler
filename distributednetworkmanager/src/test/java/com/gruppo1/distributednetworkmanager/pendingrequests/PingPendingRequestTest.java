@@ -85,6 +85,16 @@ public class PingPendingRequestTest {
     }
 
     @Test
+    public void isPertitent_valid(){
+
+    }
+
+    @Test
+    public void isPertinent_invalid(){
+
+    }
+
+    @Test
     public void pingPR_continuesOnValidAction(){
         PingPendingRequest request = new PingPendingRequest(pingAction, new StubListener());
         request.nextStep(responseAction);
