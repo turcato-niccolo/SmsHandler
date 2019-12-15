@@ -1,5 +1,7 @@
 package com.dezen.riccardo.smshandler;
 
+import android.telephony.PhoneNumberUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -70,7 +72,7 @@ public class SMSPeer extends Peer<String> {
         if(address.length() < MIN_ADDRESS_LENGTH)
             return PhoneNumberValidity.ADDRESS_TOO_SHORT;
 
-        //Failure of some other criteria in isGlobalPhoneNumber, the country code is probably invalid.
+
         if(!isGlobalPhoneNumber(address))
             return PhoneNumberValidity.ADDRESS_GENERIC_INVALID;
 
@@ -92,6 +94,10 @@ public class SMSPeer extends Peer<String> {
 
     @Override
     public boolean equals(@Nullable Object obj) {
+        if (obj == null)
+            return false;
+        if (this == obj)
+            return true;
         if(obj instanceof SMSPeer) return ((SMSPeer) obj).address.equals(this.address);
         else return false;
     }
