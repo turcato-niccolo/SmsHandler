@@ -8,6 +8,8 @@ import android.os.Bundle;
  */
 public class StringResource extends Resource<String, String> {
 
+    private static final String PARSE_ERR = "The provided separator does not divide into a valid key-value pair.";
+
     private String name;
     private String value;
 
@@ -63,5 +65,20 @@ public class StringResource extends Resource<String, String> {
      */
     public static StringResource getDefaultInvalid(){
         return new StringResource("","");
+    }
+
+    /**
+     * Method to parse a String Resource from a String
+     * @param string the String to parse
+     * @param separator the separator which divides key and value, must not be a character of the
+     *                  key nor of the value.
+     * @return The StringResource
+     * @throws IllegalArgumentException if the separator splits the String in more than two parts
+     */
+    public static StringResource parseString(String string, String separator) throws IllegalArgumentException{
+        String[] parts = string.split(separator);
+        if(parts.length > 2)
+            throw new IllegalArgumentException(PARSE_ERR);
+        return new StringResource(parts[0], parts[1]);
     }
 }
