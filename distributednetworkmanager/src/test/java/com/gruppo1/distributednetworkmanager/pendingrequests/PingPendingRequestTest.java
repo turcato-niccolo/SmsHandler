@@ -83,7 +83,7 @@ public class PingPendingRequestTest {
     @Test
     public void getCode_returns(){
         PingPendingRequest request = new PingPendingRequest(pingAction, new StubListener());
-        assertEquals(Integer.parseInt(pingAction.getActionID()), request.getCode());
+        assertEquals(Integer.parseInt(pingAction.getActionID()), request.getOperationId());
     }
 
     @Test

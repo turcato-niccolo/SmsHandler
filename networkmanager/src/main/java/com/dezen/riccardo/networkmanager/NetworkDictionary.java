@@ -352,7 +352,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          */
         private List<SMSPeer> getPeers() {
             List<SMSPeer> peerList = new ArrayList<SMSPeer>();
-            PeerEntity[] peerEntities = dictionaryDatabase.access().getAllPeers();
+            List<PeerEntity> peerEntities = dictionaryDatabase.access().getAllPeers();
             for(PeerEntity peer : peerEntities)
                 peerList.add(new SMSPeer(peer.address));
             return peerList;
@@ -395,9 +395,9 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          */
         private List<StringResource> getResources() {
             List<StringResource> resourceList = new ArrayList<StringResource>();
-            ResourceEntity[] resourceEntities = dictionaryDatabase.access().getAllResources();
+            List<ResourceEntity> resourceEntities = dictionaryDatabase.access().getAllResources();
             for(ResourceEntity resource : resourceEntities)
-                resourceList.add(new StringResource(resource.keyName, resource.value));
+                resourceList.add(new StringResource(resource.key, resource.value));
             return resourceList;
         }
 

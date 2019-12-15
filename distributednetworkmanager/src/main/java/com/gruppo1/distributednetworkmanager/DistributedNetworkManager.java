@@ -4,8 +4,6 @@ import android.content.Context;
 
 import androidx.collection.ArraySet;
 
-import com.dezen.riccardo.networkmanager.NetworkDictionary;
-import com.dezen.riccardo.networkmanager.NetworkInterface;
 import com.dezen.riccardo.networkmanager.OnNetworkEventListener;
 import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.networkmanager.StringResource;
@@ -24,7 +22,7 @@ import java.util.Set;
  * Using the already built NetworkDictionary which has a list of
  */
 
-public class DistributedNetworkManager implements NetworkInterface<SMSMessage, SMSPeer, StringResource, NetworkDictionary>, ReceivedMessageListener<SMSMessage> {
+public class DistributedNetworkManager implements ReceivedMessageListener<SMSMessage> {
 
     /**
      * Actions the network can send and receive.

@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 
 public class StringResourceTest {
 
+    private static final String SEPARATOR = "\r";
+
     @Test
     public void getName() {
         String name = "Harry";
@@ -56,5 +58,36 @@ public class StringResourceTest {
         String value = "exampleValue";
         StringResource stringResource = new StringResource(name, value);
         assertTrue(stringResource.isValid());
+    }
+
+    @Test
+    public void getDefaultInvalid(){
+        assertFalse(StringResource.getDefaultInvalid().isValid());
+    }
+
+    @Test
+    public void parseString_justFine(){
+        String key = "I'm";
+        String value = "fine";
+        String stringToParse = key+SEPARATOR+value;
+        StringResource parseResult = StringResource.parseString(stringToParse, SEPARATOR);
+        assertEquals(key, parseResult.getName());
+        assertEquals(value, parseResult.getValue());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void parseString_tooLittleParts(){
+        String key = "I'm";
+        String stringToParse = key+SEPARATOR;
+        StringResource parseResult = StringResource.parseString(stringToParse, SEPARATOR);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void parseString_tooManyParts(){
+        String key = "I'm";
+        String value = "fine";
+        String extra = "I'm an extra";
+        String stringToParse = key+SEPARATOR+value+SEPARATOR+extra;
+        StringResource parseResult = StringResource.parseString(stringToParse, SEPARATOR);
     }
 }

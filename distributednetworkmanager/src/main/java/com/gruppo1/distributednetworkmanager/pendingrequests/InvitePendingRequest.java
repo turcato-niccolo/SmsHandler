@@ -2,34 +2,63 @@ package com.gruppo1.distributednetworkmanager.pendingrequests;
 
 import androidx.annotation.NonNull;
 
-import com.dezen.riccardo.smshandler.SMSPeer;
-import com.gruppo1.distributednetworkmanager.DistributedNetworkAction;
-import com.gruppo1.distributednetworkmanager.RequestResultListener;
+import com.gruppo1.distributednetworkmanager.ActionPropagator;
+import com.gruppo1.distributednetworkmanager.KadAction;
+import com.gruppo1.distributednetworkmanager.NodeDataProvider;
 import com.gruppo1.distributednetworkmanager.exceptions.InvalidActionException;
+import com.gruppo1.distributednetworkmanager.listeners.InviteResultListener;
 
-import java.util.List;
+public class InvitePendingRequest implements PendingRequest{
 
-public class InvitePendingRequest implements PendingRequest<SMSPeer>{
+    private static final String CON_ERR = "Tried to initialize Invite Request with a different Request Type: ";
 
-    private static final String CON_ERR = "Tried to initialize Ping Request with a different Request Type: ";
-    private static final String INVITE_ACCEPTED = "1";
+    private KadAction inviteAction;
+    private ActionPropagator actionPropagator;
+    private NodeDataProvider nodeProvider;
+    private InviteResultListener resultListener;
 
-    private DistributedNetworkAction inviteAction;
-    private RequestResultListener<SMSPeer> resultListener;
-
-    public InvitePendingRequest(@NonNull DistributedNetworkAction action, @NonNull RequestResultListener<SMSPeer> listener) throws InvalidActionException {
-        if(action.getAction() != DistributedNetworkAction.Type.INVITE)
-            throw new InvalidActionException();
+    /**
+     * Default constructor
+     * @param action
+     * @param actionPropagator
+     * @param nodeProvider
+     * @param resultListener
+     * @throws InvalidActionException
+     */
+    public InvitePendingRequest(
+            @NonNull KadAction action,
+            @NonNull ActionPropagator actionPropagator,
+            @NonNull NodeDataProvider nodeProvider,
+            @NonNull InviteResultListener resultListener
+    ) throws InvalidActionException {
+        if(action.getActionType() != KadAction.ActionType.INVITE)
+            throw new InvalidActionException(CON_ERR+action.getActionType());
         inviteAction = action;
-        resultListener = listener;
+        this.resultListener = resultListener;
     }
 
     /**
      * @return the unique Code for this PendingRequest
      */
     @Override
-    public int getCode() {
-        return Integer.parseInt(inviteAction.getActionID());
+    public int getOperationId() {
+        return inviteAction.getOperationId();
+    }
+
+    /**
+     * @return the Action that started this PingPendingRequest.
+     */
+    @Override
+    public KadAction getStartingAction(){
+        return inviteAction;
+    }
+
+    /**
+     * Method used to start the PendingRequest, propagating its first Action
+     */
+    @Override
+    public void start(){
+        actionPropagator.propagateAction(inviteAction);
     }
 
     /**
@@ -38,10 +67,10 @@ public class InvitePendingRequest implements PendingRequest<SMSPeer>{
      * otherwise.
      */
     @Override
-    public boolean isPertinent(DistributedNetworkAction action){
-        return DistributedNetworkAction.Type.ANSWER_INVITE == action.getAction() &&
-                action.getActionID().equals(inviteAction.getActionID()) &&
-                action.getSender().equals(inviteAction.getDestination());
+    public boolean isActionPertinent(KadAction action){
+        return KadAction.ActionType.INVITE_ANSWER == action.getActionType() &&
+                action.getOperationId() == inviteAction.getOperationId() &&
+                action.getPeer().equals(inviteAction.getPeer());
     }
 
     /**
@@ -49,13 +78,11 @@ public class InvitePendingRequest implements PendingRequest<SMSPeer>{
      * If the Result came back, then the User answered to the invitation, and no further Action is needed.
      *
      * @param action the Action triggering the step
-     * @return null
      */
     @Override
-    public List<DistributedNetworkAction> nextStep(DistributedNetworkAction action) {
-        if(!isPertinent(action)) return null;
-        boolean inviteAccepted = action.getPayload().equals(INVITE_ACCEPTED);
-        resultListener.onInviteResult(action.getSender(), inviteAccepted);
-        return null;
+    public void nextStep(KadAction action) {
+        if(!isActionPertinent(action)) return;
+        boolean inviteAccepted = Boolean.valueOf(action.getPayload());
+        resultListener.onInviteResult(getOperationId(), action.getPeer(), inviteAccepted);
     }
 }

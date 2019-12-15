@@ -17,8 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.dezen.riccardo.networkmanager.NetworkManager;
 import com.dezen.riccardo.networkmanager.OnNetworkEventListener;
+import com.dezen.riccardo.networkmanager.ReplicatedNetworkManager;
 import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.networkmanager.StringResource;
 import com.dezen.riccardo.smshandler.Message;
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
     private static final int ALL_PERMISSIONS_REQUEST_CODE = 0;
     private static final String NETWORK_TESTER_TAG = "NETWORK_TESTER";
 
-    private NetworkManager manager;
+    private ReplicatedNetworkManager manager;
     private TextView sampleText;
     private EditText txtNumber;
     private EditText editTextName;
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
         SMSPeer myselfPeer = new SMSPeer(mPhoneNumber);
 
         //Creates manager with a Dictionary initialized with itself as first Peer
-        manager = new NetworkManager(getApplicationContext(), myselfPeer);
+        manager = new ReplicatedNetworkManager(getApplicationContext(), myselfPeer);
         manager.setListener(this);
 
         inviteButton.setOnClickListener(new View.OnClickListener() {
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements OnNetworkEventLis
         return arrayPeers;
     }
 
-    private String[] getStringResourcesInArray(StringResource[] resources)
+    private String[] getStringResourcesInArray(Resource[] resources)
     {
         String[] resourcesToStrings = new String[resources.length];
         for (int i = 0; i < resources.length; i++) {

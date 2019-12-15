@@ -1,7 +1,5 @@
 package com.dezen.riccardo.smshandler;
 
-import android.telephony.SmsMessage;
-
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

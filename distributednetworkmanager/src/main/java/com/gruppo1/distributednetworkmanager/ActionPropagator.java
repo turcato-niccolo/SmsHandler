@@ -9,5 +9,5 @@ public interface ActionPropagator {
      * Method to propagate an Action that has been appropriately built by someone
      * @param action
      */
-    void propagateAction(DistributedNetworkAction action);
+    void propagateAction(KadAction action);
 }

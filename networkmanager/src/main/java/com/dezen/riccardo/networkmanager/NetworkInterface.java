@@ -4,14 +4,13 @@ import com.dezen.riccardo.smshandler.Message;
 import com.dezen.riccardo.smshandler.Peer;
 
 /**
- * Possible interface for Network Dictionary sharing. By default this interface defines only read
- * behaviour.
+ * Interface defining generic behaviour of a Network: inviting, joining, checking availability of an
+ * User (Peer) or a Resource. The Network is assumed to contain any kind of Resource.
  * @author Riccardo De Zen.
- * @param <P>
- * @param <R>
- * @param <D>
+ * @param <M> The type of Message this Network uses to communicate
+ * @param <P> The type of Peer this Network connects
  */
-public interface NetworkInterface<M extends Message, P extends Peer, R extends Resource, D extends Dictionary<P,R>>{
+public interface NetworkInterface<M extends Message, P extends Peer>{
 
     /**
      * Method to send an invitation to a new User (Peer)
@@ -26,27 +25,16 @@ public interface NetworkInterface<M extends Message, P extends Peer, R extends R
     void acceptInvite(P inviter);
 
     /**
-     * Method to get a Resource from the network, if available.
-     * @param key the key of Resource to request.
-     * @return The Resource with the matching key if available.
+     * Method to check whether a Resource is available.
+     * @param key the key of Resource to find.
+     * @return true if the Resource is available, false otherwise.
      */
-    R getResource(String key);
+    boolean isResourceAvailable(String key);
 
     /**
-     * Method to get an array of the Peers.
-     * @return array containing all Available Peers.
+     * Method to check whether a Peer is connected to the Network
+     * @param peer the Peer to check
+     * @return true if the Peer is considered connected, false otherwise
      */
-    P[] getAvailablePeers();
-
-    /**
-     * Method to get an array of the Resources.
-     * @return array containing all Available Resources.
-     */
-    R[] getAvailableResources();
-
-    /**
-     * Setter for a listener that should listen to various network events.
-     * @param listener the class listening for events.
-     */
-    void setListener(OnNetworkEventListener<M, R> listener);
+    boolean isPeerConnected(P peer);
 }

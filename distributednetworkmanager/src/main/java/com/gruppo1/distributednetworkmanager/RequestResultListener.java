@@ -3,6 +3,8 @@ package com.gruppo1.distributednetworkmanager;
 import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.smshandler.Peer;
 
+import java.util.BitSet;
+
 /**
  * @author Riccardo De Zen
  * Interface defining standard behaviour for a class listening to request results.
@@ -15,7 +17,6 @@ public interface RequestResultListener<P extends Peer>{
      * @param accepted true if the Peer accepted the invite and false if the invite was refused or
      *                 the timeout expired
      */
-    //TODO turn the boolean into an Enum
     void onInviteResult(P invited, boolean accepted);
 
     /**
@@ -32,7 +33,12 @@ public interface RequestResultListener<P extends Peer>{
      */
     void onStoreResult(Resource storedResource, P newOwner);
 
-    //TODO should findNodeResult be added? Yes? No? Why?
+    /**
+     * Method called when a Find Node operation has been completed
+     * @param target the Target Node
+     * @param closest the closest Peer
+     */
+    void onFindNodeResult(BitSet target, P closest);
 
     /**
      * Method called when a Resource has been found, and who had it
