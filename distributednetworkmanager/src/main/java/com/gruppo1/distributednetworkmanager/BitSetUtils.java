@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.BitSet;
@@ -12,6 +13,9 @@ class BitSetUtils {
 
     private static int minLength = 64;
     private static final String NOT_VALID_NUMBIT_EXCEPTION_MSG = "numBits isn't > 0 or a multiple of 64";
+    private static final String NOT_VALID_NUMBIT_SHA_EXCEPTION_MSG = "numBits isn't > 0 or <= 160";
+    private static final String INVALID_HEX_CHAR_MSG = "Invalid Hexadecimal Character: ";
+    private static final String INVALID_HEX_STRING_MSG="Invalid hexadecimal String supplied.";
     private static final String UTILS_TAG = BitSetUtils.class.toString();
     private static final String SHA_1 = "SHA-1";
 
@@ -44,26 +48,29 @@ class BitSetUtils {
 
     /**
      * @param toHash  the String (a key) of which generate hashcode
-     * @param numBits number of bits that the hash code will be constituted of, must be > 0
+     * @param numBits number of bits that the hash code will be constituted of, must be > 0 &&  <= 160
      * @return the bitSet containing the hash (SHA-1) of the bytes in input, truncated to numBits, bitSet's size is <= numBits
-     * @throws IllegalArgumentException if peer isn't valid or the numBit isn't multiple of 64
+     * @throws IllegalArgumentException if peer isn't valid or the numBit isn't in its bounds
      */
     public static BitSet hash(@NonNull byte[] toHash, int numBits) {
-        byte[] digest = {0};
-        try {
-            MessageDigest md = MessageDigest.getInstance(SHA_1);
-            md.update(toHash);
-            digest = md.digest();
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(UTILS_TAG, e.getMessage());
-            //Shouldn't happen, reported to log
+        if(numBits > 0 && numBits <= 160) {
+            byte[] digest = {0};
+            try {
+                MessageDigest md = MessageDigest.getInstance(SHA_1);
+                md.update(toHash);
+                digest = md.digest();
+            } catch (NoSuchAlgorithmException e) {
+                Log.e(UTILS_TAG, e.getMessage());
+                //Shouldn't happen, reported to log
+            }
+            if (digest.length * 8 > numBits) {
+                byte[] trunk = new byte[(numBits % 8 > 0) ? numBits / 8 + 1 : numBits / 8];
+                System.arraycopy(digest, 0, trunk, 0, trunk.length);
+                digest = trunk;
+            }
+            return BitSet.valueOf(digest);
         }
-        if(digest.length*8 > numBits){
-            byte[] trunk = new byte[(numBits%8 > 0) ? numBits/8+1 : numBits/8];
-            System.arraycopy(digest, 0, trunk, 0, trunk.length);
-            digest = trunk;
-        }
-        return BitSet.valueOf(digest);
+        throw new  IllegalArgumentException(NOT_VALID_NUMBIT_SHA_EXCEPTION_MSG);
     }
 
     /**
@@ -100,6 +107,73 @@ class BitSetUtils {
             return 0;
         return rhs.get(firstDifferent) ? 1 : -1;
     }
+
+    /**
+     * @param hashInBytes byte array to convert to HEX on a String
+     * @return the byte array converted to Hex written on a String (lowercase)
+     */
+    private static String bytesToHex(@NonNull byte[] hashInBytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hashInBytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    /**
+     *
+     * @param hash the given BitSet to convert to HEX on a String
+     * @return the given BitSet converted to Hex written on a String
+     */
+    public static String BitSetsToHex(BitSet hash){
+        return bytesToHex(hash.toByteArray());
+    }
+
+    /**
+     *
+     * @param hexString
+     * @return
+     * @throws IllegalArgumentException, if the String length isn't multiple of 2, of contains invalid HEX string
+     */
+    public static BitSet decodeHexString(String hexString) {
+        hexString = hexString.toLowerCase();
+        if (hexString.length() % 2 == 1) {
+            throw new IllegalArgumentException(INVALID_HEX_STRING_MSG);
+        }
+
+        byte[] bytes = new byte[hexString.length() / 2];
+        for (int i = 0; i < hexString.length(); i += 2) {
+            bytes[i / 2] = hexToByte(hexString.substring(i, i + 2));
+        }
+        return BitSet.valueOf(bytes);
+    }
+
+    /**
+     *
+     * @param hexString a string of length 2 containing an HEX number of two digits
+     * @return the converted HEX to byte
+     * @throws IllegalArgumentException if the string does not contain valid HEX digits
+     */
+    private static byte hexToByte(@NonNull String hexString) {
+        int firstDigit = toDigit(hexString.charAt(0));
+        int secondDigit = toDigit(hexString.charAt(1));
+        return (byte) ((firstDigit << 4) + secondDigit);
+    }
+
+    /**
+     *
+     * @param hexChar the given char to convert
+     * @return the char converted to int
+     * @throws IllegalArgumentException if char is invalid
+     */
+    private static int toDigit(char hexChar) {
+        int digit = Character.digit(hexChar, 16);
+        if(digit == -1) {
+            throw new IllegalArgumentException(INVALID_HEX_CHAR_MSG + hexChar);
+        }
+        return digit;
+    }
+
 
 
 }

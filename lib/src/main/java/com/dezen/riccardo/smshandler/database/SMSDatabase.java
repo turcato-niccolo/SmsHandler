@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase;
  * @author Riccardo De Zen
  * Abstract class to allow Room library to instantiate the database.
  */
-@Database(entities = {SMSEntity.class}, version = 1)
+@Database(entities = {SMSEntity.class}, version = 1, exportSchema = false)
 abstract class SMSDatabase extends RoomDatabase {
     public abstract SMSDao access();
 }
