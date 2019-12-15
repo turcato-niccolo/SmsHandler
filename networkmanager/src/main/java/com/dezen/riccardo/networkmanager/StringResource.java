@@ -77,7 +77,7 @@ public class StringResource extends Resource<String, String> {
      */
     public static StringResource parseString(String string, String separator) throws IllegalArgumentException{
         String[] parts = string.split(separator);
-        if(parts.length > 2)
+        if(parts.length != 2)
             throw new IllegalArgumentException(PARSE_ERR);
         return new StringResource(parts[0], parts[1]);
     }
