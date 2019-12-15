@@ -34,25 +34,25 @@ package com.gruppo1.distributednetworkmanager;
  * @author Niccolò Turcato
  * @author Giorgia Bortoletti (some fixes)
  */
-public abstract class RoutingTable<B extends Bucket<Node>> {
+public abstract class RoutingTable<B extends Bucket<Node<BinarySet>>> {
 
     /**
      * @param node Node to add
      * @return true if the node has been added, false otherwise
      */
-    public abstract boolean add(Node node);
+    public abstract boolean add(Node<BinarySet> node);
 
     /**
      * @param node Node to remove
      * @return true if the node has been removed, false otherwise
      */
-    public abstract boolean remove(Node node);
+    public abstract boolean remove(Node<BinarySet> node);
 
     /**
      * @param node Node of which check presence
      * @return true if present, false otherwise
      */
-    public abstract boolean contains(Node node);
+    public abstract boolean contains(Node<BinarySet> node);
 
     /**
      * @param i index of the bucket in buckets container
@@ -64,18 +64,18 @@ public abstract class RoutingTable<B extends Bucket<Node>> {
      * @param node Node of the distributed Network
      * @return the index (between 0 and N -1) of the bucket that maybe containing the given Node (Resource or Peer), -1 otherwise
      */
-    public abstract int getLocation(Node node);
+    public abstract int getLocation(Node<BinarySet> node);
 
     /**
      * @param node
      * @return the closest Node at the node in the routing table if it is present, otherwise null
      */
-    public abstract Node getClosest(Node node);
+    public abstract Node getClosest(Node<BinarySet> node);
 
     /**
      * @param node
      * @return the closest K Nodes at the node in the routing table if it is present, otherwise null
      */
-    public abstract Node[] getKClosest(Node node);
+    public abstract Node[] getKClosest(Node<BinarySet> node);
 
 }
