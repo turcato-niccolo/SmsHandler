@@ -9,8 +9,8 @@ import com.gruppo1.distributednetworkmanager.ActionPropagator;
 import com.gruppo1.distributednetworkmanager.BinarySet;
 import com.gruppo1.distributednetworkmanager.BitSetUtils;
 import com.gruppo1.distributednetworkmanager.KadAction;
-import com.gruppo1.distributednetworkmanager.Node;
 import com.gruppo1.distributednetworkmanager.NodeDataProvider;
+import com.gruppo1.distributednetworkmanager.PeerNode;
 import com.gruppo1.distributednetworkmanager.listeners.FindNodeResultListener;
 import com.gruppo1.distributednetworkmanager.listeners.FindValueResultListener;
 import com.gruppo1.distributednetworkmanager.listeners.InviteResultListener;
@@ -68,32 +68,33 @@ public class ParameterizedPendingRequestTest {
     }
 
     //Stub node data provider
-    NodeDataProvider nodeDataProvider = new NodeDataProvider() {
+    private NodeDataProvider nodeDataProvider = new StubNodeDataProvider();
+    private class StubNodeDataProvider implements NodeDataProvider<BinarySet,PeerNode>{
         @Override
-        public Node getClosest(Object target) {
+        public PeerNode getClosest(BinarySet target) {
             return null;
         }
 
         @Override
-        public List getKClosest(int k, Object target) {
-            return null;
+        public List<PeerNode> getKClosest(int k, BinarySet target) {
+            return new ArrayList<>();
         }
 
         @Override
-        public List filterKClosest(int k, Object target, List nodes) {
-            return null;
+        public List<PeerNode> filterKClosest(int k, BinarySet target, List<PeerNode> nodes) {
+            return new ArrayList<>();
         }
     };
     //Stub action propagator
-    ActionPropagator actionPropagator = new ActionPropagator() {
+    private ActionPropagator actionPropagator = new ActionPropagator() {
         @Override
         public void propagateAction(KadAction action) {
             propagatedActions++;
         }
     };
     //Stub result listener
-    ResultListener resultListener = new ResultListener();
-    private class ResultListener implements PingResultListener, InviteResultListener, FindNodeResultListener, FindValueResultListener, StoreResultListener {
+    private StubResultListener resultListener = new StubResultListener();
+    private class StubResultListener implements PingResultListener, InviteResultListener, FindNodeResultListener, FindValueResultListener, StoreResultListener {
         @Override
         public void onFindNodeResult(int operationId, BitSet target, SMSPeer closest) {
 
@@ -128,14 +129,14 @@ public class ParameterizedPendingRequestTest {
      * [Specific parameter for each class],
      * [Expected number of actions on start],
      */
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "{index}: {0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {PingPendingRequest.class, KadAction.ActionType.PING_ANSWER, testPeer, 1},
-                {InvitePendingRequest.class, KadAction.ActionType.INVITE_ANSWER, testPeer, 1},
-                {FindNodePendingRequest.class, KadAction.ActionType.FIND_NODE_ANSWER, testBinarySet, 0},
-                {FindValuePendingRequest.class, KadAction.ActionType.FIND_VALUE_ANSWER, testBinarySet, 0},
-                {StorePendingRequest.class, KadAction.ActionType.STORE_ANSWER, testResource, 0}
+                {PingPendingRequest.class.getSimpleName(), PingPendingRequest.class, KadAction.ActionType.PING_ANSWER, testPeer, 1},
+                {InvitePendingRequest.class.getSimpleName(), InvitePendingRequest.class, KadAction.ActionType.INVITE_ANSWER, testPeer, 1},
+                {FindNodePendingRequest.class.getSimpleName(), FindNodePendingRequest.class, KadAction.ActionType.FIND_NODE_ANSWER, testBinarySet, 0},
+                {FindValuePendingRequest.class.getSimpleName(), FindValuePendingRequest.class, KadAction.ActionType.FIND_VALUE_ANSWER, testBinarySet, 0},
+                {StorePendingRequest.class.getSimpleName(), StorePendingRequest.class, KadAction.ActionType.STORE_ANSWER, testResource, 0}
         });
     }
 
@@ -148,11 +149,15 @@ public class ParameterizedPendingRequestTest {
 
 
     /**
-     * Constructor for test.
-     * @param pendingRequestClass the class of the PendingRequest to test
-     * @param param the Only distinctive parameter of the various Requests
+     * Constructor for the Test class
+     * @param className name for the class, not necessary, only used for Test name.
+     * @param pendingRequestClass the class to Test
+     * @param responseType the type of Response the class expects
+     * @param param the only distinctive parameter for the class
+     * @param expectedActionsOnStart the expected number of actions when the Pending Request starts
      */
     public ParameterizedPendingRequestTest(
+            @NonNull String className,
             @NonNull Class<PendingRequest> pendingRequestClass,
             @NonNull KadAction.ActionType responseType,
             @NonNull Object param,
@@ -163,7 +168,6 @@ public class ParameterizedPendingRequestTest {
             propagatedActions = 0;
             operationId = new Random().nextInt();
             Constructor constructor = pendingRequestClass.getConstructors()[0];
-            String className = pendingRequestClass.getSimpleName();
             //Switch seems to only work with Strings that are defined through hardcoding. Final attribute was of little help
             if(className.equals(PING_NAME)){
                 testedRequest = (PendingRequest) constructor.newInstance(
@@ -226,7 +230,7 @@ public class ParameterizedPendingRequestTest {
         exampleValidResponse = buildResponseAction(responseType,operationId);
         exampleInvalidIdResponse = buildResponseAction(responseType,operationId+1);
         for(KadAction.ActionType invalidType : KadAction.ActionType.values()){
-            if(invalidType != responseType)
+            if(invalidType != responseType && invalidType.isResponse())
                 exampleInvalidTypeResponses.add(buildResponseAction(invalidType, operationId));
         }
     }
@@ -267,7 +271,7 @@ public class ParameterizedPendingRequestTest {
 
     @Test
     public void nextStep_ignoresNonPertinent(){
-        final int expectedSteps = 1;
+        final int expectedSteps = 0;
         testedRequest.nextStep(exampleInvalidIdResponse);
         for(KadAction exampleResponse : exampleInvalidTypeResponses){
             testedRequest.nextStep(exampleResponse);
