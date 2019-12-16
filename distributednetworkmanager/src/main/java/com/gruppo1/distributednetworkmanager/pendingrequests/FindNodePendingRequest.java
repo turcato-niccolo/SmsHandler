@@ -27,7 +27,7 @@ public class FindNodePendingRequest implements PendingRequest {
 
     private int stepsTaken = 0;
     private int operationId;
-    private PeerNode targetNode;
+    private BinarySet targetId;
     private ActionPropagator actionPropagator;
     private NodeDataProvider<BinarySet, PeerNode> nodeProvider;
     private FindNodeResultListener resultListener;
@@ -39,20 +39,20 @@ public class FindNodePendingRequest implements PendingRequest {
 
     /**
      * Default constructor
-     * @param targetNode the target Node
+     * @param targetId the target Node
      * @param actionPropagator
      * @param nodeProvider
      * @param resultListener the listener to this Request's Result. Must not be null.
      */
     public FindNodePendingRequest(
             int operationId,
-            @NonNull PeerNode targetNode,
+            @NonNull BinarySet targetId,
             @NonNull ActionPropagator actionPropagator,
             @NonNull NodeDataProvider<BinarySet, PeerNode> nodeProvider,
             @NonNull FindNodeResultListener resultListener
     ){
         this.operationId = operationId;
-        this.targetNode = targetNode;
+        this.targetId = targetId;
         this.actionPropagator = actionPropagator;
         this.nodeProvider = nodeProvider;
         this.resultListener = resultListener;
@@ -80,7 +80,7 @@ public class FindNodePendingRequest implements PendingRequest {
      */
     @Override
     public void start(){
-        List<PeerNode> closestNodes = nodeProvider.getKClosest(K,targetNode.getAddress());
+        List<PeerNode> closestNodes = nodeProvider.getKClosest(K,targetId);
         for(PeerNode node : closestNodes){
             waitingForAnswer.add(node);
             KadAction findNodeAction = buildAction(node.getPhysicalPeer());
@@ -117,7 +117,7 @@ public class FindNodePendingRequest implements PendingRequest {
      * @param nodeToMark the Node to be added to the set
      */
     private void markVisited(PeerNode nodeToMark){
-        visitedNodes.put(targetNode.getDistance(nodeToMark), nodeToMark);
+        visitedNodes.put(targetId.getDistance(nodeToMark.getAddress()), nodeToMark);
     }
 
     /**
@@ -127,7 +127,7 @@ public class FindNodePendingRequest implements PendingRequest {
     private void handleResponse(KadAction action){
         PeerNode sender = NodeUtils.getNodeForPeer(action.getPeer(), N);
         if(waitingForAnswer.contains(sender)){
-            visitedNodes.put(targetNode.getDistance(sender), sender);
+            markVisited(sender);
             waitingForAnswer.remove(sender);
             neededResponses += action.getTotalParts();
         }
@@ -158,7 +158,7 @@ public class FindNodePendingRequest implements PendingRequest {
         PeerNode closestNode = visitedNodes.get(visitedNodes.firstKey());
         if(closestNode != null){
             SMSPeer closestPeer = closestNode.getPhysicalPeer();
-            resultListener.onFindNodeResult(operationId,targetNode.getAddress().getKey(),closestPeer);
+            resultListener.onFindNodeResult(operationId,targetId.getKey(),closestPeer);
         }
         else{
             //TODO I have visited nobody, I'm probably the closest
@@ -170,7 +170,7 @@ public class FindNodePendingRequest implements PendingRequest {
      */
     private void nextRoundOfRequests(){
         List<PeerNode> listBuffer = Arrays.asList(peerBuffer.toArray(new PeerNode[0]));
-        List<PeerNode> newClosest = nodeProvider.filterKClosest(K, targetNode.getAddress(),listBuffer);
+        List<PeerNode> newClosest = nodeProvider.filterKClosest(K, targetId,listBuffer);
         propagateToAll(newClosest);
         peerBuffer = new ArraySet<>();
     }
@@ -198,7 +198,7 @@ public class FindNodePendingRequest implements PendingRequest {
                 DEF_PARTS,
                 DEF_PARTS,
                 KadAction.PayloadType.NODE_ID,
-                BitSetUtils.BitSetsToHex(targetNode.getAddress().getKey())
+                BitSetUtils.BitSetsToHex(targetId.getKey())
         );
     }
 }

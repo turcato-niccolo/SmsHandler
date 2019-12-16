@@ -10,6 +10,8 @@ import com.gruppo1.distributednetworkmanager.listeners.PingResultListener;
 
 class PingPendingRequest implements PendingRequest{
 
+    private static final String CON_ERR = "One or more parameters were null";
+
     private static final String PAYLOAD = "owO what's this";
     private static final int DEF_PARTS = 1;
 
