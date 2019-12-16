@@ -6,10 +6,12 @@ import androidx.collection.ArraySet;
 import com.dezen.riccardo.smshandler.SMSPeer;
 import com.gruppo1.distributednetworkmanager.ActionPropagator;
 import com.gruppo1.distributednetworkmanager.BinarySet;
+import com.gruppo1.distributednetworkmanager.BitSetUtils;
 import com.gruppo1.distributednetworkmanager.KadAction;
 import com.gruppo1.distributednetworkmanager.NodeDataProvider;
 import com.gruppo1.distributednetworkmanager.NodeUtils;
 import com.gruppo1.distributednetworkmanager.PeerNode;
+import com.gruppo1.distributednetworkmanager.exceptions.EmptyNodeBufferException;
 import com.gruppo1.distributednetworkmanager.listeners.FindNodeResultListener;
 
 import java.util.Arrays;
@@ -18,12 +20,14 @@ import java.util.Set;
 
 public class FindNodePendingRequest implements PendingRequest {
 
+    private static final int DEF_PARTS = 1;
+
     private static final int K = 5;
     private static final int N = 128;
 
     private int stepsTaken = 0;
     private int operationId;
-    private PeerNode target;
+    private PeerNode targetNode;
     private ActionPropagator actionPropagator;
     private NodeDataProvider<BinarySet, PeerNode> nodeProvider;
     private FindNodeResultListener resultListener;
@@ -35,20 +39,20 @@ public class FindNodePendingRequest implements PendingRequest {
 
     /**
      * Default constructor
-     * @param target the target Node
+     * @param targetNode the target Node
      * @param actionPropagator
      * @param nodeProvider
      * @param resultListener the listener to this Request's Result. Must not be null.
      */
     public FindNodePendingRequest(
             int operationId,
-            @NonNull PeerNode target,
+            @NonNull PeerNode targetNode,
             @NonNull ActionPropagator actionPropagator,
             @NonNull NodeDataProvider<BinarySet, PeerNode> nodeProvider,
             @NonNull FindNodeResultListener resultListener
     ){
         this.operationId = operationId;
-        this.target = target;
+        this.targetNode = targetNode;
         this.actionPropagator = actionPropagator;
         this.nodeProvider = nodeProvider;
         this.resultListener = resultListener;
@@ -77,7 +81,7 @@ public class FindNodePendingRequest implements PendingRequest {
     @Override
     public void start(){
         //TODO fix generics
-        List<PeerNode> closest = nodeProvider.getKClosest(K,target.getAddress());
+        List<PeerNode> closest = nodeProvider.getKClosest(K,targetNode.getAddress());
         for(PeerNode node : closest){
             waitingForAnswer.add(node);
             //TODO create action
@@ -120,13 +124,7 @@ public class FindNodePendingRequest implements PendingRequest {
             if(peerBuffer.isEmpty()){
                 finalStep();
             }
-            else nextRound();
-            //Next round of propagation
-            List<PeerNode> listBuffer = Arrays.asList(peerBuffer.toArray(new PeerNode[0]));
-            List<PeerNode> newClosest = nodeProvider.filterKClosest(K, target.getAddress(),listBuffer);
-            propagateToAll(newClosest);
-            backupBuffer = peerBuffer;
-            peerBuffer = new ArraySet<>();
+            else nextRoundOfRequests();
         }
     }
 
@@ -134,14 +132,24 @@ public class FindNodePendingRequest implements PendingRequest {
      * The buffer is empty, so no better solutions have been found than the ones in the backup buffer
      */
     private void finalStep(){
-        //TODO
+        List<PeerNode> listBuffer = Arrays.asList(backupBuffer.toArray(new PeerNode[0]));
+        List<PeerNode> closestNode = nodeProvider.filterKClosest(1,targetNode.getAddress(),listBuffer);
+        if(closestNode.size() == 1){
+            SMSPeer closestPeer = closestNode.get(0).getPhysicalPeer();
+            resultListener.onFindNodeResult(operationId,targetNode.getAddress().getKey(),closestPeer);
+        }
+        else throw new EmptyNodeBufferException();
     }
 
     /**
      * Method to perform the next round of Requests
      */
-    private void nextRound(){
-        //TODO
+    private void nextRoundOfRequests(){
+        List<PeerNode> listBuffer = Arrays.asList(peerBuffer.toArray(new PeerNode[0]));
+        List<PeerNode> newClosest = nodeProvider.filterKClosest(K, targetNode.getAddress(),listBuffer);
+        propagateToAll(newClosest);
+        backupBuffer = peerBuffer;
+        peerBuffer = new ArraySet<>();
     }
 
     /**
@@ -149,6 +157,25 @@ public class FindNodePendingRequest implements PendingRequest {
      * @param peerNodes a list containing PeerNodes
      */
     private void propagateToAll(List<PeerNode> peerNodes){
-        //TODO for each create an Action and send it
+        for(PeerNode node : peerNodes){
+            actionPropagator.propagateAction(buildAction(node.getPhysicalPeer()));
+        }
+    }
+
+    /**
+     * //TODO specs
+     * @param peer
+     * @return
+     */
+    private KadAction buildAction(SMSPeer peer){
+        return new KadAction(
+                peer,
+                KadAction.ActionType.FIND_NODE,
+                operationId,
+                DEF_PARTS,
+                DEF_PARTS,
+                KadAction.PayloadType.NODE_ID,
+                BitSetUtils.BitSetsToHex(targetNode.getAddress().getKey())
+        );
     }
 }

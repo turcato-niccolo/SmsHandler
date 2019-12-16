@@ -10,7 +10,8 @@ import com.gruppo1.distributednetworkmanager.listeners.InviteResultListener;
 
 public class InvitePendingRequest implements PendingRequest{
 
-    private static final String CON_ERR = "Tried to initialize Invite Request with a different Request Type: ";
+    private static final String PAYLOAD = "owO what's this";
+    private static final int DEF_PARTS = 1;
 
     private int stepsTaken = 0;
     private int operationId;
@@ -34,12 +35,11 @@ public class InvitePendingRequest implements PendingRequest{
             @NonNull NodeDataProvider nodeProvider,
             @NonNull InviteResultListener resultListener
     ){
-        //TODO generate action
-        inviteAction = null;
         this.operationId = operationId;
         this.actionPropagator = actionPropagator;
         this.nodeProvider = nodeProvider;
         this.resultListener = resultListener;
+        this.inviteAction = buildAction(peerToInvite);
     }
 
     /**
@@ -91,5 +91,20 @@ public class InvitePendingRequest implements PendingRequest{
         boolean inviteAccepted = Boolean.valueOf(action.getPayload());
         resultListener.onInviteResult(getOperationId(), action.getPeer(), inviteAccepted);
         stepsTaken++;
+    }
+
+    /**
+     * Method to return the correct Action for a Peer
+     * @param peer
+     * @return
+     */
+    private KadAction buildAction(SMSPeer peer){
+        return new KadAction(
+                peer,
+                KadAction.ActionType.INVITE,operationId,
+                DEF_PARTS,
+                DEF_PARTS,
+                KadAction.PayloadType.IGNORED,PAYLOAD
+        );
     }
 }

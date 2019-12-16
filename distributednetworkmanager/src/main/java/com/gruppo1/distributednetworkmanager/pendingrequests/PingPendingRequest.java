@@ -10,6 +10,9 @@ import com.gruppo1.distributednetworkmanager.listeners.PingResultListener;
 
 class PingPendingRequest implements PendingRequest{
 
+    private static final String PAYLOAD = "owO what's this";
+    private static final int DEF_PARTS = 1;
+
     private int stepsTaken = 0;
     private int operationId;
     private KadAction pingAction;
@@ -32,12 +35,11 @@ class PingPendingRequest implements PendingRequest{
             @NonNull NodeDataProvider nodeProvider,
             @NonNull PingResultListener resultListener
     ){
-        //TODO generate action
-        this.pingAction = null;
         this.operationId = operationId;
         this.actionPropagator = actionPropagator;
         this.nodeProvider = nodeProvider;
         this.resultListener = resultListener;
+        this.pingAction = buildAction(peerToPing);
     }
 
     /**
@@ -87,5 +89,20 @@ class PingPendingRequest implements PendingRequest{
         //The Ping, one way or another, came back, so the result is positive and no further Actions are needed
         resultListener.onPingResult(getOperationId(), action.getPeer(), true);
         stepsTaken++;
+    }
+
+    /**
+     * Method to return the correct Action for a Peer
+     * @param peer
+     * @return
+     */
+    private KadAction buildAction(SMSPeer peer){
+        return new KadAction(
+                peer,
+                KadAction.ActionType.PING,operationId,
+                DEF_PARTS,
+                DEF_PARTS,
+                KadAction.PayloadType.IGNORED,PAYLOAD
+        );
     }
 }
