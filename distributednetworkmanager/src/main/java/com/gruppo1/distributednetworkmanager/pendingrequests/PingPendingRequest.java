@@ -2,17 +2,16 @@ package com.gruppo1.distributednetworkmanager.pendingrequests;
 
 import androidx.annotation.NonNull;
 
+import com.dezen.riccardo.smshandler.SMSPeer;
 import com.gruppo1.distributednetworkmanager.ActionPropagator;
 import com.gruppo1.distributednetworkmanager.KadAction;
 import com.gruppo1.distributednetworkmanager.NodeDataProvider;
-import com.gruppo1.distributednetworkmanager.exceptions.InvalidActionException;
 import com.gruppo1.distributednetworkmanager.listeners.PingResultListener;
 
 class PingPendingRequest implements PendingRequest{
 
-    private static final String CON_ERR = "Tried to initialize Ping Request with a different Request Type: ";
-
     private int stepsTaken = 0;
+    private int operationId;
     private KadAction pingAction;
     private ActionPropagator actionPropagator;
     private NodeDataProvider nodeProvider;
@@ -20,21 +19,22 @@ class PingPendingRequest implements PendingRequest{
 
     /**
      * Default constructor
-     * @param action the Action from which to build this PendingRequest. Must not be null
+     * @param operationId the id for this PendingRequest
+     * @param peerToPing the SMSPeer to ping
      * @param actionPropagator
      * @param nodeProvider
      * @param resultListener the listener to this Request's Result. Must not be null.
-     * @throws InvalidActionException if the Action is not a Ping Action
      */
     public PingPendingRequest(
-            @NonNull KadAction action,
+            int operationId,
+            @NonNull SMSPeer peerToPing,
             @NonNull ActionPropagator actionPropagator,
             @NonNull NodeDataProvider nodeProvider,
             @NonNull PingResultListener resultListener
-    ) throws InvalidActionException {
-        if(action.getActionType() != KadAction.ActionType.PING)
-            throw new InvalidActionException(CON_ERR+action.getActionType());
-        this.pingAction = action;
+    ){
+        //TODO generate action
+        this.pingAction = null;
+        this.operationId = operationId;
         this.actionPropagator = actionPropagator;
         this.nodeProvider = nodeProvider;
         this.resultListener = resultListener;
@@ -55,14 +55,6 @@ class PingPendingRequest implements PendingRequest{
     @Override
     public int getOperationId() {
         return pingAction.getOperationId();
-    }
-
-    /**
-     * @return the Action that started this PingPendingRequest.
-     */
-    @Override
-    public KadAction getStartingAction(){
-        return pingAction;
     }
 
     /**

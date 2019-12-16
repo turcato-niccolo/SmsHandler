@@ -2,10 +2,10 @@ package com.gruppo1.distributednetworkmanager.pendingrequests;
 
 import androidx.annotation.NonNull;
 
+import com.dezen.riccardo.smshandler.SMSPeer;
 import com.gruppo1.distributednetworkmanager.ActionPropagator;
 import com.gruppo1.distributednetworkmanager.KadAction;
 import com.gruppo1.distributednetworkmanager.NodeDataProvider;
-import com.gruppo1.distributednetworkmanager.exceptions.InvalidActionException;
 import com.gruppo1.distributednetworkmanager.listeners.InviteResultListener;
 
 public class InvitePendingRequest implements PendingRequest{
@@ -13,6 +13,7 @@ public class InvitePendingRequest implements PendingRequest{
     private static final String CON_ERR = "Tried to initialize Invite Request with a different Request Type: ";
 
     private int stepsTaken = 0;
+    private int operationId;
     private KadAction inviteAction;
     private ActionPropagator actionPropagator;
     private NodeDataProvider nodeProvider;
@@ -20,21 +21,24 @@ public class InvitePendingRequest implements PendingRequest{
 
     /**
      * Default constructor
-     * @param action
+     * @param operationId
+     * @param peerToInvite
      * @param actionPropagator
      * @param nodeProvider
      * @param resultListener
-     * @throws InvalidActionException
      */
     public InvitePendingRequest(
-            @NonNull KadAction action,
+            int operationId,
+            @NonNull SMSPeer peerToInvite,
             @NonNull ActionPropagator actionPropagator,
             @NonNull NodeDataProvider nodeProvider,
             @NonNull InviteResultListener resultListener
-    ) throws InvalidActionException {
-        if(action.getActionType() != KadAction.ActionType.INVITE)
-            throw new InvalidActionException(CON_ERR+action.getActionType());
-        inviteAction = action;
+    ){
+        //TODO generate action
+        inviteAction = null;
+        this.operationId = operationId;
+        this.actionPropagator = actionPropagator;
+        this.nodeProvider = nodeProvider;
         this.resultListener = resultListener;
     }
 
@@ -53,14 +57,6 @@ public class InvitePendingRequest implements PendingRequest{
     @Override
     public int getOperationId() {
         return inviteAction.getOperationId();
-    }
-
-    /**
-     * @return the Action that started this PingPendingRequest.
-     */
-    @Override
-    public KadAction getStartingAction(){
-        return inviteAction;
     }
 
     /**

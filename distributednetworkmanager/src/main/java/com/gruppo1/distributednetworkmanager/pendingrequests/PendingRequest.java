@@ -26,11 +26,6 @@ public interface PendingRequest{
     int getOperationId();
 
     /**
-     * @return the Action that started this PendingRequest
-     */
-    KadAction getStartingAction();
-
-    /**
      * Method used to start the PendingRequest, propagating its first Action
      */
     void start();

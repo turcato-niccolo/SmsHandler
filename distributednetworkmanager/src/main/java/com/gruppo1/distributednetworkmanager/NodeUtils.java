@@ -10,7 +10,7 @@ import java.util.BitSet;
  * Class used to quickly create BitSet binary key and PeerNodes from Peer and resources
  * Uses SHA-1 Hashing from class BitSetUtils
  */
-class NodeUtils {
+public class NodeUtils {
     private final static String KEY_LENGTH_INVALID_MSG = "invalid key length, must be > 0 && <=160";
     private final static String PEER_INVALID_MSG = "invalid or null Peer";
     private final static String RESOURCE_INVALID_MSG = "invalid or null Resource";
