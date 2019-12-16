@@ -11,17 +11,17 @@ import com.gruppo1.distributednetworkmanager.KadAction;
 import com.gruppo1.distributednetworkmanager.NodeDataProvider;
 import com.gruppo1.distributednetworkmanager.NodeUtils;
 import com.gruppo1.distributednetworkmanager.PeerNode;
-import com.gruppo1.distributednetworkmanager.exceptions.EmptyNodeBufferException;
 import com.gruppo1.distributednetworkmanager.listeners.FindNodeResultListener;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class FindNodePendingRequest implements PendingRequest {
 
     private static final int DEF_PARTS = 1;
-
     private static final int K = 5;
     private static final int N = 128;
 
@@ -32,9 +32,9 @@ public class FindNodePendingRequest implements PendingRequest {
     private NodeDataProvider<BinarySet, PeerNode> nodeProvider;
     private FindNodeResultListener resultListener;
 
-    private Set<PeerNode> backupBuffer = new ArraySet<>();
-    private Set<PeerNode> peerBuffer = new ArraySet<>();
-    private Set<PeerNode> waitingForAnswer = new ArraySet<>();
+    private TreeMap<BinarySet, PeerNode> visitedNodes = new TreeMap<>();
+    private Set<PeerNode> peerBuffer = new TreeSet<>();
+    private Set<PeerNode> waitingForAnswer = new TreeSet<>();
     private int neededResponses = 0;
 
     /**
@@ -80,12 +80,10 @@ public class FindNodePendingRequest implements PendingRequest {
      */
     @Override
     public void start(){
-        //TODO fix generics
-        List<PeerNode> closest = nodeProvider.getKClosest(K,targetNode.getAddress());
-        for(PeerNode node : closest){
+        List<PeerNode> closestNodes = nodeProvider.getKClosest(K,targetNode.getAddress());
+        for(PeerNode node : closestNodes){
             waitingForAnswer.add(node);
-            //TODO create action
-            KadAction findNodeAction = null;
+            KadAction findNodeAction = buildAction(node.getPhysicalPeer());
             actionPropagator.propagateAction(findNodeAction);
         }
     }
@@ -109,17 +107,42 @@ public class FindNodePendingRequest implements PendingRequest {
     @Override
     public void nextStep(KadAction action) {
         if(!isActionPertinent(action)) return;
+        handleResponse(action);
+        checkStatus();
+        stepsTaken++;
+    }
+
+    /**
+     * Method adding a Node to the visitedNodes map, with the distance from the target Node as its key
+     * @param nodeToMark the Node to be added to the set
+     */
+    private void markVisited(PeerNode nodeToMark){
+        visitedNodes.put(targetNode.getDistance(nodeToMark), nodeToMark);
+    }
+
+    /**
+     *
+     * @param action
+     */
+    private void handleResponse(KadAction action){
         PeerNode sender = NodeUtils.getNodeForPeer(action.getPeer(), N);
         if(waitingForAnswer.contains(sender)){
+            visitedNodes.put(targetNode.getDistance(sender), sender);
             waitingForAnswer.remove(sender);
             neededResponses += action.getTotalParts();
         }
         if(action.getPayloadType() == KadAction.PayloadType.PEER_ADDRESS){
             PeerNode responseNode = NodeUtils.getNodeForPeer(new SMSPeer(action.getPayload()), N);
-            peerBuffer.add(responseNode);
+            if(!visitedNodes.containsValue(responseNode))
+                peerBuffer.add(responseNode);
         }
         neededResponses--;
-        stepsTaken++;
+    }
+
+    /**
+     *
+     */
+    private void checkStatus(){
         if(waitingForAnswer.isEmpty() && neededResponses == 0){
             if(peerBuffer.isEmpty()){
                 finalStep();
@@ -132,13 +155,14 @@ public class FindNodePendingRequest implements PendingRequest {
      * The buffer is empty, so no better solutions have been found than the ones in the backup buffer
      */
     private void finalStep(){
-        List<PeerNode> listBuffer = Arrays.asList(backupBuffer.toArray(new PeerNode[0]));
-        List<PeerNode> closestNode = nodeProvider.filterKClosest(1,targetNode.getAddress(),listBuffer);
-        if(closestNode.size() == 1){
-            SMSPeer closestPeer = closestNode.get(0).getPhysicalPeer();
+        PeerNode closestNode = visitedNodes.get(visitedNodes.firstKey());
+        if(closestNode != null){
+            SMSPeer closestPeer = closestNode.getPhysicalPeer();
             resultListener.onFindNodeResult(operationId,targetNode.getAddress().getKey(),closestPeer);
         }
-        else throw new EmptyNodeBufferException();
+        else{
+            //TODO I have visited nobody, I'm probably the closest
+        }
     }
 
     /**
@@ -148,7 +172,6 @@ public class FindNodePendingRequest implements PendingRequest {
         List<PeerNode> listBuffer = Arrays.asList(peerBuffer.toArray(new PeerNode[0]));
         List<PeerNode> newClosest = nodeProvider.filterKClosest(K, targetNode.getAddress(),listBuffer);
         propagateToAll(newClosest);
-        backupBuffer = peerBuffer;
         peerBuffer = new ArraySet<>();
     }
 
