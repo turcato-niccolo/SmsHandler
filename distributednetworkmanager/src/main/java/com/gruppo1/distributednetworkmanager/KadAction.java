@@ -17,10 +17,14 @@ import java.util.BitSet;
  */
 
 public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSMessage> {
-
+    // The length of the Node_ID
+    private static final int ID_LENGTH = 128;
     private static final String SEPARATOR = "\r";
     private static final int DEFAULT_PARTS = 1;
     private static final int DEFAULT_MAX_PARTS = 1;
+    private static final int ACTION_TYPE_POSITION = 0, OPERATION_ID_POSITION = 1, CURRENT_MESSAGE_POSITION = 2,
+            TOTAL_MESSAGES_POSITION = 3, PAYLOAD_TYPE_POSITION = 4, PAYLOAD_POSITION = 5;
+    private static final int TOTAL_PARAMS = 6;
 
     private SMSPeer actionPeer;
     private ActionType actionType;
@@ -30,18 +34,13 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     private PayloadType payloadType;
     private String payload;
 
-    private static final int ACTION_TYPE_POSITION = 0, OPERATION_ID_POSITION = 1, CURRENT_MESSAGE_POSITION = 2,
-            TOTAL_MESSAGES_POSITION = 3, PAYLOAD_TYPE_POSITION = 4, PAYLOAD_POSITION = 5;
-    private static final int TOTAL_PARAMS = 6;
-
-
     private final String ACTION_CODE_NOT_FOUND_ERROR_MSG = "Expected ActionType as int number, found not parsable String instead";
     private final String ID_NOT_FOUND_ERROR_MSG = "Expected Id as int number, found not parsable String instead";
     private final String TOTAL_MESSAGES_NOT_FOUND_ERROR_MSG = "Expected totalMessages as int number, found not parsable String instead";
     private final String CURRENT_MESSAGE_NOT_FOUND_ERROR_MSG = "Expected currentMessage as int number, found not parsable String instead";
+    private final String PAYLOAD_TYPE_NOT_FOUND_ERROR_MSG = "Expected payload as int number, found not parsable String instead";
     private final String FORMATTED_ACTION_NOT_FOUND_ERROR_MSG = "This message does not contain a formatted KadAction";
     private final String NOT_FORMATTED_PARAMS = "Params can't build a formatted KadAction";
-
     public static final String DEFAULT_IGNORED = " ";
 
     /**
@@ -148,14 +147,15 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     }
 
     /**
-     * Private constructor. Parameters should already come in valid.
+     *  Constructor of KadAction.
      *
-     * @param actionType
-     * @param id
-     * @param part
-     * @param maxParts
-     * @param payloadType
-     * @param payload
+     * @param actionType The type of the action.
+     * @param id The id of the message.
+     * @param part The number of the current message part.
+     * @param maxParts The number of the total messages.
+     * @param payloadType The type of the payload.
+     * @param payload The value of the payload.
+     * @throws IllegalArgumentException if the parameters are not valid.
      */
     public KadAction(@NonNull SMSPeer smsPeer, @NonNull ActionType actionType, int id, int part, int maxParts, @NonNull PayloadType payloadType, @NonNull String payload) {
         this.actionPeer = smsPeer;
@@ -169,6 +169,12 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
             throw new IllegalArgumentException();
     }
 
+    /**
+     * Constructor of KadDction given SMSMessage.
+     *
+     * @param buildingMessage the given SMSMessage.
+     * @throws IllegalArgumentException if the parameters are not valid.
+     */
     public KadAction(@NonNull SMSMessage buildingMessage) {
         String messageBody = buildingMessage.getData();
         String[] parameteres = messageBody.split(SEPARATOR);
@@ -199,15 +205,19 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
             try {
                 payloadType = PayloadType.getTypeFromCode(Integer.parseInt(parameteres[PAYLOAD_TYPE_POSITION]));
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(e.getMessage() + "\n" + "");
+                throw new IllegalArgumentException(e.getMessage() + "\n" + PAYLOAD_TYPE_NOT_FOUND_ERROR_MSG);
             }
             payload = parameteres[PAYLOAD_POSITION];
-            //= actionType;
-            //TODO
+            if (!isValid())
+                throw new IllegalArgumentException();
         }
-        if (isValid()) ;
     }
 
+    /**
+     * Check if all the action's parameters are valid
+     *
+     * @return True if the defined action is valid and fits into a Message.
+     */
     @Override
     public boolean isValid() {
         if (this.actionType.equals(ActionType.INVALID))
@@ -226,24 +236,41 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
         return true;
     }
 
+    /**
+     * Check if payload's content type matches with payloadType passed as parameter.
+     *
+     * @param payloadType The type of the payload.
+     * @param payload The string which contains the value of the payload.
+     * @return True if the payload string contains a value of the correct type,false otherwise.
+     */
     public static boolean payloadMatchesType(PayloadType payloadType, String payload) {
         switch (payloadType) {
             case IGNORED:
-                return true;
             case BOOLEAN:
-                Boolean.valueOf(payload);
+                return true;
             case NODE_ID:
-                //TODO
+                BitSet bitset=BitSetUtils.decodeHexString(payload);
+                return bitset.length()==ID_LENGTH;
             case PEER_ADDRESS:
                 return SMSPeer.isAddressValid(payload) == SMSPeer.PhoneNumberValidity.ADDRESS_VALID;
             case RESOURCE:
-                //metodo statico parse resource
+                try {
+                    return StringResource.parseString(payload, SEPARATOR).isValid();
+                }
+                catch (IllegalArgumentException e){
+                    return false;
+                }
             default:
                 return false;
         }
 
     }
 
+    /**
+     * Get a message with correct formatted action command ready to be sent
+     *
+     * @return A Message containing the formatted action command ready to be sent.
+     */
     @Override
     public SMSMessage toMessage() {
         StringBuilder body = new StringBuilder();
@@ -254,30 +281,66 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
         return new SMSMessage(actionPeer, body.toString());
     }
 
+    /**
+     * Get the action type from the enum.
+     *
+     * @return The type of the action.
+     */
     public ActionType getActionType() {
         return actionType;
     }
 
+    /**
+     * Get the ID which identifies the action.
+     *
+     * @return The operation ID.
+     */
     public int getOperationId() {
         return operationId;
     }
+    /**
+     * Get the k part of the current message.
+     *
+     * @return The currentPart k  of the message.
+     */
 
     public int getCurrentPart() {
         return currentPart;
     }
+    /**
+     * Get the number of the total messages expected .
+     *
+     * @return The total number of messages.
+     */
 
     public int getTotalParts() {
         return totalParts;
     }
+    /**
+     * Get the payload type from the enum.
+     *
+     * @return The type of the payload.
+     */
 
     public PayloadType getPayloadType() {
         return payloadType;
     }
+
+    /**
+     * Get the SMSPeer which is sending or receiving the action message.
+     *
+     * @return SMSPeer the peer sending or receiving the action message.
+     */
     @Override
     public SMSPeer getPeer() {
         return actionPeer;
     }
 
+    /**
+     * Get a string containing the value of the payload
+     *
+     * @return A string containing the value of the payload.
+     */
     @Override
     public String getPayload() {
         return payload;
