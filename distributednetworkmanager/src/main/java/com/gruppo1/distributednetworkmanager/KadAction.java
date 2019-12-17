@@ -250,7 +250,7 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
                 return true;
             case NODE_ID:
                 BitSet bitset=BitSetUtils.decodeHexString(payload);
-                return bitset.length()==ID_LENGTH;
+                return bitset.size()==ID_LENGTH;
             case PEER_ADDRESS:
                 return SMSPeer.isAddressValid(payload) == SMSPeer.PhoneNumberValidity.ADDRESS_VALID;
             case RESOURCE:
