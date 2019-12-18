@@ -17,14 +17,23 @@ import java.util.BitSet;
  */
 
 public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSMessage> {
+    private static final int OPERATION_ID_LENGTH=4;
+    private static final int CURRENT_PART_LENGTH=4;
+    private static final int TOTAL_PARTS_LENGTH=4;
+    private static final int ACTION_TYPE_START_INDEX=0;
+    private static final int OPERATION_ID_START_INDEX=1;
+    private static final int CURRENT_PART_START_INDEX=5;
+    private static final int TOTAL_PARTS_START_INDEX=9;
+    private static final int PAYLOAD_TYPE_START_INDEX=13;
+    private static final int PAYLOAD_START_INDEX=14;
+    private static final char PARSING_CHARACTER='0';
     // The length of the Node_ID
     private static final int ID_LENGTH = 128;
-    private static final String SEPARATOR = "\r";
-    private static final int DEFAULT_PARTS = 1;
-    private static final int DEFAULT_MAX_PARTS = 1;
-    private static final int ACTION_TYPE_POSITION = 0, OPERATION_ID_POSITION = 1, CURRENT_MESSAGE_POSITION = 2,
-            TOTAL_MESSAGES_POSITION = 3, PAYLOAD_TYPE_POSITION = 4, PAYLOAD_POSITION = 5;
-    private static final int TOTAL_PARAMS = 6;
+    private static final int MIN_ID = 1;
+    private static final int MAX_ID = 999;
+    private static final String RESOURCE_SEPARATOR="\r";
+    private static final int MIN_PARTS=1;
+    private static final int MAX_PARTS = 999;
 
     private SMSPeer actionPeer;
     private ActionType actionType;
@@ -34,14 +43,6 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     private PayloadType payloadType;
     private String payload;
 
-    private final String ACTION_CODE_NOT_FOUND_ERROR_MSG = "Expected ActionType as int number, found not parsable String instead";
-    private final String ID_NOT_FOUND_ERROR_MSG = "Expected Id as int number, found not parsable String instead";
-    private final String TOTAL_MESSAGES_NOT_FOUND_ERROR_MSG = "Expected totalMessages as int number, found not parsable String instead";
-    private final String CURRENT_MESSAGE_NOT_FOUND_ERROR_MSG = "Expected currentMessage as int number, found not parsable String instead";
-    private final String PAYLOAD_TYPE_NOT_FOUND_ERROR_MSG = "Expected payload as int number, found not parsable String instead";
-    private final String FORMATTED_ACTION_NOT_FOUND_ERROR_MSG = "This message does not contain a formatted KadAction";
-    private final String NOT_FORMATTED_PARAMS = "Params can't build a formatted KadAction";
-    public static final String DEFAULT_IGNORED = " ";
 
     /**
      * Enum for Action type
@@ -170,47 +171,20 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     }
 
     /**
-     * Constructor of KadDction given SMSMessage.
+     * Constructor of KadDAction given SMSMessage.
      *
      * @param buildingMessage the given SMSMessage.
      * @throws IllegalArgumentException if the parameters are not valid.
      */
     public KadAction(@NonNull SMSMessage buildingMessage) {
         String messageBody = buildingMessage.getData();
-        String[] parameteres = messageBody.split(SEPARATOR);
-        actionPeer = buildingMessage.getPeer();
-        if (parameteres.length == TOTAL_PARAMS) {
-            try {
-                actionType = ActionType.getTypeFromVal(Integer.parseInt(parameteres[ACTION_TYPE_POSITION]));
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(e.getMessage() + "\n" + ACTION_CODE_NOT_FOUND_ERROR_MSG);
-            }
-
-            try {
-                operationId = Integer.parseInt(parameteres[OPERATION_ID_POSITION]);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(e.getMessage() + "\n" + ID_NOT_FOUND_ERROR_MSG);
-            }
-
-            try {
-                totalParts = Integer.parseInt(parameteres[TOTAL_MESSAGES_POSITION]);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(e.getMessage() + "\n" + TOTAL_MESSAGES_NOT_FOUND_ERROR_MSG);
-            }
-            try {
-                currentPart = Integer.parseInt(parameteres[CURRENT_MESSAGE_POSITION]);
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(e.getMessage() + "\n" + CURRENT_MESSAGE_NOT_FOUND_ERROR_MSG);
-            }
-            try {
-                payloadType = PayloadType.getTypeFromCode(Integer.parseInt(parameteres[PAYLOAD_TYPE_POSITION]));
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(e.getMessage() + "\n" + PAYLOAD_TYPE_NOT_FOUND_ERROR_MSG);
-            }
-            payload = parameteres[PAYLOAD_POSITION];
-            if (!isValid())
-                throw new IllegalArgumentException();
-        }
+        actionPeer=buildingMessage.getPeer();
+        actionType=ActionType.getTypeFromVal(Integer.parseInt(messageBody.substring(ACTION_TYPE_START_INDEX,OPERATION_ID_START_INDEX)));
+        operationId=removePadding(messageBody.substring(OPERATION_ID_START_INDEX,CURRENT_PART_START_INDEX));
+        currentPart=removePadding(messageBody.substring(CURRENT_PART_START_INDEX,TOTAL_PARTS_START_INDEX));
+        totalParts=removePadding(messageBody.substring(TOTAL_PARTS_START_INDEX,PAYLOAD_TYPE_START_INDEX));
+        payloadType=PayloadType.getTypeFromCode(Integer.parseInt(messageBody.substring(PAYLOAD_TYPE_START_INDEX,PAYLOAD_START_INDEX)));
+        payload=messageBody.substring(PAYLOAD_START_INDEX);
     }
 
     /**
@@ -224,7 +198,9 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
             return false;
         if (this.payloadType.equals(PayloadType.INVALID))
             return false;
-        if (currentPart <= 0 || totalParts <= 0 || currentPart > totalParts)
+        if (currentPart <MIN_PARTS || totalParts <= MIN_PARTS || currentPart > totalParts || totalParts>MAX_PARTS )
+            return false;
+        if(operationId<MIN_ID || operationId>MAX_ID)
             return false;
         if (!payloadMatchesType(payloadType, payload))
             return false;
@@ -255,7 +231,7 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
                 return SMSPeer.isAddressValid(payload) == SMSPeer.PhoneNumberValidity.ADDRESS_VALID;
             case RESOURCE:
                 try {
-                    return StringResource.parseString(payload, SEPARATOR).isValid();
+                    return StringResource.parseString(payload, RESOURCE_SEPARATOR).isValid();
                 }
                 catch (IllegalArgumentException e){
                     return false;
@@ -274,9 +250,10 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     @Override
     public SMSMessage toMessage() {
         StringBuilder body = new StringBuilder();
-        body.append(actionType.getCode()).append(SEPARATOR).append(operationId)
-                .append(SEPARATOR).append(currentPart).append(SEPARATOR).append(totalParts)
-                .append(payloadType.getCode()).append(SEPARATOR).append(payload);
+
+        body.append(actionType.getCode()).append(addPadding(operationId,OPERATION_ID_LENGTH))
+                .append(addPadding(currentPart,CURRENT_PART_LENGTH)).append(addPadding(totalParts,TOTAL_PARTS_LENGTH))
+                .append(payloadType.getCode()).append(payload);
 
         return new SMSMessage(actionPeer, body.toString());
     }
@@ -345,4 +322,45 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     public String getPayload() {
         return payload;
     }
+
+    /**
+     *
+      * @param string The string you want to add the padding to.
+     * @param length The final length of the string that you need.
+     * @return String with the correct length.
+     */
+     static String addPadding(int string,int length) {
+         String stringToPadd=Integer.toString(string);
+        while(stringToPadd.length()<length)
+        {
+             stringToPadd=PARSING_CHARACTER+stringToPadd;
+        }
+        return stringToPadd;
+    }
+
+    /**
+     * Remove all the paddingCharacter from a String and convert it into an integer
+     * The String has to contain only int
+     *
+     * @param string The String you want to remove the padding to.
+     * @return String without padding.
+     * @throws IllegalArgumentException if the String don't contain only integer
+     */
+    static int removePadding(String string)
+    {
+        String expectedString=string;
+        int START_OF_THE_STRING=0;
+        while (string.charAt(START_OF_THE_STRING)==PARSING_CHARACTER && START_OF_THE_STRING<expectedString.length())
+        {
+            START_OF_THE_STRING++;
+            expectedString=string.substring(START_OF_THE_STRING);
+        }
+        try {
+            return Integer.parseInt(expectedString);
+        }
+        catch (NumberFormatException e) {
+        throw new IllegalArgumentException(e.getMessage());
+    }
+
+}
 }
