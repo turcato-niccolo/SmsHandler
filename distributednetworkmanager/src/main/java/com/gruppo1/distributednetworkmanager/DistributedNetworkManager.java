@@ -137,5 +137,8 @@ public class DistributedNetworkManager implements ReceivedMessageListener<SMSMes
      */
     public void onMessageReceived(SMSMessage message) {
         //TODO if it's a Request then Answer, else Elaborate the result if it is a Response
+
+        KadAction action = new KadAction(message);
+        DistributedNetworkActionResponder requestResponder = new DistributedNetworkActionResponder(context);
     }
 }
