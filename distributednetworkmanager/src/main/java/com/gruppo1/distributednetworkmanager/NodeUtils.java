@@ -12,6 +12,9 @@ import java.util.BitSet;
  * Uses SHA-1 Hashing from class BitSetUtils
  */
 public class NodeUtils {
+
+    public static final int DEFAULT_KEY_LENGTH = 128;
+
     private final static String KEY_LENGTH_INVALID_MSG = "invalid key length, must be > 0 && <=160";
     private final static String PEER_INVALID_MSG = "invalid or null Peer";
     private final static String RESOURCE_INVALID_MSG = "invalid or null Resource";

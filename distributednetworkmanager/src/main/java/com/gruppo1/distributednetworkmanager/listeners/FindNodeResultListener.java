@@ -15,9 +15,9 @@ import java.util.BitSet;
  */
 public interface FindNodeResultListener {
     /**
-     * Method called when a Find Node operation has been completed
+     * Method called when a Find Node operation has been completed.
      *
-     * @param operationId the id for the PendingRequest that came to an end
+     * @param operationId the id for the {@code PendingRequest} that reached a conclusion.
      * @param target      the Target Node
      * @param closest     the closest Peer
      */

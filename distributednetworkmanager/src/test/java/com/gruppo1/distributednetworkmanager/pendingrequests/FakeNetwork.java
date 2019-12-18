@@ -56,12 +56,14 @@ public class FakeNetwork implements ActionPropagator {
             peer = owner;
         }
         //Method to add a Node to the table
-        public void meet(PeerNode metNode){
+        @Override
+        public void visitNode(PeerNode metNode){
             if(!metNode.equals(peer))
                 fakeTable.put(peer.getDistance(metNode), metNode);
         }
         //Getter for peer
-        public PeerNode getPeer() {
+        @Override
+        public PeerNode getRootNode() {
             return peer;
         }
         //Getter for size of Routing Table
@@ -138,10 +140,10 @@ public class FakeNetwork implements ActionPropagator {
         for(int i = 0; i < allClients.size(); i++){
             FakeClient client = allClients.get(i);
             FakeClient nextClient = allClients.get((i+1)%allClients.size());
-            client.meet(nextClient.getPeer());
+            client.visitNode(nextClient.getRootNode());
             while(client.size() < 2*SQUARED_K){
                 int index = Math.abs(random.nextInt()) % allClients.size();
-                client.meet(allClients.get(index).getPeer());
+                client.visitNode(allClients.get(index).getRootNode());
             }
         }
     }
@@ -153,7 +155,7 @@ public class FakeNetwork implements ActionPropagator {
     public PeerNode getExpectedClosest(BinarySet target){
         TreeMap<BinarySet, PeerNode> buffer = new TreeMap<>();
         for(FakeClient client : allClients)
-            buffer.put(target.getDistance(client.getPeer().getAddress()), client.getPeer());
+            buffer.put(target.getDistance(client.getRootNode().getAddress()), client.getRootNode());
         return buffer.get(buffer.firstKey());
     }
 
@@ -177,7 +179,7 @@ public class FakeNetwork implements ActionPropagator {
             System.out.println("I dunno shit");
             currentRequest.nextStep(
                     new KadAction(
-                            client.getPeer().getPhysicalPeer(),
+                            client.getRootNode().getPhysicalPeer(),
                             KadAction.ActionType.FIND_NODE_ANSWER,
                             id,1,1,
                             KadAction.PayloadType.IGNORED,
@@ -187,7 +189,7 @@ public class FakeNetwork implements ActionPropagator {
         for(int i = 1; i <= closestNodes.size(); i++){
             currentRequest.nextStep(
                     new KadAction(
-                            client.getPeer().getPhysicalPeer(),
+                            client.getRootNode().getPhysicalPeer(),
                             KadAction.ActionType.FIND_NODE_ANSWER,
                             id,i,closestNodes.size(),
                             KadAction.PayloadType.PEER_ADDRESS,
@@ -205,7 +207,7 @@ public class FakeNetwork implements ActionPropagator {
             BinarySet target = new BinarySet(BitSetUtils.decodeHexString(action.getPayload()));
             FakeClient client = null;
             for(FakeClient eachClient : allClients){
-                if(eachClient.getPeer().equals(destination)){
+                if(eachClient.getRootNode().equals(destination)){
                     client = eachClient;
                     break;
                 }

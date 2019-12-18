@@ -1,13 +1,24 @@
 package com.gruppo1.distributednetworkmanager.listeners;
 
-import com.dezen.riccardo.smshandler.SMSPeer;
+import androidx.annotation.NonNull;
 
+import com.gruppo1.distributednetworkmanager.PeerNode;
+
+/**
+ * Interface defining the default behaviour for a Class wanting to work as a listener for events
+ * related to one or more
+ * {@link com.gruppo1.distributednetworkmanager.pendingrequests.PingPendingRequest}.
+ *
+ * @author Riccardo De Zen
+ */
 public interface PingResultListener {
     /**
-     * Method called when a Ping came back or the timeout expired
-     * @param operationId the id for the PendingRequest that came to an end
-     * @param pinged the SMSPeer that got Pinged
-     * @param isOnline true if the Peer answered the ping, false otherwise
+     * Method called when a Ping operation came to an end.
+     *
+     * @param operationId the id for the {@code PendingRequest} that reached a conclusion.
+     * @param pinged      the {@code Peer} that got pinged.
+     * @param isOnline    this parameter is true if {@code pinged} answered the Ping, false
+     *                    otherwise.
      */
-    void onPingResult(int operationId, SMSPeer pinged, boolean isOnline);
+    void onPingResult(int operationId, @NonNull PeerNode pinged, boolean isOnline);
 }

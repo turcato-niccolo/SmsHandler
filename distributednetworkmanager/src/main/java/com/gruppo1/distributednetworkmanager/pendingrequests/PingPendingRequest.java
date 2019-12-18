@@ -4,39 +4,49 @@ import androidx.annotation.NonNull;
 
 import com.dezen.riccardo.smshandler.SMSPeer;
 import com.gruppo1.distributednetworkmanager.ActionPropagator;
+import com.gruppo1.distributednetworkmanager.BinarySet;
 import com.gruppo1.distributednetworkmanager.KadAction;
 import com.gruppo1.distributednetworkmanager.NodeDataProvider;
+import com.gruppo1.distributednetworkmanager.NodeUtils;
+import com.gruppo1.distributednetworkmanager.PeerNode;
 import com.gruppo1.distributednetworkmanager.listeners.PingResultListener;
 
-class PingPendingRequest implements PendingRequest{
-
-    private static final String CON_ERR = "One or more parameters were null";
+/**
+ * Class defining an implementation of {@link PendingRequest} for a PING type request, as defined
+ * in the Kademlia protocol.
+ * After completion the {@code PendingRequest} should not receive further calls to
+ * {@link PendingRequest#nextStep(KadAction)}.
+ *
+ * @author Riccardo De Zen
+ */
+public class PingPendingRequest implements PendingRequest {
 
     private static final String PAYLOAD = "owO what's this";
     private static final int DEF_PARTS = 1;
 
-    private int stepsTaken = 0;
+    private int totalStepsTaken = 0;
     private int operationId;
-    private KadAction pingAction;
     private ActionPropagator actionPropagator;
-    private NodeDataProvider nodeProvider;
+    private NodeDataProvider<BinarySet, PeerNode> nodeProvider;
     private PingResultListener resultListener;
+    private KadAction pingAction;
 
     /**
-     * Default constructor
-     * @param operationId the id for this PendingRequest
-     * @param peerToPing the SMSPeer to ping
-     * @param actionPropagator
-     * @param nodeProvider
-     * @param resultListener the listener to this Request's Result. Must not be null.
+     * Default constructor.
+     *
+     * @param operationId      the unique id for this PendingRequest operation.
+     * @param peerToPing       the {@code Peer} to ping.
+     * @param actionPropagator a valid {@link ActionPropagator}.
+     * @param nodeProvider     a valid {@link NodeDataProvider}.
+     * @param resultListener   a valid listener to this {@code PendingRequest}'s Result.
      */
     public PingPendingRequest(
             int operationId,
             @NonNull SMSPeer peerToPing,
             @NonNull ActionPropagator actionPropagator,
-            @NonNull NodeDataProvider nodeProvider,
+            @NonNull NodeDataProvider<BinarySet, PeerNode> nodeProvider,
             @NonNull PingResultListener resultListener
-    ){
+    ) {
         this.operationId = operationId;
         this.actionPropagator = actionPropagator;
         this.nodeProvider = nodeProvider;
@@ -45,16 +55,18 @@ class PingPendingRequest implements PendingRequest{
     }
 
     /**
-     * @return the number of steps performed (number of times nextStep took a valid Action and acted
-     * accordingly). Should be either 0 or 1.
+     * @return the number of steps performed by the operation.
+     * A {@code PingPendingRequest} should perform only one step (when the answer to the Ping
+     * came back).
+     * @see PendingRequest#getTotalStepsTaken()
      */
     @Override
-    public int getTotalStepsTaken(){
-        return stepsTaken;
+    public int getTotalStepsTaken() {
+        return totalStepsTaken;
     }
 
     /**
-     * @return the unique Code for this PendingRequest
+     * @see PendingRequest#getOperationId()
      */
     @Override
     public int getOperationId() {
@@ -62,49 +74,60 @@ class PingPendingRequest implements PendingRequest{
     }
 
     /**
-     * Method used to start the PendingRequest, propagating its first Action
+     * @see PendingRequest#start()
+     * The only propagated Action is a Request of type
+     * {@link com.gruppo1.distributednetworkmanager.KadAction.ActionType#PING}.
      */
     @Override
-    public void start(){
+    public void start() {
         actionPropagator.propagateAction(pingAction);
     }
 
     /**
-     * @return true if the given action can be used to continue the Request, false otherwise. The action
-     * can be used if Type and ID match, and if this request hasn't been canceled yet.
+     * @return true if the given action can be used to continue the operation, false otherwise.
+     * The action is "pertinent" if:
+     * - The {@code ActionType} of {@code action} is
+     * {@link com.gruppo1.distributednetworkmanager.KadAction.ActionType#PING_ANSWER}.
+     * - The {@code operationId} matches.
+     * - The {@code Peer} of {@code action} matches the {@code Peer} of {@code pingAction}.
+     * @see PendingRequest#isActionPertinent(KadAction)
      */
     @Override
-    public boolean isActionPertinent(KadAction action){
-        //The Request can only continue if it receives an answer to the ping
+    public boolean isActionPertinent(@NonNull KadAction action) {
         return KadAction.ActionType.PING_ANSWER == action.getActionType() &&
-                pingAction.getOperationId() == action.getOperationId();
+                pingAction.getOperationId() == action.getOperationId() &&
+                pingAction.getPeer().equals(action.getPeer());
     }
 
     /**
-     * Method to perform the next step for this PendingRequest. Receiving a response is already
+     * For a PING type Request, an incoming pertinent Action is already a valid completion criteria.
      *
-     * @param action the Action triggering the step
+     * @param action a pertinent Action attempting to continue the operation.
      */
     @Override
-    public void nextStep(KadAction action) {
-        if(!isActionPertinent(action)) return;
-        //The Ping, one way or another, came back, so the result is positive and no further Actions are needed
-        resultListener.onPingResult(getOperationId(), action.getPeer(), true);
-        stepsTaken++;
+    public void nextStep(@NonNull KadAction action) {
+        if (!isActionPertinent(action)) return;
+        PeerNode pingedNode = NodeUtils.getNodeForPeer(action.getPeer(),
+                NodeUtils.DEFAULT_KEY_LENGTH);
+        nodeProvider.visitNode(pingedNode);
+        resultListener.onPingResult(getOperationId(), pingedNode, true);
+        totalStepsTaken++;
     }
 
     /**
+     * //TODO remove as soon as KadActionBuilder is completed.
      * Method to return the correct Action for a Peer
+     *
      * @param peer
      * @return
      */
-    private KadAction buildAction(SMSPeer peer){
+    private KadAction buildAction(SMSPeer peer) {
         return new KadAction(
                 peer,
-                KadAction.ActionType.PING,operationId,
+                KadAction.ActionType.PING, operationId,
                 DEF_PARTS,
                 DEF_PARTS,
-                KadAction.PayloadType.IGNORED,PAYLOAD
+                KadAction.PayloadType.IGNORED, PAYLOAD
         );
     }
 }

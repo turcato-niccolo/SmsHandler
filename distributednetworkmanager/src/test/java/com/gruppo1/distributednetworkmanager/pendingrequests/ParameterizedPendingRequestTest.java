@@ -71,6 +71,14 @@ public class ParameterizedPendingRequestTest {
     private NodeDataProvider nodeDataProvider = new StubNodeDataProvider();
     private class StubNodeDataProvider implements NodeDataProvider<BinarySet,PeerNode>{
         @Override
+        public PeerNode getRootNode() {
+            return null;
+        }
+        @Override
+        public void visitNode(@NonNull PeerNode visitedNode) {
+        }
+
+        @Override
         public PeerNode getClosest(BinarySet target) {
             return null;
         }
@@ -100,27 +108,27 @@ public class ParameterizedPendingRequestTest {
     private StubResultListener resultListener = new StubResultListener();
     private class StubResultListener implements PingResultListener, InviteResultListener, FindNodeResultListener, FindValueResultListener, StoreResultListener {
         @Override
-        public void onFindNodeResult(int operationId, BitSet target, SMSPeer closest) {
+        public void onFindNodeResult(int operationId, BitSet target, PeerNode closest) {
 
         }
 
         @Override
-        public void onFindValueResult(int operationId, SMSPeer owner, Resource resource) {
+        public void onFindValueResult(int operationId, PeerNode owner, Resource resource) {
 
         }
 
         @Override
-        public void onInviteResult(int operationId, SMSPeer invited, boolean accepted) {
+        public void onInviteResult(int operationId, PeerNode invited, boolean accepted) {
 
         }
 
         @Override
-        public void onPingResult(int operationId, SMSPeer pinged, boolean isOnline) {
+        public void onPingResult(int operationId, PeerNode pinged, boolean isOnline) {
 
         }
 
         @Override
-        public void onStoreResult(int operationId, Resource storedResource, SMSPeer newOwner) {
+        public void onStoreResult(int operationId, Resource storedResource, PeerNode newOwner) {
 
         }
     }

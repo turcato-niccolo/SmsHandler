@@ -18,7 +18,7 @@ public class FindNodeTest {
 
     private FindNodeResultListener listener = new FindNodeResultListener() {
         @Override
-        public void onFindNodeResult(int operationId, BitSet target, SMSPeer closest) {
+        public void onFindNodeResult(int operationId, BitSet target, PeerNode closest) {
             actualClosest = closest;
         }
     };
@@ -32,7 +32,7 @@ public class FindNodeTest {
     private FakeNetwork network;
 
     private SMSPeer expectedClosest;
-    private SMSPeer actualClosest;
+    private PeerNode actualClosest;
 
     @Before
     public void init(){
