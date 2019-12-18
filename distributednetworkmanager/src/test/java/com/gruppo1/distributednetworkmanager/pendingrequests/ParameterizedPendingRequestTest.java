@@ -91,6 +91,10 @@ public class ParameterizedPendingRequestTest {
         public void propagateAction(KadAction action) {
             propagatedActions++;
         }
+        @Override
+        public void propagateActions(List<KadAction> actions) {
+            propagatedActions += actions.size();
+        }
     };
     //Stub result listener
     private StubResultListener resultListener = new StubResultListener();
@@ -260,13 +264,13 @@ public class ParameterizedPendingRequestTest {
     }
 
     /**
-     * isPertinent is always executed during nextStep, and {@link PendingRequest#getStepsTaken()}
+     * isPertinent is always executed during nextStep, and {@link PendingRequest#getTotalStepsTaken()}
      */
     @Test
     public void nextStep_acceptsPertinent(){
         final int expectedSteps = 1;
         testedRequest.nextStep(exampleValidResponse);
-        assertEquals(expectedSteps, testedRequest.getStepsTaken());
+        assertEquals(expectedSteps, testedRequest.getTotalStepsTaken());
     }
 
     @Test
@@ -276,6 +280,6 @@ public class ParameterizedPendingRequestTest {
         for(KadAction exampleResponse : exampleInvalidTypeResponses){
             testedRequest.nextStep(exampleResponse);
         }
-        assertEquals(expectedSteps, testedRequest.getStepsTaken());
+        assertEquals(expectedSteps, testedRequest.getTotalStepsTaken());
     }
 }

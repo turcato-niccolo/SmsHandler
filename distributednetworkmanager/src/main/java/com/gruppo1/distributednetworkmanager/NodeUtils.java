@@ -2,6 +2,7 @@ package com.gruppo1.distributednetworkmanager;
 
 import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.smshandler.Peer;
+import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.BitSet;
 
@@ -57,7 +58,9 @@ public class NodeUtils {
         if (keyLength > 0 && keyLength <= 160) {
             if (peer != null && peer.isValid()) {
                 BinarySet set = new BinarySet(BitSetUtils.hash(peer.getAddress().getBytes(), keyLength));
-                return new PeerNode(set);
+                PeerNode node = new PeerNode(set);
+                node.setPhysicalPeer((SMSPeer) peer);
+                return node;
             }
             throw new IllegalArgumentException(PEER_INVALID_MSG);
         }

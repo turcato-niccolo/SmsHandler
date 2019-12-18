@@ -27,7 +27,7 @@ public class StorePendingRequest implements PendingRequest {
      * accordingly).
      */
     @Override
-    public int getStepsTaken() {
+    public int getTotalStepsTaken() {
         return 0;
     }
 

@@ -1,7 +1,6 @@
 package com.gruppo1.distributednetworkmanager.pendingrequests;
 
 import androidx.annotation.NonNull;
-import androidx.collection.ArraySet;
 
 import com.dezen.riccardo.smshandler.SMSPeer;
 import com.gruppo1.distributednetworkmanager.ActionPropagator;
@@ -13,6 +12,7 @@ import com.gruppo1.distributednetworkmanager.NodeUtils;
 import com.gruppo1.distributednetworkmanager.PeerNode;
 import com.gruppo1.distributednetworkmanager.listeners.FindNodeResultListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +25,7 @@ public class FindNodePendingRequest implements PendingRequest {
     private static final int K = 5;
     private static final int N = 128;
 
-    private int stepsTaken = 0;
+    private int totalStepsTaken = 0;
     private int operationId;
     private BinarySet targetId;
     private ActionPropagator actionPropagator;
@@ -34,8 +34,8 @@ public class FindNodePendingRequest implements PendingRequest {
 
     private TreeMap<BinarySet, PeerNode> visitedNodes = new TreeMap<>();
     private Set<PeerNode> peerBuffer = new TreeSet<>();
-    private Set<PeerNode> waitingForAnswer = new TreeSet<>();
-    private int neededResponses = 0;
+    private Set<PeerNode> pendingResponses = new TreeSet<>();
+    private int expectedResponses = 0;
 
     /**
      * Default constructor
@@ -63,8 +63,8 @@ public class FindNodePendingRequest implements PendingRequest {
      * accordingly). Should be either 0 or 1.
      */
     @Override
-    public int getStepsTaken(){
-        return stepsTaken;
+    public int getTotalStepsTaken(){
+        return totalStepsTaken;
     }
 
     /**
@@ -81,11 +81,13 @@ public class FindNodePendingRequest implements PendingRequest {
     @Override
     public void start(){
         List<PeerNode> closestNodes = nodeProvider.getKClosest(K,targetId);
+        List<KadAction> actions = new ArrayList<>();
         for(PeerNode node : closestNodes){
-            waitingForAnswer.add(node);
+            pendingResponses.add(node);
             KadAction findNodeAction = buildAction(node.getPhysicalPeer());
-            actionPropagator.propagateAction(findNodeAction);
+            actions.add(findNodeAction);
         }
+        actionPropagator.propagateActions(actions);
     }
 
     /**
@@ -109,7 +111,7 @@ public class FindNodePendingRequest implements PendingRequest {
         if(!isActionPertinent(action)) return;
         handleResponse(action);
         checkStatus();
-        stepsTaken++;
+        totalStepsTaken++;
     }
 
     /**
@@ -126,24 +128,23 @@ public class FindNodePendingRequest implements PendingRequest {
      */
     private void handleResponse(KadAction action){
         PeerNode sender = NodeUtils.getNodeForPeer(action.getPeer(), N);
-        if(waitingForAnswer.contains(sender)){
+        if(pendingResponses.contains(sender)){
             markVisited(sender);
-            waitingForAnswer.remove(sender);
-            neededResponses += action.getTotalParts();
+            pendingResponses.remove(sender);
+            expectedResponses += action.getTotalParts();
         }
         if(action.getPayloadType() == KadAction.PayloadType.PEER_ADDRESS){
             PeerNode responseNode = NodeUtils.getNodeForPeer(new SMSPeer(action.getPayload()), N);
-            if(!visitedNodes.containsValue(responseNode))
-                peerBuffer.add(responseNode);
+            peerBuffer.add(responseNode);
         }
-        neededResponses--;
+        expectedResponses--;
     }
 
     /**
      *
      */
     private void checkStatus(){
-        if(waitingForAnswer.isEmpty() && neededResponses == 0){
+        if(pendingResponses.isEmpty() && expectedResponses == 0){
             if(peerBuffer.isEmpty()){
                 finalStep();
             }
@@ -157,11 +158,10 @@ public class FindNodePendingRequest implements PendingRequest {
     private void finalStep(){
         PeerNode closestNode = visitedNodes.get(visitedNodes.firstKey());
         if(closestNode != null){
-            SMSPeer closestPeer = closestNode.getPhysicalPeer();
-            resultListener.onFindNodeResult(operationId,targetId.getKey(),closestPeer);
+            resultListener.onFindNodeResult(operationId,targetId.getKey(),closestNode);
         }
         else{
-            //TODO I have visited nobody, I'm probably the closest
+            resultListener.onFindNodeResult(operationId,targetId.getKey(),null);
         }
     }
 
@@ -169,10 +169,12 @@ public class FindNodePendingRequest implements PendingRequest {
      * Method to perform the next round of Requests
      */
     private void nextRoundOfRequests(){
+        System.out.println("Round: "+ totalStepsTaken +" done");
         List<PeerNode> listBuffer = Arrays.asList(peerBuffer.toArray(new PeerNode[0]));
         List<PeerNode> newClosest = nodeProvider.filterKClosest(K, targetId,listBuffer);
+        pendingResponses.addAll(newClosest);
+        peerBuffer.clear();
         propagateToAll(newClosest);
-        peerBuffer = new ArraySet<>();
     }
 
     /**
@@ -180,9 +182,11 @@ public class FindNodePendingRequest implements PendingRequest {
      * @param peerNodes a list containing PeerNodes
      */
     private void propagateToAll(List<PeerNode> peerNodes){
+        List<KadAction> actions = new ArrayList<>();
         for(PeerNode node : peerNodes){
-            actionPropagator.propagateAction(buildAction(node.getPhysicalPeer()));
+            actions.add(buildAction(node.getPhysicalPeer()));
         }
+        actionPropagator.propagateActions(actions);
     }
 
     /**
@@ -191,7 +195,6 @@ public class FindNodePendingRequest implements PendingRequest {
      * @return
      */
     private KadAction buildAction(SMSPeer peer){
-        System.out.println(BitSetUtils.BitSetsToHex(targetId.getKey()));
         return new KadAction(
                 peer,
                 KadAction.ActionType.FIND_NODE,

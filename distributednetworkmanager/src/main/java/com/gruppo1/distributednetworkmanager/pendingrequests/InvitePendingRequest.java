@@ -47,7 +47,7 @@ public class InvitePendingRequest implements PendingRequest{
      * accordingly). Should be either 0 or 1.
      */
     @Override
-    public int getStepsTaken(){
+    public int getTotalStepsTaken(){
         return stepsTaken;
     }
 

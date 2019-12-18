@@ -17,6 +17,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.TreeMap;
 
+/**
+ * @author Riccardo De Zen
+ * Awful class. Do not touch. No, seriously, this is not the Class you are looking for.
+ */
 @RunWith(ParameterizedRobolectricTestRunner.class)
 public class FakeNetwork implements ActionPropagator {
     final static int KEY_LENGTH = 128;
@@ -73,7 +77,7 @@ public class FakeNetwork implements ActionPropagator {
             TreeMap<BinarySet,PeerNode> buffer = new TreeMap<>();
             List<PeerNode> result = new ArrayList<>();
             while(result.size() < k && !fakeTable.isEmpty()){
-                PeerNode possibleAddition = fakeTable.get(fakeTable.firstKey());
+                PeerNode possibleAddition = fakeTable.get(fakeTable.firstKey());;
                 if(possibleAddition != null && possibleAddition.getAddress().getDistance(target).compareTo(peer.getAddress().getDistance(target)) < 0)
                     result.add(possibleAddition);
                 buffer.put(fakeTable.firstKey(), fakeTable.remove(fakeTable.firstKey()));
@@ -135,7 +139,7 @@ public class FakeNetwork implements ActionPropagator {
             FakeClient client = allClients.get(i);
             FakeClient nextClient = allClients.get((i+1)%allClients.size());
             client.meet(nextClient.getPeer());
-            while(client.size() < SQUARED_K){
+            while(client.size() < 2*SQUARED_K){
                 int index = Math.abs(random.nextInt()) % allClients.size();
                 client.meet(allClients.get(index).getPeer());
             }
@@ -166,7 +170,11 @@ public class FakeNetwork implements ActionPropagator {
      */
     public void answer(int id, FakeClient client, BinarySet target){
         List<PeerNode> closestNodes = client.getKClosest(BASE_K, target);
-        if(closestNodes.isEmpty())
+        for(PeerNode node : closestNodes){
+            System.out.println("I know this guys who is closer: "+node);
+        }
+        if(closestNodes.isEmpty()){
+            System.out.println("I dunno shit");
             currentRequest.nextStep(
                     new KadAction(
                             client.getPeer().getPhysicalPeer(),
@@ -174,15 +182,16 @@ public class FakeNetwork implements ActionPropagator {
                             id,1,1,
                             KadAction.PayloadType.IGNORED,
                             "owO")
-                    );
+            );
+        }
         for(int i = 1; i <= closestNodes.size(); i++){
             currentRequest.nextStep(
                     new KadAction(
                             client.getPeer().getPhysicalPeer(),
                             KadAction.ActionType.FIND_NODE_ANSWER,
                             id,i,closestNodes.size(),
-                            KadAction.PayloadType.NODE_ID,
-                            BitSetUtils.BitSetsToHex(closestNodes.get(i-1).getAddress().getKey())
+                            KadAction.PayloadType.PEER_ADDRESS,
+                            closestNodes.get(i-1).getPhysicalPeer().getAddress()
                     )
             );
         }
@@ -190,7 +199,6 @@ public class FakeNetwork implements ActionPropagator {
 
     @Override
     public void propagateAction(KadAction action) {
-        System.out.println("Sup");
         if(action.getActionType() == KadAction.ActionType.FIND_NODE){
             int id = action.getOperationId();
             PeerNode destination = NodeUtils.getNodeForPeer(action.getPeer(), KEY_LENGTH);
@@ -203,9 +211,14 @@ public class FakeNetwork implements ActionPropagator {
                 }
             }
             if(client != null){
-                System.out.println("Gonna answer bruv");
                 answer(id, client, target);
             }
         }
+    }
+
+    @Override
+    public void propagateActions(List<KadAction> actions) {
+        for(KadAction action : actions)
+            propagateAction(action);
     }
 }
