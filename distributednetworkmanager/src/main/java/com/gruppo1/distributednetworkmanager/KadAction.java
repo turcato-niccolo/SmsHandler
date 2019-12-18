@@ -308,6 +308,7 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
      *
      * @return SMSPeer the peer sending or receiving the action message.
      */
+
     @Override
     public SMSPeer getPeer() {
         return actionPeer;
@@ -318,19 +319,21 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
      *
      * @return A string containing the value of the payload.
      */
+
     @Override
     public String getPayload() {
         return payload;
     }
 
     /**
+     * Convert an integer to a string and adds to it the padding character.
      *
-      * @param string The string you want to add the padding to.
-     * @param length The final length of the string that you need.
+     * @param intToPadd The integer that need the padding.
+     * @param length The wanted length for the string.
      * @return String with the correct length.
      */
-     static String addPadding(int string,int length) {
-         String stringToPadd=Integer.toString(string);
+     static String addPadding(int intToPadd,int length) {
+         String stringToPadd=Integer.toString(intToPadd);
         while(stringToPadd.length()<length)
         {
              stringToPadd=PARSING_CHARACTER+stringToPadd;
@@ -339,12 +342,12 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     }
 
     /**
-     * Remove all the paddingCharacter from a String and convert it into an integer
-     * The String has to contain only int
+     * Remove all the paddingCharacter from a String and convert it into an integer.
+     * The String has to contain only int.
      *
      * @param string The String you want to remove the padding to.
      * @return String without padding.
-     * @throws IllegalArgumentException if the String don't contain only integer
+     * @throws IllegalArgumentException if the String doesn't contain only integer.
      */
     static int removePadding(String string)
     {
