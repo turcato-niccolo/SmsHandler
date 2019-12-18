@@ -2,9 +2,12 @@ package com.gruppo1.distributednetworkmanager;
 
 import androidx.annotation.NonNull;
 
+import com.dezen.riccardo.networkmanager.StringResource;
 import com.dezen.riccardo.smshandler.SMSMessage;
 import com.dezen.riccardo.smshandler.SMSPeer;
 import com.dezen.riccardo.smshandler.exceptions.InvalidMessageException;
+
+import java.util.BitSet;
 
 /***
  * Class defining an Action travelling through a Kademlia Network.
