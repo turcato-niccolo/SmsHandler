@@ -93,4 +93,21 @@ public class PeerNodeTest {
     public void PeerNode_ClonePositiveTest() {
         assertNotSame(testNode, testNode.clone());
     }
+
+
+    @Test
+    public void PeerNode_SetpeerPositiveTest(){
+        testNode.setPhysicalPeer(testPeer);
+        assertEquals(testNode.getPhysicalPeer(), testPeer);
+    }
+
+    @Test
+    public void PeerNode_CompareNullNegativeTest(){
+        assertNotEquals(testPeer, null);
+    }
+
+    @Test
+    public void PeerNode_CompareDiffTypeNegativeTest(){
+        assertNotEquals(testPeer, 4);
+    }
 }
