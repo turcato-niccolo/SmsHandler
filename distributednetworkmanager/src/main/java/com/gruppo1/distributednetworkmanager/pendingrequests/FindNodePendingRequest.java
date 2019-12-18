@@ -191,6 +191,7 @@ public class FindNodePendingRequest implements PendingRequest {
      * @return
      */
     private KadAction buildAction(SMSPeer peer){
+        System.out.println(BitSetUtils.BitSetsToHex(targetId.getKey()));
         return new KadAction(
                 peer,
                 KadAction.ActionType.FIND_NODE,
