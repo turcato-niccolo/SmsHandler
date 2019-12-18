@@ -74,4 +74,11 @@ public class KBucket extends Bucket<Node<BinarySet>> {
             return elements[0];
         return null;
     }
+
+    /**
+     * @return number of nodes in the bucket
+     */
+    public int size(){
+        return last;
+    }
 }
