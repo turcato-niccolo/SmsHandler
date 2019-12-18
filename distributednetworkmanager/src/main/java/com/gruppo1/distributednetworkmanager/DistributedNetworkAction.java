@@ -20,7 +20,6 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
     private String param;
     private String extra;
     private String payload;
-    private PeerNode currentPeerNode;
     private SMSPeer currentPeer;
     private static final int ID_POSITION = 0,CURRENT_MESSAGE_POSITION=1, TOTAL_MESSAGES_POSITION = 2, ACTION_POSITION = 3
             , PARAM_POSITION=4, EXTRA_POSITION=5, PAYLOAD_POSITION=6;
@@ -218,11 +217,11 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
     public boolean areValidParameters(int actionType, String param, String extra,String payload)
     {
      return Type.isValid(actionType) && (param.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType)) &&
-        (extra.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType))&&(payload.equals(DEFAULT_IGNORED) ^ Type.usesParam(actionType));
+        (extra.equals(DEFAULT_IGNORED) ^ Type.usesExtra(actionType))&&(payload.equals(DEFAULT_IGNORED) ^ Type.usesPayload(actionType));
     }
     @Override
     public boolean isValid() {
-        return currentPeerNode !=null && (
+        return currentPeer !=null && (
                 ((actionCommand == Type.INVITE || actionCommand == Type.ANSWER_INVITE || actionCommand==Type.PING ||
                         actionCommand==Type.ANSWER_PING || actionCommand==Type.ANSWER_STORE || actionCommand==Type.FIND_NODE)
                         && extra.equals(DEFAULT_IGNORED) && payload.equals(DEFAULT_IGNORED)&& !param.equals(DEFAULT_IGNORED))
@@ -287,9 +286,7 @@ public class DistributedNetworkAction extends NodeActionStructure<String> {
     @Override
     public void setDestination(@NonNull SMSPeer peer) {
         if(peer instanceof SMSPeer && peer.isValid()){
-
             currentPeer =  peer;
-
         }
     }
 
