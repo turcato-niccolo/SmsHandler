@@ -29,11 +29,13 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     private static final char PARSING_CHARACTER='0';
     // The length of the Node_ID
     private static final int ID_LENGTH = 128;
-    private static final int MIN_ID = 1;
-    private static final int MAX_ID = 999;
+    public static final int MIN_ID = 1;
+    public static final int MAX_ID = 999;
     private static final String RESOURCE_SEPARATOR="\r";
-    private static final int MIN_PARTS=1;
-    private static final int MAX_PARTS = 999;
+    public static final int MIN_PARTS=1;
+    public static final int MAX_PARTS = 999;
+    private final String ACTION_CODE_NOT_FOUND_ERROR_MSG = "Expected ActionType as int number, found not parsable String instead";
+    private final String PAYLOAD_TYPE_NOT_FOUND_ERROR_MSG="Expected PayloadType as int number, found not parsable String instead";
 
     private SMSPeer actionPeer;
     private ActionType actionType;
@@ -179,11 +181,19 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
     public KadAction(@NonNull SMSMessage buildingMessage) {
         String messageBody = buildingMessage.getData();
         actionPeer=buildingMessage.getPeer();
+        try{
         actionType=ActionType.getTypeFromVal(Integer.parseInt(messageBody.substring(ACTION_TYPE_START_INDEX,OPERATION_ID_START_INDEX)));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(e.getMessage() + "\n" + ACTION_CODE_NOT_FOUND_ERROR_MSG);
+        }
         operationId=removePadding(messageBody.substring(OPERATION_ID_START_INDEX,CURRENT_PART_START_INDEX));
         currentPart=removePadding(messageBody.substring(CURRENT_PART_START_INDEX,TOTAL_PARTS_START_INDEX));
         totalParts=removePadding(messageBody.substring(TOTAL_PARTS_START_INDEX,PAYLOAD_TYPE_START_INDEX));
+        try{
         payloadType=PayloadType.getTypeFromCode(Integer.parseInt(messageBody.substring(PAYLOAD_TYPE_START_INDEX,PAYLOAD_START_INDEX)));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(e.getMessage() + "\n" + PAYLOAD_TYPE_NOT_FOUND_ERROR_MSG);
+        }
         payload=messageBody.substring(PAYLOAD_START_INDEX);
     }
 
@@ -198,7 +208,7 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
             return false;
         if (this.payloadType.equals(PayloadType.INVALID))
             return false;
-        if (currentPart <MIN_PARTS || totalParts <= MIN_PARTS || currentPart > totalParts || totalParts>MAX_PARTS )
+        if (currentPart <MIN_PARTS || totalParts < MIN_PARTS || currentPart > totalParts || totalParts>MAX_PARTS )
             return false;
         if(operationId<MIN_ID || operationId>MAX_ID)
             return false;
