@@ -208,7 +208,7 @@ public class KadAction implements DistributedNetworkAction<String, SMSPeer, SMSM
             return false;
         if (this.payloadType.equals(PayloadType.INVALID))
             return false;
-        if (currentPart <MIN_PARTS || totalParts < MIN_PARTS || currentPart > totalParts || totalParts>MAX_PARTS )
+        if (currentPart <MIN_PARTS || currentPart > totalParts || totalParts>MAX_PARTS )
             return false;
         if(operationId<MIN_ID || operationId>MAX_ID)
             return false;
