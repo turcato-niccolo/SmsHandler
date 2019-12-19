@@ -18,9 +18,10 @@ public interface ActionsBuilder<T extends NodeActionStructure, P extends Peer, R
 
     /**
      * @param peer the peer that will be pinged
+     * @param actionID a new actionID defined by the class calling this method
      * @return an action built to execute the ping command to the peer
      */
-    T buildPing(P peer);
+    T buildPing(int actionID, P peer);
     /**
      * @param request the ping request received from a peer (that will be the receiver for the response)
      * @return a response action built to respond to the received ping command from the peer
@@ -29,9 +30,10 @@ public interface ActionsBuilder<T extends NodeActionStructure, P extends Peer, R
 
     /**
      * @param peer the receiving peer (the peer to invite)
+     * @param actionID a new actionID defined by the class calling this method
      * @return an action built to execute the invite command to the peer
      */
-    T buildInvite(P peer);
+    T buildInvite(int actionID, P peer);
     /**
      * @param request the received invite request
      * @param accepted set to indicate if the answer accepts the invite or if it rejects it
@@ -43,15 +45,17 @@ public interface ActionsBuilder<T extends NodeActionStructure, P extends Peer, R
     /**
      * @param peer the receiving peer
      * @param node the node to be stored
+     * @param actionID a new actionID defined by the class calling this method
      * @return an action built to execute the store (node) command to the peer
      */
-    T buildStore(P peer, N node);
+    T buildStore(int actionID, P peer, N node);
     /**
      * @param peer the receiving peer
      * @param resource the resource to be stored
+     * @param actionID a new actionID defined by the class calling this method
      * @return an action built to execute the store (resource) command to the peer
      */
-    T buildStore(P peer, R resource);
+    T buildStore(int actionID, P peer, R resource);
     /**
      * @param request the received store (node) request action
      * @param peers the peers of which forward addresses
@@ -69,9 +73,10 @@ public interface ActionsBuilder<T extends NodeActionStructure, P extends Peer, R
     /**
      * @param peer the peer that will receive the built action command
      * @param node the node of which find its address (on the used network)
+     * @param actionID a new actionID defined by the class calling this method
      * @return an action built to execute the find node command to the peer
      */
-    T buildFindNode(P peer, N node);
+    T buildFindNode(int actionID, P peer, N node);
 
     /**
      * @param request the received find node request from a peer
@@ -84,9 +89,10 @@ public interface ActionsBuilder<T extends NodeActionStructure, P extends Peer, R
     /**
      * @param peer the peer that will receive the built action command
      * @param resourceNode the node representing the searched resource
+     * @param actionID a new actionID defined by the class calling this method
      * @return an action built to execute the find value (of a resource) command to the peer
      */
-    T buildFindValue(P peer, N resourceNode);
+    T buildFindValue(int actionID,P peer, N resourceNode);
     /**
      * @param request the received find value request from a peer
      * @param resource if found the searched resource (by the requesting peer), otherwise a resource containing a fixed token (that indicated that the resource hasn't been found)
