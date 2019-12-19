@@ -14,7 +14,7 @@ import com.dezen.riccardo.smshandler.Peer;
  * Each response is based on a request
  * Responses (ANSW) are built starting from the request (mainly to retrieve the action ID/number)
  */
-public interface ActionsBuilder<T extends NodeActionStructure, P extends Peer, R extends Resource, N extends Node> {
+public interface ActionsBuilder<T extends DistributedNetworkAction, P extends Peer, R extends Resource, N extends Node> {
 
     /**
      * @param peer the peer that will be pinged
