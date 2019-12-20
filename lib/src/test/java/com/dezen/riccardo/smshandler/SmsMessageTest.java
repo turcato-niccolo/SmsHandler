@@ -1,8 +1,8 @@
 package com.dezen.riccardo.smshandler;
 
 
-import com.dezen.riccardo.smshandler.exceptions.InvalidMessageException;
 import com.dezen.riccardo.smshandler.exceptions.InvalidAddressException;
+import com.dezen.riccardo.smshandler.exceptions.InvalidMessageException;
 
 import org.junit.Before;
 import org.junit.Test;

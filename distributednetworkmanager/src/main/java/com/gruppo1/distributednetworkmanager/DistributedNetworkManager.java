@@ -4,8 +4,6 @@ import android.content.Context;
 
 import androidx.collection.ArraySet;
 
-import com.dezen.riccardo.networkmanager.NetworkDictionary;
-import com.dezen.riccardo.networkmanager.NetworkInterface;
 import com.dezen.riccardo.networkmanager.OnNetworkEventListener;
 import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.networkmanager.StringResource;
@@ -25,7 +23,7 @@ import java.util.Set;
  * Using the already built NetworkDictionary which has a list of
  */
 
-public class DistributedNetworkManager implements NetworkInterface<SMSMessage, SMSPeer, StringResource, NetworkDictionary>, ReceivedMessageListener<SMSMessage> {
+public class DistributedNetworkManager implements ReceivedMessageListener<SMSMessage> {
 
     /**
      * Actions the network can send and receive.
@@ -70,7 +68,7 @@ public class DistributedNetworkManager implements NetworkInterface<SMSMessage, S
         int ADDRESS_LENGTH = 128;
 
         BinarySet mySet = myNode.getKey();
-        NodeActionStructure searchAction;
+        KadAction searchAction;
         for (int i = 0; i < ADDRESS_LENGTH; i++){
 
             Node<BinarySet> searchNode = new PeerNode(getFurthest(mySet, ADDRESS_LENGTH-(i+1)));
@@ -172,5 +170,8 @@ public class DistributedNetworkManager implements NetworkInterface<SMSMessage, S
      */
     public void onMessageReceived(SMSMessage message) {
         //TODO if it's a Request then Answer, else Elaborate the result if it is a Response
+
+        KadAction action = new KadAction(message);
+        DistributedNetworkActionResponder requestResponder = new DistributedNetworkActionResponder(context);
     }
 }

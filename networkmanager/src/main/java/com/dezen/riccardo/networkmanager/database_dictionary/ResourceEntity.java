@@ -4,6 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+
+import com.dezen.riccardo.networkmanager.NetworkDictionary;
+
 /**
  * @author Giorgia Bortoletti
  */
@@ -12,15 +15,16 @@ public class ResourceEntity {
 
     /**
      * Constructor of ResourceEntity
-     * @param keyName
+     * @param key
      * @param value
      */
-    public ResourceEntity(String keyName, String value) {
-        this.keyName = keyName;
+    public ResourceEntity(String key, String value) {
+        this.key = key;
         this.value = value;
     }
     @PrimaryKey @NonNull
-    public String keyName;
-    @ColumnInfo(name = "value")
+    @ColumnInfo(name = NetworkDictionary.RESOURCE_TABLE_KEY_COLUMN_NAME)
+    public String key;
+    @ColumnInfo(name = NetworkDictionary.RESOURCE_TABLE_VALUE_COLUMN_NAME)
     public String value;
 }

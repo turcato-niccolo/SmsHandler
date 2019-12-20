@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.BitSet;
