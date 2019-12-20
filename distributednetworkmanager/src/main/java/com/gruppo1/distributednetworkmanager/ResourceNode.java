@@ -92,7 +92,7 @@ public class ResourceNode extends Resource<BinarySet, String> implements Node<Bi
     }
 
     /**
-     * Not implemented
+     * Not implemented, because it's not applicable to this class
      *
      * @return an empty Bundle, not yet implemented
      */
