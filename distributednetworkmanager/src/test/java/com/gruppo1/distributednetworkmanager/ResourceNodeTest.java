@@ -1,15 +1,16 @@
 package com.gruppo1.distributednetworkmanager;
 
-import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.networkmanager.StringResource;
-import com.dezen.riccardo.smshandler.SMSPeer;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.BitSet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class ResourceNodeTest {
 
@@ -70,5 +71,20 @@ public class ResourceNodeTest {
     @Test
     public void ResourceNode_ClonePositiveTest() {
         assertNotSame(testNode, testNode.clone());
+    }
+
+    @Test
+    public void ResourceNode_EqualsItselfPositiveTest(){
+        assertEquals(testNode, testNode);
+    }
+
+    @Test
+    public void ResourceNode_EqualsNullNegativeTest(){
+        assertNotEquals(testNode, null);
+    }
+
+    @Test
+    public void ResourceNode_EqualsDiffTypeNegativeTest(){
+        assertNotEquals(testNode, 7);
     }
 }

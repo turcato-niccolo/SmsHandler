@@ -78,4 +78,9 @@ public abstract class RoutingTable<B extends Bucket<Node<BinarySet>>> {
      */
     public abstract Node[] getKClosest(Node<BinarySet> node);
 
+    /**
+     * @return number of nodes present in the routing table
+     */
+    public abstract int size();
+
 }

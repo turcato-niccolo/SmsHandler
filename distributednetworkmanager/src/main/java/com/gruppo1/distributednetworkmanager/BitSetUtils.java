@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.BitSet;
@@ -61,7 +60,7 @@ class BitSetUtils {
                 digest = md.digest();
             } catch (NoSuchAlgorithmException e) {
                 Log.e(UTILS_TAG, e.getMessage());
-                //Shouldn't happen, reported to log
+                //Shouldn't happen, if it happens: report to log
             }
             if (digest.length * 8 > numBits) {
                 byte[] trunk = new byte[(numBits % 8 > 0) ? numBits / 8 + 1 : numBits / 8];
@@ -104,7 +103,7 @@ class BitSetUtils {
         distance.xor(rhs);
         int firstDifferent = distance.length() - 1;
         if (firstDifferent == -1)
-            return 0;
+            return 0; //redundant, won't be executed
         return rhs.get(firstDifferent) ? 1 : -1;
     }
 

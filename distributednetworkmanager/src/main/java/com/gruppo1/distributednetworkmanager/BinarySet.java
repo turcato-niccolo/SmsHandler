@@ -6,21 +6,33 @@ import java.util.BitSet;
 
 
 /**
+ * @author Niccolo' Turcato
  * This class was made to extend BitSet as comparable
  */
 public class BinarySet implements Comparable<BinarySet>, Cloneable {
     private BitSet key;
-    private String EMPTY_KEY_EXCEPTION = "EMPTY_KEY_EXCEPTION";
+    private String EMPTY_KEY_EXCEPTION = "The key is empty";
 
     /**
      * Constructor that initializes the key with the given value
      *
      * @param buildingKey given value for the Key
+     * @throws IllegalArgumentException if the given BitSet is empty
      */
     public BinarySet(@NonNull BitSet buildingKey) {
-        if(buildingKey.size() > 0)
+        if (buildingKey.size() > 0)
             key = (BitSet) buildingKey.clone();
         else throw new IllegalArgumentException(EMPTY_KEY_EXCEPTION);
+    }
+
+    /**
+     * Constructor that builds a BinarySet starting from a string containing hexadecimal digits
+     *
+     * @param hexString a string containing hexadecimal digits (length must be multiple of 2, write 0A instead of A)
+     * @throws IllegalArgumentException, if the String length isn't multiple of 2, or contains invalid HEX string
+     */
+    public BinarySet(@NonNull String hexString) {
+        this(BitSetUtils.decodeHexString(hexString));
     }
 
     /**
@@ -33,7 +45,7 @@ public class BinarySet implements Comparable<BinarySet>, Cloneable {
         distance.xor(key);
         int firstDifferent = distance.length() - 1;
         if (firstDifferent == -1)
-            return 0;
+            return 0; //actually, this is redundant
         return key.get(firstDifferent) ? 1 : -1;
     }
 
@@ -66,7 +78,7 @@ public class BinarySet implements Comparable<BinarySet>, Cloneable {
      */
     public int getFirstPositionOfOne() {
         BitSet bitSet = getKey();
-        return bitSet.length()-1;
+        return bitSet.length() - 1;
     }
 
     /**
@@ -91,4 +103,10 @@ public class BinarySet implements Comparable<BinarySet>, Cloneable {
         return false;
     }
 
+    /**
+     * @return the key converted to Hexadecimal number written on a String
+     */
+    public String toHex() {
+        return BitSetUtils.BitSetsToHex(key);
+    }
 }

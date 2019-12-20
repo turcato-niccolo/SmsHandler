@@ -1,16 +1,13 @@
 package com.gruppo1.distributednetworkmanager;
 
-import com.dezen.riccardo.smshandler.SMSPeer;
-
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.util.BitSet;
 
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class BitSetUtilsTest {
     public static String[] params = new String[]{
@@ -60,6 +57,26 @@ public class BitSetUtilsTest {
                 if (i != j)
                     assertNotEquals(resultingKeysStringHash[i], resultingKeysStringHash[j]);
 
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void BitSetUtils_StringHashWrongNumBitTest() {
+        BitSetUtils.hash("Qwerty", 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void BitSetUtils_StringHashNumBitNotMultipleTest() {
+        BitSetUtils.hash("Qwerty", 62);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void BitSetUtils_SHAZeroNumBitTest() {
+        BitSetUtils.hash("Qwerty".getBytes(), 0);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void BitSetUtils_SHATooManyNumBitTest() {
+        BitSetUtils.hash("Qwerty".getBytes(), 170);
     }
 
     @Test

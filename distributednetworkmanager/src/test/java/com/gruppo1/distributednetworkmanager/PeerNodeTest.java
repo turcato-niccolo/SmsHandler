@@ -1,6 +1,5 @@
 package com.gruppo1.distributednetworkmanager;
 
-import com.dezen.riccardo.networkmanager.StringResource;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
 import org.junit.Before;
@@ -8,7 +7,10 @@ import org.junit.Test;
 
 import java.util.BitSet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 public class PeerNodeTest {
 
@@ -92,5 +94,22 @@ public class PeerNodeTest {
     @Test
     public void PeerNode_ClonePositiveTest() {
         assertNotSame(testNode, testNode.clone());
+    }
+
+
+    @Test
+    public void PeerNode_SetpeerPositiveTest(){
+        testNode.setPhysicalPeer(testPeer);
+        assertEquals(testNode.getPhysicalPeer(), testPeer);
+    }
+
+    @Test
+    public void PeerNode_CompareNullNegativeTest(){
+        assertNotEquals(testPeer, null);
+    }
+
+    @Test
+    public void PeerNode_CompareDiffTypeNegativeTest(){
+        assertNotEquals(testPeer, 4);
     }
 }

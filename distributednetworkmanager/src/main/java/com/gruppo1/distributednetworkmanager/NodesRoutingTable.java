@@ -115,13 +115,13 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
         if (nodesClosest != null){
             int minDistance = sizeTable+1;
             Node nodeClosest = null;
-            for (int i = 0; i < nodesClosest.length; i++) {
-                if(!nodesClosest[i].equals(node)) {
-                    BinarySet distanceBinarySet = node.getDistance(nodesClosest[i]);
+            for (Node nodeMaybeClosest : nodesClosest) {
+                if(!nodeMaybeClosest.equals(node)) {
+                    BinarySet distanceBinarySet = node.getDistance(nodeMaybeClosest);
                     int distance = sizeTable - 1 - distanceBinarySet.getFirstPositionOfOne();
                     if (distance < minDistance) {
                         minDistance = distance;
-                        nodeClosest = nodesClosest[i];
+                        nodeClosest = nodeMaybeClosest;
                     }
                 }
             }
@@ -147,6 +147,17 @@ public class NodesRoutingTable extends RoutingTable<KBucket> {
                 return nodesClosest;
         }
         return null;
+    }
+  
+    /**
+     * @return number of nodes present in the routing table
+     */
+    public int size(){
+        int size = 0;
+        for(KBucket bucket : bucketsTable){
+            size += bucket.size();
+        }
+        return size;
     }
 
 }
