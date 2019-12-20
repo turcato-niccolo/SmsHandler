@@ -24,6 +24,21 @@ class NetworkVocabulary implements Dictionary<SMSPeer, StringResource> {
         resources = new ArrayList<>();
     }
 
+    //Class is deprecated
+    /**
+     * @return the number of contained peers
+     */
+    public int countPeers(){
+        return 0;
+    }
+
+    /**
+     * @return the number of contained resources
+     */
+    public int countResources(){
+        return 0;
+    }
+
     /**
      * Class used to contain references to Peers and their associated resources
      */
