@@ -28,12 +28,12 @@ public class SendResponseSms implements Command<Location> {
     public void execute(Location foundLocation) {
         String responseMessage = locationManager.getResponseStringMessage(foundLocation);
         SMSMessage smsMessage = new SMSMessage(new SMSPeer(receivingAddress), responseMessage);
-        manager.sendUrgentMessage(smsMessage);
+        manager.sendMessage(smsMessage);
 
     }
 
     /***
-     * @author Turcato
+     * @author Turcato3
      * @param receiverAddress receiver's phone number
 
      * @param context android application Context

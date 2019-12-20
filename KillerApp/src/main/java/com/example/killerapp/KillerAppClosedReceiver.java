@@ -20,21 +20,21 @@ public class KillerAppClosedReceiver extends BroadcastReceiver {
  *
  */
     LocationManager locationManager;
-    AlarmManager alarmManager;
     String receivedStringMessage;
+    SMSHandler smsHandler;
 
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Constants constants = new Constants();
         locationManager = new LocationManager();
+        smsHandler=new SMSHandler(context);
         SmsMessage[] messages = Telephony.Sms.Intents.getMessagesFromIntent(intent);
         for (SmsMessage message: messages) {
             //The messages built by this app fit in a single sms, so this cycle won't open the activity in more than one iteration
             receivedStringMessage = message.getMessageBody();
-            if (receivedStringMessage.contains(SMSHandler.APP_KEY) &&(
-                    locationManager.containsLocationRequest(receivedStringMessage)
-                    || alarmManager.containsAlarmRequest(receivedStringMessage))) {
+            if (receivedStringMessage.contains(SMSHandler.WAKE_KEY) )
+            {
                 Intent openAlarmAndLocateActivityIntent = new Intent(context, AlarmAndLocateResponseActivity.class);
                 //Forwards message text and return address as parameters defined in the constants class
                 openAlarmAndLocateActivityIntent.putExtra(constants.receivedStringMessage, receivedStringMessage);

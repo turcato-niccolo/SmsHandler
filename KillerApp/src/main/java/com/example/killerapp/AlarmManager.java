@@ -8,13 +8,13 @@ import android.provider.Settings;
 import android.util.Log;
 
 public class AlarmManager {
-    final String[] audioAlarmMessages = {"AUDIO_ALARM_REQUEST", "AUDIO_ALARM_RESPONSE"};
-    final int request = 0, response = 1;
+    static final String[] audioAlarmMessages = {"AUDIO_ALARM_REQUEST", "AUDIO_ALARM_RESPONSE"};
+    static final int request = 0, response = 1;
     final String AlarmManagerTag = "AlarmManagerTag";
+
     private MediaPlayer mediaPlayer;
 
     /**
-     *
      * @return returns a formatted String containing the alarm Request command
      */
     public String getRequestStringMessage()
@@ -33,7 +33,7 @@ public class AlarmManager {
     }
 
     /**
-     * Starts and alarm with the default ringtone of the device, stops when activity is closed by user
+     * Starts an alarm with the default ringtone of the device, stops when activity is closed by user
      */
     public void startAlarm(Context context)
     {

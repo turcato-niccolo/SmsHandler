@@ -2,7 +2,9 @@ package com.example.killerapp;
 
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
+import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -23,19 +25,20 @@ import static com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCU
  * @author Turcato
  */
 class LocationManager {
-    String[] locationMessages = {"LOCATION_REQUEST", "LOCATION_RESPONSE"};
-    final int request = 0, response = 1;
+    static String[] locationMessages = {"LOCATION_REQUEST", "LOCATION_RESPONSE"};
+    static final int request = 0, response = 1;
     final String longitudeTag = "<LG>";
     final String longitudeTagEnd = "</LG>";
     final String latitudeTag = "<LT>";
     final String latitudeTagEnd = "</LT>";
     final String LocationManagerTag = "LocationManagerTag";
+    private final String MAPS_START_URL = "https://www.google.com/maps/search/?api=1&query=";
+    //NOTE: concat latitude,longitude
 
+    Context currentContext;
     LocationRequest locationRequest;
     PendingIntent locationIntent;
     Location mLastLocation;
-
-
 
     FusedLocationProviderClient mFusedLocationClient;
 
@@ -81,7 +84,6 @@ class LocationManager {
     {
         return locationStringResponse.contains(locationMessages[response]);
     }
-
 
     /***
      * @author Turcato
@@ -201,6 +203,19 @@ class LocationManager {
 
         //The request is high priority, this instruction removes it to be more efficient
         mFusedLocationClient.removeLocationUpdates(locationIntent);
+    }
+    /***
+     * @author Turcato
+     * Opens the default maps application at the given Location(latitude, longitude)
+     *
+     * @param mapsLatitude latitude extracted by response sms
+     * @param mapsLongitude longitude extracted by response sms
+     */
+    public void OpenMapsUrl(Double mapsLatitude, Double mapsLongitude)
+    {
+        String url = MAPS_START_URL + mapsLatitude + "," + mapsLongitude;
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        currentContext.getApplicationContext().startActivity(intent);
     }
 
 }
