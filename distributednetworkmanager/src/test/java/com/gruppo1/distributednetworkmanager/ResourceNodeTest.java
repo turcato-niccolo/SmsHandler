@@ -71,4 +71,19 @@ public class ResourceNodeTest {
     public void ResourceNode_ClonePositiveTest() {
         assertNotSame(testNode, testNode.clone());
     }
+
+    @Test
+    public void ResourceNode_EqualsItselfPositiveTest(){
+        assertEquals(testNode, testNode);
+    }
+
+    @Test
+    public void ResourceNode_EqualsNullNegativeTest(){
+        assertNotEquals(testNode, null);
+    }
+
+    @Test
+    public void ResourceNode_EqualsDiffTypeNegativeTest(){
+        assertNotEquals(testNode, 7);
+    }
 }
