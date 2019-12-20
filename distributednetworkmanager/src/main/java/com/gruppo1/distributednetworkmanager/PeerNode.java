@@ -5,14 +5,12 @@ import androidx.annotation.NonNull;
 import com.dezen.riccardo.smshandler.Peer;
 import com.dezen.riccardo.smshandler.SMSPeer;
 
-import java.util.BitSet;
-
 /**
  * @author Niccolo' Turcato
  * Class that represents the Peer DistributedNetworkNode of DistributedNetwork
  * Address is a Bitset of fixed length
  */
-class PeerNode extends Peer<BinarySet> implements Node<BinarySet> {
+public class PeerNode extends Peer<BinarySet> implements Node<BinarySet> {
     private BinarySet binaryKey;
     private SMSPeer physicalPeer;
 

@@ -8,7 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.BitSet;
 
-class BitSetUtils {
+public class BitSetUtils {
 
     private static int minLength = 64;
     private static final String NOT_VALID_NUMBIT_EXCEPTION_MSG = "numBits isn't > 0 or a multiple of 64";

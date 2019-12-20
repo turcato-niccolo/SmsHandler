@@ -2,6 +2,7 @@ package com.gruppo1.distributednetworkmanager;
 
 import com.dezen.riccardo.networkmanager.Resource;
 import com.dezen.riccardo.smshandler.Peer;
+import com.dezen.riccardo.smshandler.SMSPeer;
 
 import java.util.BitSet;
 
@@ -10,7 +11,10 @@ import java.util.BitSet;
  * Class used to quickly create BitSet binary key and PeerNodes from Peer and resources
  * Uses SHA-1 Hashing from class BitSetUtils
  */
-class NodeUtils {
+public class NodeUtils {
+
+    public static final int DEFAULT_KEY_LENGTH = 128;
+
     private final static String KEY_LENGTH_INVALID_MSG = "invalid key length, must be > 0 && <=160";
     private final static String PEER_INVALID_MSG = "invalid or null Peer";
     private final static String RESOURCE_INVALID_MSG = "invalid or null Resource";
@@ -57,7 +61,9 @@ class NodeUtils {
         if (keyLength > 0 && keyLength <= 160) {
             if (peer != null && peer.isValid()) {
                 BinarySet set = new BinarySet(BitSetUtils.hash(peer.getAddress().getBytes(), keyLength));
-                return new PeerNode(set);
+                PeerNode node = new PeerNode(set);
+                node.setPhysicalPeer((SMSPeer) peer);
+                return node;
             }
             throw new IllegalArgumentException(PEER_INVALID_MSG);
         }

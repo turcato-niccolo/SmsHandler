@@ -1,15 +1,9 @@
 package com.dezen.riccardo.networkmanager.database_dictionary;
 
 import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
-import androidx.room.OnConflictStrategy;
-import androidx.room.Query;
-import androidx.room.Update;
 import androidx.sqlite.db.SimpleSQLiteQuery;
 
 import com.dezen.riccardo.networkmanager.NetworkDictionary;
-import com.dezen.riccardo.smshandler.SMSPeer;
 
 /**
  * @author Giorgia Bortoletti
