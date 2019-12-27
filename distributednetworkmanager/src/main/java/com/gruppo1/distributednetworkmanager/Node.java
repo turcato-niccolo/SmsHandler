@@ -6,7 +6,7 @@ package com.gruppo1.distributednetworkmanager;
  *
  * @param <T> type of key
  */
-public interface Node<T> extends Cloneable{
+public interface Node<T> extends Cloneable {
     int keyLength();
 
     T getKey();

@@ -7,9 +7,10 @@ import java.util.Random;
 
 /**
  * @author Niccolo' Turcato
- * Builds KadAction objs with randomized ids (1-999)
+ * Builds KadAction objs
  * <p>
- * TODO: add detailed description (summary from De Zen's Paper)
+ * Based on:
+ * https://github.com/turcato-niccolo/SmsHandler
  */
 public class KadActionsBuilder implements ActionsBuilder<KadAction, SMSPeer, StringResource, Node<BinarySet>> {
 
@@ -241,8 +242,7 @@ public class KadActionsBuilder implements ActionsBuilder<KadAction, SMSPeer, Str
                 );
             }
             return responses;
-        }
-        else
+        } else
             return new KadAction[]{INVALID_ACTION};
     }
 
@@ -273,15 +273,15 @@ public class KadActionsBuilder implements ActionsBuilder<KadAction, SMSPeer, Str
      * @return a response action built to respond to the received find value command (of a resource), or an invalid KAD action if the given action wasn't coherent with this building method (actionType)
      */
     public KadAction buildFindValueAnsw(KadAction request, StringResource resource) {
-        if(request.getActionType() == KadAction.ActionType.FIND_VALUE)
-        return new KadAction(
-                request.getPeer(),
-                KadAction.ActionType.FIND_VALUE_ANSWER,
-                request.getOperationId(),
-                DEFAULT_PARTS, DEFAULT_PARTS,
-                KadAction.PayloadType.RESOURCE,
-                resource.getName() + RESOURCE_SEPARATOR + resource.getValue()
-        );
+        if (request.getActionType() == KadAction.ActionType.FIND_VALUE)
+            return new KadAction(
+                    request.getPeer(),
+                    KadAction.ActionType.FIND_VALUE_ANSWER,
+                    request.getOperationId(),
+                    DEFAULT_PARTS, DEFAULT_PARTS,
+                    KadAction.PayloadType.RESOURCE,
+                    resource.getName() + RESOURCE_SEPARATOR + resource.getValue()
+            );
         else
             return INVALID_ACTION;
     }
@@ -292,7 +292,7 @@ public class KadActionsBuilder implements ActionsBuilder<KadAction, SMSPeer, Str
      * @return an array of responses (one for each peer in peers) for the received request, or an invalid KAD action if the given action wasn't coherent with this building method (actionType)
      */
     public KadAction[] buildFindValueAnsw(KadAction request, SMSPeer[] peers) {
-        if(request.getActionType() == KadAction.ActionType.FIND_VALUE) {
+        if (request.getActionType() == KadAction.ActionType.FIND_VALUE) {
             KadAction[] responses = new KadAction[peers.length];
             for (int i = 0; i < peers.length; i++) {
                 responses[i] = new KadAction(
@@ -305,8 +305,7 @@ public class KadActionsBuilder implements ActionsBuilder<KadAction, SMSPeer, Str
                 );
             }
             return responses;
-        }
-        else
-            return new KadAction[]{ INVALID_ACTION};
+        } else
+            return new KadAction[]{INVALID_ACTION};
     }
 }

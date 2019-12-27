@@ -14,12 +14,13 @@ public class BitSetUtils {
     private static final String NOT_VALID_NUMBIT_EXCEPTION_MSG = "numBits isn't > 0 or a multiple of 64";
     private static final String NOT_VALID_NUMBIT_SHA_EXCEPTION_MSG = "numBits isn't > 0 or <= 160";
     private static final String INVALID_HEX_CHAR_MSG = "Invalid Hexadecimal Character: ";
-    private static final String INVALID_HEX_STRING_MSG="Invalid hexadecimal String supplied.";
+    private static final String INVALID_HEX_STRING_MSG = "Invalid hexadecimal String supplied.";
     private static final String UTILS_TAG = BitSetUtils.class.toString();
     private static final String SHA_1 = "SHA-1";
 
     /**
-     * @param
+     * @param first the first binary key
+     * @param second the second binary key
      * @return The distance of the Keys, calculated in XOR logic
      */
     public static BitSet distanceFrom(@NonNull BitSet first, @NonNull BitSet second) {
@@ -52,7 +53,7 @@ public class BitSetUtils {
      * @throws IllegalArgumentException if peer isn't valid or the numBit isn't in its bounds
      */
     public static BitSet hash(@NonNull byte[] toHash, int numBits) {
-        if(numBits > 0 && numBits <= 160) {
+        if (numBits > 0 && numBits <= 160) {
             byte[] digest = {0};
             try {
                 MessageDigest md = MessageDigest.getInstance(SHA_1);
@@ -69,7 +70,7 @@ public class BitSetUtils {
             }
             return BitSet.valueOf(digest);
         }
-        throw new  IllegalArgumentException(NOT_VALID_NUMBIT_SHA_EXCEPTION_MSG);
+        throw new IllegalArgumentException(NOT_VALID_NUMBIT_SHA_EXCEPTION_MSG);
     }
 
     /**
@@ -120,17 +121,15 @@ public class BitSetUtils {
     }
 
     /**
-     *
      * @param hash the given BitSet to convert to HEX on a String
-     * @return the given BitSet converted to Hex written on a String
+     * @return the given BitSet converted to Hex written on a String (bytes directly converted to pairs of hexadecimal digits, example: 00001111 -> 0f)
      */
-    public static String BitSetsToHex(BitSet hash){
+    public static String BitSetsToHex(BitSet hash) {
         return bytesToHex(hash.toByteArray());
     }
 
     /**
-     *
-     * @param hexString
+     * @param hexString a string containing hexadecimal digits, must be formatted as in BitSetsToHex(BitSet hash) method
      * @return
      * @throws IllegalArgumentException, if the String length isn't multiple of 2, of contains invalid HEX string
      */
@@ -148,7 +147,6 @@ public class BitSetUtils {
     }
 
     /**
-     *
      * @param hexString a string of length 2 containing an HEX number of two digits
      * @return the converted HEX to byte
      * @throws IllegalArgumentException if the string does not contain valid HEX digits
@@ -160,19 +158,17 @@ public class BitSetUtils {
     }
 
     /**
-     *
      * @param hexChar the given char to convert
      * @return the char converted to int
      * @throws IllegalArgumentException if char is invalid
      */
     private static int toDigit(char hexChar) {
         int digit = Character.digit(hexChar, 16);
-        if(digit == -1) {
+        if (digit == -1) {
             throw new IllegalArgumentException(INVALID_HEX_CHAR_MSG + hexChar);
         }
         return digit;
     }
-
 
 
 }
