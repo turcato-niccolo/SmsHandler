@@ -5,12 +5,9 @@ import androidx.annotation.NonNull;
 import com.dezen.riccardo.networkmanager.StringResource;
 import com.dezen.riccardo.smshandler.SMSPeer;
 import com.gruppo1.distributednetworkmanager.ActionPropagator;
-import com.gruppo1.distributednetworkmanager.BinarySet;
-import com.gruppo1.distributednetworkmanager.BitSetUtils;
 import com.gruppo1.distributednetworkmanager.KadAction;
 import com.gruppo1.distributednetworkmanager.NodeDataProvider;
 import com.gruppo1.distributednetworkmanager.NodeUtils;
-import com.gruppo1.distributednetworkmanager.PeerNode;
 import com.gruppo1.distributednetworkmanager.listeners.FindValueResultListener;
 
 import java.util.ArrayList;

@@ -2,8 +2,6 @@ package com.gruppo1.distributednetworkmanager.listeners;
 
 import androidx.annotation.NonNull;
 
-import com.gruppo1.distributednetworkmanager.PeerNode;
-
 import java.util.BitSet;
 
 /**

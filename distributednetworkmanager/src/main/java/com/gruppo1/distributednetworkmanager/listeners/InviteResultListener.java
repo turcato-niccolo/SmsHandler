@@ -2,8 +2,6 @@ package com.gruppo1.distributednetworkmanager.listeners;
 
 import androidx.annotation.NonNull;
 
-import com.gruppo1.distributednetworkmanager.PeerNode;
-
 /**
  * Interface defining the default behaviour for a Class wanting to work as a listener for events
  * related to one or more

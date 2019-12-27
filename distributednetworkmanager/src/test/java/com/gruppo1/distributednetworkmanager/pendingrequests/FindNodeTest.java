@@ -2,7 +2,6 @@ package com.gruppo1.distributednetworkmanager.pendingrequests;
 
 import com.dezen.riccardo.smshandler.SMSPeer;
 import com.gruppo1.distributednetworkmanager.NodeUtils;
-import com.gruppo1.distributednetworkmanager.PeerNode;
 import com.gruppo1.distributednetworkmanager.listeners.FindNodeResultListener;
 
 import org.junit.Assert;
