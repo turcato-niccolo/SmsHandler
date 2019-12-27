@@ -289,6 +289,21 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
         return INVALID_PEER;
     }
 
+
+    /**
+     * @return the number of contained peers
+     */
+    public int countPeers(){
+        return peers.size();
+    }
+
+    /**
+     * @return the number of contained resources
+     */
+    public int countResources(){
+        return resources.size();
+    }
+
     /**
      * Class to interact with Peer Database e Resource Database
      * @author Giorgia Bortoletti
@@ -394,7 +409,7 @@ public class NetworkDictionary implements Dictionary<SMSPeer, StringResource> {
          * @return a list containing all Resources
          */
         private List<StringResource> getResources() {
-            List<StringResource> resourceList = new ArrayList<StringResource>();
+            List<StringResource> resourceList = new ArrayList<>();
             List<ResourceEntity> resourceEntities = dictionaryDatabase.access().getAllResources();
             for(ResourceEntity resource : resourceEntities)
                 resourceList.add(new StringResource(resource.key, resource.value));
