@@ -10,7 +10,7 @@ import java.util.Random;
  * Builds KadAction objs
  * <p>
  * Based on:
- * https://github.com/turcato-niccolo/SmsHandler
+ * https://docs.google.com/document/d/1O7hO7yb5F4vtmm2AAnyiq0OqFqW_iqISUx0ac5sy1po/edit
  */
 public class KadActionsBuilder implements ActionsBuilder<KadAction, SMSPeer, StringResource, Node<BinarySet>> {
 
